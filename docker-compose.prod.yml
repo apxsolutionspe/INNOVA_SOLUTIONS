@@ -1,0 +1,44 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: innova-postgres-prod
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - innova_postgres_prod_data:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
+    container_name: innova-backend-prod
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN}
+      FRONTEND_URL: ${FRONTEND_URL}
+      SWAGGER_ENABLED: ${SWAGGER_ENABLED:-false}
+    ports:
+      - "3000:3000"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: apps/frontend/Dockerfile
+    container_name: innova-frontend-prod
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "8080:80"
+
+volumes:
+  innova_postgres_prod_data:

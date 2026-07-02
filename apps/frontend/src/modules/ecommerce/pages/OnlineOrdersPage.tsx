@@ -1,0 +1,28 @@
+import { ClipboardList, RefreshCw, ShoppingCart } from 'lucide-react';
+
+import { Button } from '../../../components/ui/Button';
+import { PageContainer } from '../../../components/layout/PageContainer';
+import { ExecutiveHeader } from '../../business-intelligence/components/ExecutiveHeader';
+import { ExecutiveKpiCard } from '../../business-intelligence/components/ExecutiveKpiCard';
+import { ExecutivePanel } from '../../business-intelligence/components/ExecutivePanel';
+import { OnlineOrdersTable } from '../components/OnlineOrdersTable';
+
+export function OnlineOrdersPage() {
+  return (
+    <PageContainer title="Pedidos online" description="Gestion futura de pedidos recibidos desde tienda online.">
+      <ExecutiveHeader
+        eyebrow="eCommerce"
+        title="Pedidos online"
+        description="Seguimiento de pedidos web, estados y pagos preparados para integracion futura."
+        actions={<Button type="button" variant="secondary" onClick={() => window.location.reload()}><RefreshCw size={17} /> Actualizar</Button>}
+      />
+      <div className="grid gap-4 md:grid-cols-2">
+        <ExecutiveKpiCard title="Flujo" value="Web" description="Pedidos desde canal online" icon={ShoppingCart} tone="violet" />
+        <ExecutiveKpiCard title="Gestion" value="Admin" description="Confirmacion y preparacion" icon={ClipboardList} tone="blue" />
+      </div>
+      <ExecutivePanel title="Listado de pedidos" description="Estados PENDING, CONFIRMED, PREPARING, DELIVERED o CANCELLED.">
+        <OnlineOrdersTable />
+      </ExecutivePanel>
+    </PageContainer>
+  );
+}

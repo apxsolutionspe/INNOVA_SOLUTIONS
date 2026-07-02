@@ -1,0 +1,52 @@
+{
+  "name": "@techcenter/backend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "nest start --watch",
+    "start": "node dist/main.js",
+    "build": "nest build",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "npm run typecheck",
+    "prisma:generate": "prisma generate --schema prisma/schema.prisma",
+    "prisma:migrate": "prisma migrate dev --schema prisma/schema.prisma",
+    "prisma:seed": "prisma db seed --schema prisma/schema.prisma"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
+  "dependencies": {
+    "@nestjs/common": "^11.1.23",
+    "@nestjs/config": "^4.0.4",
+    "@nestjs/core": "^11.1.23",
+    "@nestjs/jwt": "^11.0.2",
+    "@nestjs/passport": "^11.0.5",
+    "@nestjs/platform-express": "^11.1.23",
+    "@nestjs/swagger": "^11.4.4",
+    "@prisma/client": "^6.19.0",
+    "@techcenter/shared-types": "0.1.0",
+    "@techcenter/shared-utils": "0.1.0",
+    "bcrypt": "^6.0.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.15.1",
+    "exceljs": "^4.4.0",
+    "passport": "^0.7.0",
+    "passport-jwt": "^4.0.1",
+    "pdfkit": "^0.18.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2",
+    "swagger-ui-express": "^5.0.1"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^11.0.21",
+    "@nestjs/schematics": "^11.0.9",
+    "@nestjs/testing": "^11.1.23",
+    "@types/bcrypt": "^6.0.0",
+    "@types/node": "^24.10.1",
+    "@types/passport-jwt": "^4.0.1",
+    "@types/pdfkit": "^0.17.6",
+    "prisma": "^6.19.0",
+    "tsx": "^4.22.3",
+    "typescript": "^6.0.3"
+  }
+}

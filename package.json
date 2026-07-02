@@ -1,0 +1,35 @@
+{
+  "name": "techcenter-nova-manager",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Monorepo empresarial para Innova Solutions.",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspaces --if-present",
+    "dev:frontend": "npm run dev --workspace @techcenter/frontend",
+    "dev:backend": "npm run dev --workspace @techcenter/backend",
+    "build": "npm run build --workspaces --if-present",
+    "build:frontend": "npm run build --workspace @techcenter/frontend",
+    "build:backend": "npm run build --workspace @techcenter/backend",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "format": "prettier --write .",
+    "prisma:generate": "npm run prisma:generate --workspace @techcenter/backend",
+    "prisma:migrate": "npm run prisma:migrate --workspace @techcenter/backend",
+    "prisma:seed": "npm run prisma:seed --workspace @techcenter/backend",
+    "prisma:studio": "npx prisma studio --schema apps/backend/prisma/schema.prisma",
+    "users:list": "tsx scripts/list-users.ts",
+    "users:reset-password": "tsx scripts/reset-user-password.ts",
+    "admin:reset-password": "tsx scripts/reset-admin-password.ts",
+    "env:check": "node scripts/check-env.mjs",
+    "port:check": "node scripts/free-port.mjs 3000 --check",
+    "port:free": "node scripts/free-port.mjs 3000"
+  },
+  "devDependencies": {
+    "prettier": "^3.6.2",
+    "typescript": "^6.0.3"
+  }
+}
