@@ -2,12 +2,61 @@ import { Logger, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import express, { NextFunction, Request, Response } from 'express';
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 
 function isAddressInUseError(error: unknown): error is NodeJS.ErrnoException {
   return error instanceof Error && 'code' in error && (error as NodeJS.ErrnoException).code === 'EADDRINUSE';
+}
+
+function resolveFrontendDistPath() {
+  const candidates = [
+    join(process.cwd(), 'apps', 'frontend', 'dist'),
+    join(process.cwd(), '..', 'frontend', 'dist'),
+    join(__dirname, '..', '..', 'frontend', 'dist'),
+  ];
+
+  return candidates.find((candidate) => existsSync(join(candidate, 'index.html'))) ?? candidates[0];
+}
+
+function shouldServeSpaFallback(path: string, method: string) {
+  if (!['GET', 'HEAD'].includes(method)) return false;
+  if (path === '/api' || path.startsWith('/api/')) return false;
+
+  const staticPrefixes = ['/assets/', '/images/', '/videos/', '/icons/'];
+  if (staticPrefixes.some((prefix) => path.startsWith(prefix))) return false;
+
+  const staticFiles = ['/manifest.webmanifest', '/service-worker.js', '/favicon.ico', '/robots.txt'];
+  if (staticFiles.includes(path)) return false;
+
+  return true;
+}
+
+function configureFrontendStaticServing(app: Awaited<ReturnType<typeof NestFactory.create>>, logger: Logger) {
+  const frontendDistPath = resolveFrontendDistPath();
+  const indexHtmlPath = join(frontendDistPath, 'index.html');
+
+  if (!existsSync(indexHtmlPath)) {
+    logger.warn(`Frontend dist no encontrado en ${frontendDistPath}. El backend seguira sirviendo solo la API.`);
+    return;
+  }
+
+  app.use(express.static(frontendDistPath, { index: false }));
+
+  const server = app.getHttpAdapter().getInstance();
+  server.use((request: Request, response: Response, next: NextFunction) => {
+    if (!shouldServeSpaFallback(request.path, request.method)) {
+      return next();
+    }
+
+    return response.sendFile(indexHtmlPath);
+  });
+
+  logger.log(`Frontend React servido desde ${frontendDistPath}`);
 }
 
 async function bootstrap() {
@@ -66,6 +115,8 @@ async function bootstrap() {
     const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
     SwaggerModule.setup('api/docs', app, swaggerDocument);
   }
+
+  configureFrontendStaticServing(app, logger);
 
   try {
     await app.listen(port);
