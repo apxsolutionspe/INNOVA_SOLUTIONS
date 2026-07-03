@@ -1,12 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { CashMovementType, ServiceOrderStatus } from '@prisma/client';
+import { createHash } from 'node:crypto';
 
 import { PrismaService } from '../../database/prisma.service';
 import { AuthenticatedUser } from '../auth/types/authenticated-user.type';
 import { AiQueryDto } from './dto/ai-query.dto';
 import { businessSummaryPrompt } from './prompts/business-summary.prompt';
-import { BusinessAiMode, BusinessAiProviderName } from './providers/ai-provider.interface';
+import { BusinessAiMode, BusinessAiProvider, BusinessAiProviderName } from './providers/ai-provider.interface';
+import { GeminiProvider } from './providers/gemini.provider';
 import { OpenAiProvider } from './providers/openai.provider';
 
 type InsightResponse = {
@@ -33,13 +35,27 @@ type BusinessContext = {
   alerts: string[];
 };
 
+type CachedAiResult = {
+  expiresAt: number;
+  result: {
+    provider: BusinessAiProviderName;
+    mode: BusinessAiMode;
+    answer: string;
+    model?: string;
+    metadata?: Record<string, unknown>;
+  };
+};
+
 @Injectable()
 export class AiAnalyticsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly config: ConfigService,
+    private readonly gemini: GeminiProvider,
     private readonly openai: OpenAiProvider,
   ) {}
+
+  private readonly responseCache = new Map<string, CachedAiResult>();
 
   async businessSummary(): Promise<InsightResponse> {
     const context = await this.buildBusinessContext();
@@ -129,23 +145,44 @@ export class AiAnalyticsService {
       contextGeneratedAt: context.generatedAt,
     };
 
-    if (this.shouldUseOpenAi()) {
-      const external = await this.openai.askBusinessQuestion({
-        question,
-        systemPrompt: this.systemPrompt(),
-        businessContext: this.limitContextForAi(context),
-      });
+    const cloudProvider = this.resolveCloudProvider();
+    const limitedContext = this.limitContextForAi(context);
+    const cacheKey = cloudProvider ? this.buildCacheKey(question, cloudProvider, limitedContext) : '';
 
-      if (external.mode === 'CLOUD_AI') {
-        provider = 'OPENAI';
-        mode = 'CLOUD_AI';
-        answer = external.answer;
-        metadata = { ...metadata, ...(external.metadata ?? {}) };
+    if (cloudProvider) {
+      const cached = this.getCachedResult(cacheKey);
+      if (cached) {
+        provider = cached.provider;
+        mode = cached.mode;
+        answer = cached.answer;
+        metadata = { ...metadata, ...(cached.metadata ?? {}), cached: true, fallbackUsed: false };
       } else {
-        warnings.push(...(external.warnings ?? ['OpenAI no respondio. Se genero analisis interno.']));
+        const external = await cloudProvider.askBusinessQuestion({
+          question,
+          systemPrompt: this.systemPrompt(),
+          businessContext: limitedContext,
+        });
+
+        if (external.mode === 'CLOUD_AI') {
+          provider = external.provider;
+          mode = 'CLOUD_AI';
+          answer = external.answer;
+          metadata = { ...metadata, ...(external.metadata ?? {}), cached: false, fallbackUsed: false };
+          this.setCachedResult(cacheKey, {
+            provider,
+            mode,
+            answer,
+            model: cloudProvider.modelName,
+            metadata,
+          });
+        } else {
+          metadata = { ...metadata, ...(external.metadata ?? {}), cached: false, fallbackUsed: true };
+          warnings.push(...(external.warnings ?? [`${cloudProvider.providerName} no respondio. Se genero analisis interno.`]));
+        }
       }
     } else {
-      warnings.push(this.openAiDisabledReason());
+      metadata = { ...metadata, cached: false, fallbackUsed: true };
+      warnings.push(this.cloudDisabledReason());
     }
 
     await this.audit(user.id, 'ASK_AI', `Pregunta IA: ${question}`);
@@ -154,7 +191,7 @@ export class AiAnalyticsService {
       success: true,
       question,
       provider,
-      model: provider === 'OPENAI' ? this.openai.modelName : undefined,
+      model: provider === 'RULE_BASED' ? undefined : this.resolveModelName(provider),
       mode,
       answer,
       insights: internal.insights,
@@ -169,16 +206,17 @@ export class AiAnalyticsService {
   }
 
   async testConnection(user: AuthenticatedUser) {
-    const health = await this.openai.healthCheck();
-    const providerEnabled = this.shouldUseOpenAi();
-    const result = providerEnabled
-      ? await this.openai.testConnection()
+    const selectedProvider = this.resolveConfiguredProvider();
+    const health = selectedProvider ? await selectedProvider.healthCheck() : await this.gemini.healthCheck();
+    const providerEnabled = Boolean(selectedProvider);
+    const result = selectedProvider
+      ? await selectedProvider.testConnection()
       : {
           provider: 'RULE_BASED' as const,
           mode: 'RULE_BASED_FALLBACK' as const,
-          answer: this.openAiDisabledReason(),
-          warnings: [this.openAiDisabledReason()],
-          metadata: health,
+          answer: this.cloudDisabledReason(),
+          warnings: [this.cloudDisabledReason()],
+          metadata: { ...health, providerRequested: this.providerNameFromEnv() },
         };
 
     await this.audit(user.id, 'TEST_CONNECTION', `Prueba IA: ${result.provider} ${result.mode}`);
@@ -596,32 +634,91 @@ export class AiAnalyticsService {
     return output;
   }
 
-  private shouldUseOpenAi() {
-    const enabled = (this.config.get<string>('AI_ENABLED') ?? this.config.get<string>('AI_MODE') ?? 'false').toLowerCase();
-    const provider = (this.config.get<string>('AI_PROVIDER') ?? '').toLowerCase();
-    return ['true', '1', 'yes', 'real', 'production'].includes(enabled) && provider === 'openai' && Boolean(this.config.get<string>('OPENAI_API_KEY')?.trim());
+  private resolveCloudProvider(): BusinessAiProvider | null {
+    return this.resolveConfiguredProvider();
   }
 
-  private openAiDisabledReason() {
+  private resolveConfiguredProvider(): BusinessAiProvider | null {
+    const enabled = (this.config.get<string>('AI_ENABLED') ?? this.config.get<string>('AI_MODE') ?? 'false').toLowerCase();
     const provider = (this.config.get<string>('AI_PROVIDER') ?? '').toLowerCase();
-    const keyConfigured = Boolean(this.config.get<string>('OPENAI_API_KEY')?.trim());
+    if (!['true', '1', 'yes', 'real', 'production'].includes(enabled)) return null;
+    if (provider === 'gemini' && this.config.get<string>('GEMINI_API_KEY')?.trim()) return this.gemini;
+    if (provider === 'openai' && this.config.get<string>('OPENAI_API_KEY')?.trim()) return this.openai;
+    return null;
+  }
+
+  private providerNameFromEnv() {
+    const provider = (this.config.get<string>('AI_PROVIDER') ?? 'gemini').toLowerCase();
+    return provider === 'openai' ? 'OPENAI' : provider === 'gemini' ? 'GEMINI' : 'RULE_BASED';
+  }
+
+  private resolveModelName(provider: BusinessAiProviderName) {
+    if (provider === 'GEMINI') return this.gemini.modelName;
+    if (provider === 'OPENAI') return this.openai.modelName;
+    return undefined;
+  }
+
+  private cloudDisabledReason() {
+    const provider = (this.config.get<string>('AI_PROVIDER') ?? 'gemini').toLowerCase();
     const enabled = (this.config.get<string>('AI_ENABLED') ?? this.config.get<string>('AI_MODE') ?? 'false').toLowerCase();
 
     if (!['true', '1', 'yes', 'real', 'production'].includes(enabled)) {
       return 'IA cloud deshabilitada. Se usara analisis interno.';
     }
-    if (provider !== 'openai') {
-      return 'AI_PROVIDER no esta configurado como openai. Se usara analisis interno.';
+    if (provider === 'gemini' && !this.config.get<string>('GEMINI_API_KEY')?.trim()) {
+      return 'Gemini no esta configurado. Se usara analisis interno.';
     }
-    if (!keyConfigured) {
+    if (provider === 'openai' && !this.config.get<string>('OPENAI_API_KEY')?.trim()) {
       return 'OpenAI no esta configurado. Se usara analisis interno.';
+    }
+    if (!['gemini', 'openai'].includes(provider)) {
+      return 'AI_PROVIDER no esta configurado como gemini u openai. Se usara analisis interno.';
     }
     return 'Se usara analisis interno.';
   }
 
   private maxContextItems() {
-    const value = Number(this.config.get<string>('AI_MAX_CONTEXT_ITEMS') ?? 20);
-    return Number.isFinite(value) && value > 0 ? Math.min(value, 50) : 20;
+    const value = Number(this.config.get<string>('AI_MAX_CONTEXT_ITEMS') ?? 10);
+    return Number.isFinite(value) && value > 0 ? Math.min(value, 50) : 10;
+  }
+
+  private cacheEnabled() {
+    return (this.config.get<string>('AI_USE_CACHE') ?? 'true').toLowerCase() !== 'false';
+  }
+
+  private cacheTtlMs() {
+    const seconds = Number(this.config.get<string>('AI_CACHE_TTL_SECONDS') ?? 300);
+    return (Number.isFinite(seconds) && seconds > 0 ? seconds : 300) * 1000;
+  }
+
+  private buildCacheKey(question: string, provider: BusinessAiProvider, context: Record<string, unknown>) {
+    const hash = createHash('sha256')
+      .update(provider.providerName)
+      .update(provider.modelName)
+      .update(question.trim().toLowerCase())
+      .update(JSON.stringify({ ...context, generatedAt: undefined }))
+      .digest('hex');
+    return hash;
+  }
+
+  private getCachedResult(cacheKey: string) {
+    if (!this.cacheEnabled() || !cacheKey) return null;
+    const cached = this.responseCache.get(cacheKey);
+    if (!cached) return null;
+    if (cached.expiresAt < Date.now()) {
+      this.responseCache.delete(cacheKey);
+      return null;
+    }
+    return cached.result;
+  }
+
+  private setCachedResult(cacheKey: string, result: CachedAiResult['result']) {
+    if (!this.cacheEnabled() || !cacheKey) return;
+    if (this.responseCache.size > 100) {
+      const firstKey = this.responseCache.keys().next().value as string | undefined;
+      if (firstKey) this.responseCache.delete(firstKey);
+    }
+    this.responseCache.set(cacheKey, { expiresAt: Date.now() + this.cacheTtlMs(), result });
   }
 
   private limitContextForAi(context: BusinessContext) {

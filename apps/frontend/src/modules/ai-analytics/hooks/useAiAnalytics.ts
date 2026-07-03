@@ -33,8 +33,8 @@ export function useAiAnalytics() {
         configured: false,
         keyConfigured: false,
         timeoutMs: 30000,
-        answer: 'No se pudo probar OpenAI. El analisis interno sigue disponible.',
-        warnings: [err instanceof Error ? err.message : 'No se pudo probar OpenAI.'],
+        answer: 'No se pudo probar la IA cloud. El analisis interno sigue disponible.',
+        warnings: [err instanceof Error ? err.message : 'No se pudo probar la IA cloud.'],
         generatedAt: new Date().toISOString(),
       });
     }
@@ -62,6 +62,7 @@ export function useAiAnalytics() {
     setLoading(true);
     setError('');
     setResult(null);
+    setPanelResult(null);
     try {
       setQuestion(cleanQuestion);
       setResult(await aiAnalyticsService.ask(cleanQuestion));
@@ -75,6 +76,7 @@ export function useAiAnalytics() {
   async function runPanel(type: 'sales' | 'inventory' | 'profitability') {
     setPanelLoading(type);
     setError('');
+    setResult(null);
     setPanelResult(null);
     try {
       const response =

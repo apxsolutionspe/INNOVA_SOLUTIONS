@@ -125,25 +125,12 @@ export class OpenAiProvider implements BusinessAiProvider {
 
   async testConnection(): Promise<AiProviderResponse> {
     const health = await this.healthCheck();
-    if (!health.keyConfigured) {
-      return {
-        provider: 'OPENAI',
-        mode: 'RULE_BASED_FALLBACK',
-        answer: health.message,
-        warnings: ['OPENAI_API_KEY no esta configurada.'],
-        metadata: { ...health },
-      };
-    }
-
-    const response = await this.askBusinessQuestion({
-      question: 'Responde solo: conexion correcta.',
-      systemPrompt: 'Eres una prueba tecnica de conexion. No incluyas datos sensibles.',
-      businessContext: { purpose: 'health-check' },
-    });
-
     return {
-      ...response,
-      answer: response.mode === 'CLOUD_AI' ? 'OpenAI conectado correctamente.' : response.answer,
+      provider: 'OPENAI',
+      mode: health.keyConfigured ? 'CLOUD_AI' : 'RULE_BASED_FALLBACK',
+      answer: health.message,
+      warnings: health.keyConfigured ? [] : ['OPENAI_API_KEY no esta configurada.'],
+      metadata: { ...health, tokenConsumingCheck: false },
     };
   }
 

@@ -29,6 +29,7 @@ export interface BusinessAiProvider {
   providerName: BusinessAiProviderName;
   modelName: string;
   healthCheck(): Promise<AiHealthResult>;
+  testConnection(): Promise<AiProviderResponse>;
   askBusinessQuestion(input: BusinessAiInput): Promise<AiProviderResponse>;
 }
 

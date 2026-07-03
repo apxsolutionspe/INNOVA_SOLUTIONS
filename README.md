@@ -178,24 +178,28 @@ npm.cmd run preview --workspace @techcenter/frontend
 
 Luego abrir el sistema en el navegador y usar la opcion `Instalar aplicacion`.
 
-## IA Analytics con OpenAI
+## IA Analytics con Gemini
 
-En produccion Render, IA Analytics puede usar OpenAI desde el backend NestJS:
+En produccion Render, IA Analytics puede usar Gemini desde el backend NestJS. OpenAI queda como proveedor opcional si se configura.
 
 ```txt
-React -> NestJS /api/ai-analytics -> OpenAI API
+React -> NestJS /api/ai-analytics -> Gemini API
 ```
 
 Variables principales:
 
 - `AI_ENABLED=true`
-- `AI_PROVIDER=openai`
-- `AI_MODEL=gpt-4.1-mini`
+- `AI_PROVIDER=gemini`
+- `AI_MODEL=gemini-2.5-flash`
+- `GEMINI_API_KEY=`
 - `OPENAI_API_KEY=`
 - `AI_TIMEOUT_MS=30000`
-- `AI_MAX_CONTEXT_ITEMS=20`
+- `AI_MAX_CONTEXT_ITEMS=10`
+- `AI_MAX_OUTPUT_TOKENS=500`
+- `AI_CACHE_TTL_SECONDS=300`
+- `AI_USE_CACHE=true`
 
-Si OpenAI no esta configurado o falla, el sistema mantiene un fallback interno basado en reglas y estadisticas reales. El frontend nunca recibe `OPENAI_API_KEY`.
+Si Gemini/OpenAI no esta configurado o falla, el sistema mantiene un fallback interno basado en reglas y estadisticas reales. El frontend nunca recibe `GEMINI_API_KEY` ni `OPENAI_API_KEY`.
 
 Documentacion completa: `docs/apis-ia.md`.
 
