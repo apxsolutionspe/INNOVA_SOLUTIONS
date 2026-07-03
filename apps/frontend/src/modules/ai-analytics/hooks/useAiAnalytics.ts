@@ -1,11 +1,19 @@
 import { useState } from 'react';
+
 import { aiAnalyticsService } from '../services/ai-analytics.service';
-import { AiAnalysisResult, AiIndexStatus, AiInsightResponse, AiLocalHealth } from '../types/ai-analytics.types';
+import {
+  AiAnalysisResult,
+  AiConnectionStatus,
+  AiIndexStatus,
+  AiInsightResponse,
+  AiLocalHealth,
+} from '../types/ai-analytics.types';
 
 export function useAiAnalytics() {
   const [question, setQuestion] = useState('');
   const [result, setResult] = useState<AiAnalysisResult | null>(null);
   const [panelResult, setPanelResult] = useState<AiInsightResponse | null>(null);
+  const [connectionStatus, setConnectionStatus] = useState<AiConnectionStatus | null>(null);
   const [health, setHealth] = useState<AiLocalHealth | null>(null);
   const [indexStatus, setIndexStatus] = useState<AiIndexStatus | null>(null);
   const [loading, setLoading] = useState(false);
@@ -13,8 +21,26 @@ export function useAiAnalytics() {
   const [rebuilding, setRebuilding] = useState(false);
   const [error, setError] = useState('');
 
-  async function loadLocalStatus() {
+  async function loadConnectionStatus() {
     setError('');
+    try {
+      setConnectionStatus(await aiAnalyticsService.testConnection());
+    } catch (err) {
+      setConnectionStatus({
+        success: true,
+        provider: 'RULE_BASED',
+        mode: 'RULE_BASED_FALLBACK',
+        configured: false,
+        keyConfigured: false,
+        timeoutMs: 30000,
+        answer: 'No se pudo probar OpenAI. El analisis interno sigue disponible.',
+        warnings: [err instanceof Error ? err.message : 'No se pudo probar OpenAI.'],
+        generatedAt: new Date().toISOString(),
+      });
+    }
+  }
+
+  async function loadLocalStatus() {
     try {
       const [healthData, indexData] = await Promise.all([
         aiAnalyticsService.localHealth(),
@@ -22,9 +48,8 @@ export function useAiAnalytics() {
       ]);
       setHealth(healthData);
       setIndexStatus(indexData);
-    } catch (err) {
+    } catch {
       setHealth({ status: 'error', service: 'innova-ai-service', ollama: 'disconnected', model: 'qwen3', rag: false });
-      setError(err instanceof Error ? err.message : 'IA local no disponible. Verifica que Ollama esté ejecutándose.');
     }
   }
 
@@ -39,9 +64,9 @@ export function useAiAnalytics() {
     setResult(null);
     try {
       setQuestion(cleanQuestion);
-      setResult(await aiAnalyticsService.localAsk(cleanQuestion, true));
+      setResult(await aiAnalyticsService.ask(cleanQuestion));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'IA local no disponible. Verifica que Ollama esté ejecutándose.');
+      setError(err instanceof Error ? err.message : 'No se pudo generar el analisis empresarial.');
     } finally {
       setLoading(false);
     }
@@ -60,7 +85,7 @@ export function useAiAnalytics() {
             : await aiAnalyticsService.profitabilityInsights();
       setPanelResult(response);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'No se pudo cargar el análisis.');
+      setError(err instanceof Error ? err.message : 'No se pudo cargar el analisis.');
     } finally {
       setPanelLoading('');
     }
@@ -72,7 +97,7 @@ export function useAiAnalytics() {
     try {
       setIndexStatus(await aiAnalyticsService.rebuildIndex());
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'No se pudo reconstruir el índice RAG.');
+      setError(err instanceof Error ? err.message : 'No se pudo reconstruir el indice RAG.');
     } finally {
       setRebuilding(false);
     }
@@ -83,6 +108,7 @@ export function useAiAnalytics() {
     setQuestion,
     result,
     panelResult,
+    connectionStatus,
     health,
     indexStatus,
     loading,
@@ -91,6 +117,7 @@ export function useAiAnalytics() {
     error,
     analyze,
     runPanel,
+    loadConnectionStatus,
     loadLocalStatus,
     rebuildIndex,
   };

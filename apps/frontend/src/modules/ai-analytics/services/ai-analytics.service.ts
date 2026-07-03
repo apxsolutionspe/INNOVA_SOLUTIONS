@@ -1,5 +1,5 @@
 import { httpClient } from '../../../services/http-client';
-import { AiAnalysisResult, AiIndexStatus, AiInsightResponse, AiLocalHealth } from '../types/ai-analytics.types';
+import { AiAnalysisResult, AiConnectionStatus, AiIndexStatus, AiInsightResponse, AiLocalHealth } from '../types/ai-analytics.types';
 
 export const aiAnalyticsService = {
   async localHealth() {
@@ -20,6 +20,10 @@ export const aiAnalyticsService = {
   },
   async ask(question: string) {
     const { data } = await httpClient.post<AiAnalysisResult>('/ai-analytics/ask', { question });
+    return data;
+  },
+  async testConnection() {
+    const { data } = await httpClient.get<AiConnectionStatus>('/ai-analytics/test-connection');
     return data;
   },
   async businessSummary() {

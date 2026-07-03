@@ -1,17 +1,36 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { CashMovementType, ServiceOrderStatus } from '@prisma/client';
+
 import { PrismaService } from '../../database/prisma.service';
 import { AuthenticatedUser } from '../auth/types/authenticated-user.type';
 import { AiQueryDto } from './dto/ai-query.dto';
-import { GeminiProvider } from './providers/gemini.provider';
+import { businessSummaryPrompt } from './prompts/business-summary.prompt';
+import { BusinessAiMode, BusinessAiProviderName } from './providers/ai-provider.interface';
 import { OpenAiProvider } from './providers/openai.provider';
 
 type InsightResponse = {
-  mode: 'MOCK' | 'REAL';
+  success: boolean;
+  provider: BusinessAiProviderName;
+  model?: string;
+  mode: BusinessAiMode;
   answer: string;
   insights: string[];
+  warnings: string[];
   generatedAt: string;
+  metadata?: Record<string, unknown>;
+};
+
+type BusinessContext = {
+  generatedAt: string;
+  sales: Record<string, unknown>;
+  inventory: Record<string, unknown>;
+  cash: Record<string, unknown>;
+  purchases: Record<string, unknown>;
+  serviceOrders: Record<string, unknown>;
+  quickServices: Record<string, unknown>;
+  profitability: Record<string, unknown>;
+  alerts: string[];
 };
 
 @Injectable()
@@ -19,183 +38,648 @@ export class AiAnalyticsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly config: ConfigService,
-    private readonly gemini: GeminiProvider,
     private readonly openai: OpenAiProvider,
   ) {}
 
   async businessSummary(): Promise<InsightResponse> {
-    const [sales, salesAmount, quickServicesAmount, lowStock, outOfStock, pendingOrders, readyOrders, pendingPurchases, cashMovements] = await Promise.all([
-      this.prisma.sale.count({ where: { status: 'COMPLETED' } }),
-      this.prisma.sale.aggregate({ where: { status: 'COMPLETED' }, _sum: { total: true } }),
-      this.prisma.quickServiceSale.aggregate({ where: { status: 'COMPLETED' }, _sum: { total: true } }),
-      this.prisma.product.count({ where: { isActive: true, stock: { lte: this.prisma.product.fields.minStock } } }),
-      this.prisma.product.count({ where: { isActive: true, stock: 0 } }),
-      this.prisma.serviceOrder.count({ where: { status: { in: [ServiceOrderStatus.RECEIVED, ServiceOrderStatus.DIAGNOSIS, ServiceOrderStatus.IN_PROGRESS] } } }),
-      this.prisma.serviceOrder.count({ where: { status: ServiceOrderStatus.READY } }),
-      this.prisma.purchaseOrder.count({ where: { status: { in: ['PENDING', 'PARTIALLY_RECEIVED'] } } }),
-      this.prisma.cashMovement.findMany({ orderBy: { createdAt: 'desc' }, take: 30 }),
-    ]);
+    const context = await this.buildBusinessContext();
+    return this.ruleBasedResponse('Resumen general del negocio.', this.buildSummaryInsights(context), {
+      dataSources: ['sales', 'inventory', 'cash', 'purchases', 'service-orders', 'quick-services'],
+    });
+  }
 
-    const incomeTypes: CashMovementType[] = [CashMovementType.INCOME, CashMovementType.SALE, CashMovementType.SERVICE_PAYMENT];
-    const income = cashMovements
-      .filter((movement) => incomeTypes.includes(movement.type))
-      .reduce((sum, movement) => sum + Number(movement.amount), 0);
-    const expenses = cashMovements.filter((movement) => movement.type === CashMovementType.EXPENSE).reduce((sum, movement) => sum + Number(movement.amount), 0);
+  async salesInsights(): Promise<InsightResponse> {
+    const context = await this.buildBusinessContext();
+    const sales = context.sales as {
+      salesToday?: number;
+      incomeToday?: number;
+      incomeMonth?: number;
+      salesMonth?: number;
+      topProductsSold?: Array<{ name: string; quantity: number; total: number }>;
+      paymentMethods?: Array<{ method: string; amount: number; count: number }>;
+    };
+
     const insights = [
-      `Ventas completadas: ${sales}, ingresos acumulados por ventas: S/ ${Number(salesAmount._sum.total ?? 0).toFixed(2)}.`,
-      `Ingresos por servicios rapidos: S/ ${Number(quickServicesAmount._sum.total ?? 0).toFixed(2)}.`,
-      `Inventario: ${lowStock} productos en stock bajo y ${outOfStock} sin stock.`,
-      `Ordenes tecnicas: ${pendingOrders} pendientes/en proceso y ${readyOrders} listas para entregar.`,
-      `Compras pendientes o parciales: ${pendingPurchases}.`,
-      `Caja reciente: ingresos S/ ${income.toFixed(2)}, gastos S/ ${expenses.toFixed(2)}, neto S/ ${(income - expenses).toFixed(2)}.`,
+      `Ventas de hoy: ${sales.salesToday ?? 0}. Ingresos de hoy: S/ ${this.money(sales.incomeToday)}.`,
+      `Ventas del mes: ${sales.salesMonth ?? 0}. Ingresos del mes: S/ ${this.money(sales.incomeMonth)}.`,
+      ...(sales.topProductsSold ?? []).map((item) => `${item.name}: ${item.quantity} unidades vendidas, S/ ${this.money(item.total)}.`),
+      ...(sales.paymentMethods ?? []).map((item) => `${item.method}: ${item.count} operaciones, S/ ${this.money(item.amount)}.`),
     ];
 
+    return this.ruleBasedResponse('Ventas analizadas con datos reales. Prioriza productos con demanda alta y controla pagos por metodo.', insights, {
+      dataSources: ['sales', 'payments'],
+    });
+  }
+
+  async inventoryInsights(): Promise<InsightResponse> {
+    const context = await this.buildBusinessContext();
+    const inventory = context.inventory as {
+      lowStock?: Array<{ name: string; stock: number; minStock: number; category: string }>;
+      outOfStock?: Array<{ name: string; category: string }>;
+      possibleLowRotation?: Array<{ name: string; stock: number; minStock: number }>;
+    };
+
+    const insights = [
+      ...(inventory.lowStock ?? []).map((product) => `Reponer ${product.name}: stock ${product.stock}, minimo ${product.minStock}, categoria ${product.category}.`),
+      ...(inventory.outOfStock ?? []).map((product) => `${product.name} esta sin stock en ${product.category}.`),
+      ...(inventory.possibleLowRotation ?? []).map((product) => `${product.name} podria tener baja rotacion: stock ${product.stock} frente a minimo ${product.minStock}.`),
+    ];
+
+    return this.ruleBasedResponse('Inventario analizado con stock real, minimos y rotacion estimada.', insights, {
+      dataSources: ['inventory', 'sales'],
+    });
+  }
+
+  async profitabilityInsights(): Promise<InsightResponse> {
+    const context = await this.buildBusinessContext();
+    const profitability = context.profitability as {
+      estimatedProductMargin?: number;
+      estimatedServiceMargin?: number;
+      expenses?: number;
+      estimatedNetProfit?: number;
+      topProductMargins?: Array<{ name: string; margin: number }>;
+      topServiceMargins?: Array<{ name: string; margin: number }>;
+    };
+
+    const insights = [
+      `Margen estimado de productos: S/ ${this.money(profitability.estimatedProductMargin)}.`,
+      `Margen estimado de servicios rapidos: S/ ${this.money(profitability.estimatedServiceMargin)}.`,
+      `Gastos registrados: S/ ${this.money(profitability.expenses)}.`,
+      `Utilidad neta estimada: S/ ${this.money(profitability.estimatedNetProfit)}.`,
+      ...(profitability.topProductMargins ?? []).map((item) => `${item.name}: margen unitario estimado S/ ${this.money(item.margin)}.`),
+      ...(profitability.topServiceMargins ?? []).map((item) => `${item.name}: margen estimado S/ ${this.money(item.margin)}.`),
+    ];
+
+    return this.ruleBasedResponse('Rentabilidad revisada desde costos, precios e ingresos registrados.', insights, {
+      dataSources: ['profitability', 'cash', 'inventory', 'quick-services'],
+    });
+  }
+
+  async ask(dto: AiQueryDto, user: AuthenticatedUser) {
+    const startedAt = Date.now();
+    const question = dto.question.trim();
+    const context = await this.buildBusinessContext();
+    const internal = this.answerWithRules(question, context, user.role.name === 'ADMIN');
+    const warnings: string[] = [...internal.warnings];
+    let provider: BusinessAiProviderName = 'RULE_BASED';
+    let mode: BusinessAiMode = 'RULE_BASED_FALLBACK';
+    let answer = internal.answer;
+    let metadata: Record<string, unknown> = {
+      dataSources: this.resolveDataSources(question),
+      contextGeneratedAt: context.generatedAt,
+    };
+
+    if (this.shouldUseOpenAi()) {
+      const external = await this.openai.askBusinessQuestion({
+        question,
+        systemPrompt: this.systemPrompt(),
+        businessContext: this.limitContextForAi(context),
+      });
+
+      if (external.mode === 'CLOUD_AI') {
+        provider = 'OPENAI';
+        mode = 'CLOUD_AI';
+        answer = external.answer;
+        metadata = { ...metadata, ...(external.metadata ?? {}) };
+      } else {
+        warnings.push(...(external.warnings ?? ['OpenAI no respondio. Se genero analisis interno.']));
+      }
+    } else {
+      warnings.push(this.openAiDisabledReason());
+    }
+
+    await this.audit(user.id, 'ASK_AI', `Pregunta IA: ${question}`);
+
     return {
-      mode: 'MOCK',
-      answer: 'Resumen operativo generado con datos reales del sistema.',
-      insights,
+      success: true,
+      question,
+      provider,
+      model: provider === 'OPENAI' ? this.openai.modelName : undefined,
+      mode,
+      answer,
+      insights: internal.insights,
+      recommendations: internal.recommendations,
+      warnings: [...new Set(warnings.filter(Boolean))],
+      generatedAt: new Date().toISOString(),
+      metadata: {
+        ...metadata,
+        durationMs: Date.now() - startedAt,
+      },
+    };
+  }
+
+  async testConnection(user: AuthenticatedUser) {
+    const health = await this.openai.healthCheck();
+    const providerEnabled = this.shouldUseOpenAi();
+    const result = providerEnabled
+      ? await this.openai.testConnection()
+      : {
+          provider: 'RULE_BASED' as const,
+          mode: 'RULE_BASED_FALLBACK' as const,
+          answer: this.openAiDisabledReason(),
+          warnings: [this.openAiDisabledReason()],
+          metadata: health,
+        };
+
+    await this.audit(user.id, 'TEST_CONNECTION', `Prueba IA: ${result.provider} ${result.mode}`);
+
+    return {
+      success: true,
+      provider: result.provider,
+      model: health.model,
+      mode: result.mode,
+      configured: providerEnabled,
+      keyConfigured: health.keyConfigured,
+      timeoutMs: health.timeoutMs,
+      answer: result.answer,
+      warnings: result.warnings ?? [],
+      metadata: {
+        ...health,
+        ...(result.metadata ?? {}),
+      },
       generatedAt: new Date().toISOString(),
     };
   }
 
-  async salesInsights(): Promise<InsightResponse> {
-    const startOfMonth = new Date();
+  private async buildBusinessContext(): Promise<BusinessContext> {
+    const maxItems = this.maxContextItems();
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+    const startOfMonth = new Date(startOfToday);
     startOfMonth.setDate(1);
-    startOfMonth.setHours(0, 0, 0, 0);
-    const [topProducts, monthSales, recentSales] = await Promise.all([
-      this.prisma.saleItem.groupBy({ by: ['description'], _sum: { quantity: true, total: true }, orderBy: { _sum: { quantity: 'desc' } }, take: 5 }),
+
+    const [
+      lowStock,
+      outOfStock,
+      topSaleItems,
+      salesToday,
+      incomeToday,
+      incomeMonth,
+      paymentMethods,
+      cashSession,
+      cashMovements,
+      quickServices,
+      serviceOrders,
+      purchases,
+      productMargins,
+      serviceMargins,
+      pendingPurchases,
+    ] = await Promise.all([
+      this.prisma.product.findMany({
+        where: { isActive: true, stock: { lte: this.prisma.product.fields.minStock } },
+        select: { name: true, sku: true, stock: true, minStock: true, salePrice: true, category: { select: { name: true } } },
+        orderBy: { stock: 'asc' },
+        take: maxItems,
+      }),
+      this.prisma.product.findMany({
+        where: { isActive: true, stock: 0 },
+        select: { name: true, sku: true, stock: true, minStock: true, category: { select: { name: true } } },
+        orderBy: { name: 'asc' },
+        take: maxItems,
+      }),
+      this.prisma.saleItem.groupBy({
+        by: ['description'],
+        where: { sale: { status: 'COMPLETED' } },
+        _sum: { quantity: true, total: true },
+        orderBy: { _sum: { quantity: 'desc' } },
+        take: maxItems,
+      }),
+      this.prisma.sale.count({ where: { status: 'COMPLETED', createdAt: { gte: startOfToday } } }),
+      this.prisma.sale.aggregate({ where: { status: 'COMPLETED', createdAt: { gte: startOfToday } }, _sum: { total: true } }),
       this.prisma.sale.aggregate({ where: { status: 'COMPLETED', createdAt: { gte: startOfMonth } }, _sum: { total: true }, _count: true }),
-      this.prisma.sale.findMany({ where: { status: 'COMPLETED' }, orderBy: { createdAt: 'desc' }, take: 5, include: { payments: true } }),
+      this.prisma.payment.groupBy({
+        by: ['method'],
+        _sum: { amount: true },
+        _count: true,
+        orderBy: { _sum: { amount: 'desc' } },
+        take: maxItems,
+      }),
+      this.prisma.cashSession.findFirst({ where: { status: 'OPEN' }, orderBy: { openedAt: 'desc' } }),
+      this.prisma.cashMovement.findMany({ orderBy: { createdAt: 'desc' }, take: maxItems }),
+      this.prisma.quickServiceSaleItem.groupBy({
+        by: ['description'],
+        _sum: { quantity: true, subtotal: true },
+        orderBy: { _sum: { quantity: 'desc' } },
+        take: maxItems,
+      }),
+      this.prisma.serviceOrder.groupBy({ by: ['status'], _count: true }),
+      this.prisma.purchaseOrder.groupBy({ by: ['status'], _sum: { total: true }, _count: true }),
+      this.prisma.product.findMany({
+        where: { isActive: true },
+        select: { name: true, salePrice: true, purchasePrice: true, stock: true, minStock: true },
+        take: maxItems,
+      }),
+      this.prisma.quickService.findMany({
+        where: { isActive: true },
+        select: { name: true, unitPrice: true, costPrice: true },
+        take: maxItems,
+      }),
+      this.prisma.purchaseOrder.findMany({
+        where: { status: { in: ['PENDING', 'PARTIALLY_RECEIVED'] } },
+        select: { code: true, status: true, total: true, createdAt: true },
+        orderBy: { createdAt: 'desc' },
+        take: maxItems,
+      }),
     ]);
 
-    const insights = [
-      `Ventas del mes: ${monthSales._count}, ingresos del mes: S/ ${Number(monthSales._sum.total ?? 0).toFixed(2)}.`,
-      ...topProducts.map((item) => `${item.description}: ${item._sum.quantity ?? 0} unidades vendidas, S/ ${Number(item._sum.total ?? 0).toFixed(2)}.`),
-      ...recentSales.map((sale) => `Venta reciente ${sale.code}: S/ ${Number(sale.total).toFixed(2)} via ${sale.payments[0]?.method ?? 'sin metodo registrado'}.`),
-    ];
+    const incomeTypes: CashMovementType[] = [CashMovementType.INCOME, CashMovementType.SALE, CashMovementType.SERVICE_PAYMENT, CashMovementType.ADJUSTMENT];
+    const cashIncome = cashMovements.filter((movement) => incomeTypes.includes(movement.type)).reduce((sum, movement) => sum + Number(movement.amount), 0);
+    const cashExpenses = cashMovements.filter((movement) => movement.type === CashMovementType.EXPENSE).reduce((sum, movement) => sum + Number(movement.amount), 0);
+    const topProductMargins = productMargins
+      .map((product) => ({
+        name: product.name,
+        margin: Number(product.salePrice) - Number(product.purchasePrice),
+        stock: product.stock,
+        minStock: product.minStock,
+      }))
+      .sort((a, b) => b.margin - a.margin)
+      .slice(0, 8);
+    const topServiceMargins = serviceMargins
+      .map((service) => ({
+        name: service.name,
+        margin: Number(service.unitPrice) - Number(service.costPrice ?? 0),
+      }))
+      .sort((a, b) => b.margin - a.margin)
+      .slice(0, 8);
+    const lowRotation = productMargins
+      .filter((product) => product.stock > Math.max(product.minStock * 3, product.minStock + 5))
+      .map((product) => ({ name: product.name, stock: product.stock, minStock: product.minStock }))
+      .slice(0, 8);
+    const pendingStatuses: ServiceOrderStatus[] = [ServiceOrderStatus.RECEIVED, ServiceOrderStatus.DIAGNOSIS, ServiceOrderStatus.IN_PROGRESS];
+    const pendingOrderCount = serviceOrders
+      .filter((item) => pendingStatuses.includes(item.status))
+      .reduce((sum, item) => sum + item._count, 0);
+    const readyOrderCount = serviceOrders.find((item) => item.status === ServiceOrderStatus.READY)?._count ?? 0;
+    const expenses = cashExpenses;
+    const estimatedProductMargin = topProductMargins.reduce((sum, product) => sum + product.margin * product.stock, 0);
+    const estimatedServiceMargin = topServiceMargins.reduce((sum, service) => sum + service.margin, 0);
 
-    return this.buildResponse('Ventas analizadas con datos reales. Prioriza reposicion y promociones sobre los productos con mayor rotacion.', insights);
+    const context: BusinessContext = {
+      generatedAt: new Date().toISOString(),
+      sales: {
+        salesToday,
+        incomeToday: Number(incomeToday._sum.total ?? 0),
+        incomeMonth: Number(incomeMonth._sum.total ?? 0),
+        salesMonth: incomeMonth._count,
+        topProductsSold: topSaleItems.map((item) => ({
+          name: item.description,
+          quantity: item._sum.quantity ?? 0,
+          total: Number(item._sum.total ?? 0),
+        })),
+        paymentMethods: paymentMethods.map((item) => ({
+          method: item.method,
+          amount: Number(item._sum.amount ?? 0),
+          count: item._count,
+        })),
+      },
+      inventory: {
+        lowStock: lowStock.map((product) => ({
+          name: product.name,
+          sku: product.sku,
+          stock: product.stock,
+          minStock: product.minStock,
+          salePrice: Number(product.salePrice),
+          category: product.category.name,
+        })),
+        outOfStock: outOfStock.map((product) => ({
+          name: product.name,
+          sku: product.sku,
+          stock: product.stock,
+          minStock: product.minStock,
+          category: product.category.name,
+        })),
+        possibleLowRotation: lowRotation,
+      },
+      cash: {
+        currentCashStatus: cashSession?.status ?? 'CLOSED',
+        openingAmount: cashSession ? Number(cashSession.openingAmount) : 0,
+        expectedCashAmount: cashSession ? Number(cashSession.expectedCashAmount) : 0,
+        difference: cashSession ? Number(cashSession.difference) : 0,
+        income: cashIncome,
+        expenses,
+        net: cashIncome - expenses,
+      },
+      purchases: {
+        byStatus: purchases.map((item) => ({ status: item.status, count: item._count, total: Number(item._sum.total ?? 0) })),
+        pending: pendingPurchases.map((purchase) => ({
+          code: purchase.code,
+          status: purchase.status,
+          total: Number(purchase.total),
+          createdAt: purchase.createdAt,
+        })),
+      },
+      serviceOrders: {
+        byStatus: serviceOrders.map((item) => ({ status: item.status, count: item._count })),
+        pending: pendingOrderCount,
+        ready: readyOrderCount,
+      },
+      quickServices: {
+        topServices: quickServices.map((item) => ({
+          name: item.description,
+          quantity: item._sum.quantity ?? 0,
+          income: Number(item._sum.subtotal ?? 0),
+        })),
+      },
+      profitability: {
+        estimatedProductMargin,
+        estimatedServiceMargin,
+        expenses,
+        estimatedNetProfit: Number(incomeMonth._sum.total ?? 0) + estimatedServiceMargin - expenses,
+        topProductMargins,
+        topServiceMargins,
+      },
+      alerts: [],
+    };
+
+    context.alerts = this.buildAlerts(context);
+    return context;
   }
 
-  async inventoryInsights(): Promise<InsightResponse> {
-    const [lowStock, outOfStock, recentMovements, products] = await Promise.all([
-      this.prisma.product.findMany({ where: { isActive: true, stock: { lte: this.prisma.product.fields.minStock } }, include: { category: true }, orderBy: { stock: 'asc' }, take: 10 }),
-      this.prisma.product.findMany({ where: { isActive: true, stock: 0 }, include: { category: true }, orderBy: { name: 'asc' }, take: 10 }),
-      this.prisma.inventoryMovement.findMany({ orderBy: { createdAt: 'desc' }, take: 10, include: { product: true } }),
-      this.prisma.product.findMany({ where: { isActive: true }, orderBy: { stock: 'desc' }, take: 10 }),
-    ]);
-    const lowRotation = products.filter((product) => product.stock > product.minStock * 3).slice(0, 5);
-    const insights = [
-      ...lowStock.map((product) => `Reponer ${product.name}: stock ${product.stock}, minimo ${product.minStock}, categoria ${product.category.name}.`),
-      ...outOfStock.map((product) => `${product.name} esta sin stock y debe priorizarse si tiene demanda.`),
-      ...lowRotation.map((product) => `${product.name} podria tener baja rotacion: stock ${product.stock} frente a minimo ${product.minStock}.`),
-      ...recentMovements.map((movement) => `Movimiento reciente ${movement.type}: ${movement.product.name}, cantidad ${movement.quantity}.`),
-    ];
-    return this.buildResponse('Inventario analizado con stock real, minimos y movimientos recientes.', insights);
-  }
-
-  async profitabilityInsights(): Promise<InsightResponse> {
-    const [products, quickServices, expenses] = await Promise.all([
-      this.prisma.product.findMany({ where: { isActive: true }, orderBy: { salePrice: 'desc' }, take: 10 }),
-      this.prisma.quickService.findMany({ where: { isActive: true }, include: { category: true }, orderBy: { unitPrice: 'desc' }, take: 10 }),
-      this.prisma.cashMovement.aggregate({ where: { type: CashMovementType.EXPENSE }, _sum: { amount: true } }),
-    ]);
-    const productInsights = products.map((product) => {
-      const margin = Number(product.salePrice) - Number(product.purchasePrice);
-      return `${product.name}: margen unitario estimado S/ ${margin.toFixed(2)} (${product.purchasePrice} -> ${product.salePrice}).`;
-    });
-    const serviceInsights = quickServices.map((service) => {
-      const margin = Number(service.unitPrice) - Number(service.costPrice ?? 0);
-      return `${service.name}: margen estimado S/ ${margin.toFixed(2)} por ${service.unit}, categoria ${service.category.name}.`;
-    });
-    return this.buildResponse(`Rentabilidad revisada. Gastos registrados: S/ ${Number(expenses._sum.amount ?? 0).toFixed(2)}.`, [...productInsights, ...serviceInsights]);
-  }
-
-  async ask(dto: AiQueryDto, user: AuthenticatedUser) {
-    const question = dto.question.trim();
+  private answerWithRules(question: string, context: BusinessContext, includeProfitability: boolean) {
     const normalized = question.toLowerCase();
-    const [summary, sales, inventory, profitability] = await Promise.all([
-      this.businessSummary(),
-      this.salesInsights(),
-      this.inventoryInsights(),
-      user.role.name === 'ADMIN' ? this.profitabilityInsights() : Promise.resolve(this.buildResponse('Rentabilidad avanzada disponible solo para ADMIN.', [])),
-    ]);
+    let base: InsightResponse;
 
-    const selected = this.selectInsights(normalized, { summary, sales, inventory, profitability });
-    let answer = this.composeAnswer(question, selected.insights, selected.answer);
-    let mode: 'MOCK' | 'REAL' = 'MOCK';
-
-    if (this.shouldUseExternalProvider()) {
-      const prompt = this.buildSafePrompt(question, selected.insights);
-      const provider = (this.config.get<string>('AI_PROVIDER') ?? 'gemini').toLowerCase() === 'gemini' ? this.gemini : this.openai;
-      const external = await provider.ask(prompt);
-      if (external.mode === 'REAL') {
-        answer = external.answer;
-        mode = 'REAL';
-      }
+    if (this.matches(normalized, ['reponer', 'stock', 'inventario', 'rotacion', 'rotación'])) {
+      base = this.ruleBasedResponse('Con base en el inventario actual, debes priorizar los productos con stock bajo o sin stock.', this.buildInventoryInsights(context), {
+        dataSources: ['inventory', 'sales'],
+      });
+    } else if (this.matches(normalized, ['vendidos', 'ventas', 'mes', 'demanda'])) {
+      base = this.ruleBasedResponse('Las ventas muestran la demanda actual y los productos que conviene priorizar.', this.buildSalesInsights(context), {
+        dataSources: ['sales', 'payments'],
+      });
+    } else if (this.matches(normalized, ['servicios', 'rapidos', 'rápidos'])) {
+      base = this.ruleBasedResponse('Los servicios rapidos deben evaluarse por ingreso, frecuencia y margen estimado.', this.buildQuickServiceInsights(context), {
+        dataSources: ['quick-services', 'cash'],
+      });
+    } else if (this.matches(normalized, ['rentabilidad', 'ganancia', 'margen', 'utilidad'])) {
+      base = includeProfitability
+        ? this.ruleBasedResponse('La rentabilidad estimada se calcula con ingresos, costos y gastos registrados.', this.buildProfitabilityInsights(context), {
+            dataSources: ['profitability', 'cash', 'inventory'],
+          })
+        : this.ruleBasedResponse('Rentabilidad avanzada disponible solo para ADMIN.', [], { dataSources: ['profitability'] });
+    } else if (this.matches(normalized, ['caja', 'movimiento', 'efectivo', 'gasto'])) {
+      base = this.ruleBasedResponse('La caja se analiza desde movimientos recientes, ingresos, gastos y diferencia.', this.buildCashInsights(context), {
+        dataSources: ['cash'],
+      });
+    } else if (this.matches(normalized, ['alerta', 'hoy', 'pendiente', 'orden', 'compra'])) {
+      base = this.ruleBasedResponse('Estas son las alertas prioritarias para revisar hoy.', this.buildSummaryInsights(context), {
+        dataSources: ['inventory', 'purchases', 'service-orders', 'cash'],
+      });
+    } else {
+      base = this.ruleBasedResponse('Analisis general del negocio con datos operativos agregados.', this.buildSummaryInsights(context), {
+        dataSources: ['sales', 'inventory', 'cash', 'purchases', 'service-orders', 'quick-services'],
+      });
     }
 
-    await this.audit(user.id, 'ASK_AI', `Pregunta IA: ${question}`);
-    return { question, answer, insights: selected.insights, mode, generatedAt: new Date().toISOString() };
+    const recommendations = this.recommendations(base.insights);
+    return {
+      answer: this.composeAnswer(question, base.answer, base.insights, recommendations),
+      insights: base.insights,
+      recommendations,
+      warnings: base.insights.length ? [] : ['Aun no hay suficientes datos para generar un analisis completo.'],
+    };
   }
 
-  async testConnection(user: AuthenticatedUser) {
-    const provider = (this.config.get<string>('AI_PROVIDER') ?? 'gemini').toLowerCase() === 'gemini' ? this.gemini : this.openai;
-    const result = this.shouldUseExternalProvider() ? await provider.testConnection() : { mode: 'MOCK' as const, answer: 'AI_MODE=mock. Se usara analisis interno.' };
-    await this.audit(user.id, 'TEST_CONNECTION', result.answer);
-    return result;
-  }
-
-  private selectInsights(normalizedQuestion: string, data: Record<string, InsightResponse>) {
-    if (this.matches(normalizedQuestion, ['reponer', 'stock', 'inventario', 'rotacion', 'rotación'])) return data.inventory;
-    if (this.matches(normalizedQuestion, ['vendidos', 'ventas', 'mes', 'demanda'])) return data.sales;
-    if (this.matches(normalizedQuestion, ['servicios', 'rapidos', 'rápidos'])) {
-      return this.buildResponse('Servicios rapidos revisados dentro del resumen y la rentabilidad.', [...data.summary.insights, ...data.profitability.insights.filter((item) => item.toLowerCase().includes('categoria'))]);
-    }
-    if (this.matches(normalizedQuestion, ['rentabilidad', 'ganancia', 'margen', 'utilidad'])) return data.profitability;
-    if (this.matches(normalizedQuestion, ['caja', 'movimiento', 'efectivo', 'gasto'])) return data.summary;
-    if (this.matches(normalizedQuestion, ['alerta', 'hoy', 'pendiente', 'orden'])) return data.summary;
-    return this.buildResponse('Analisis general del negocio.', [...data.summary.insights, ...data.sales.insights.slice(0, 4), ...data.inventory.insights.slice(0, 4), ...data.profitability.insights.slice(0, 4)]);
-  }
-
-  private composeAnswer(question: string, insights: string[], fallback: string) {
-    if (!insights.length) return 'Aun no hay suficientes datos para generar un analisis completo.';
-    const intro = `Para la pregunta "${question}", el analisis con datos actuales indica lo siguiente:`;
-    const recommendation = this.recommendationFromInsights(insights);
-    return `${intro} ${fallback} ${recommendation}`;
-  }
-
-  private recommendationFromInsights(insights: string[]) {
-    const text = insights.join(' ').toLowerCase();
-    if (text.includes('sin stock') || text.includes('reponer')) return 'Recomendacion: prioriza reposicion de productos criticos, revisa proveedores activos y evita vender productos sin disponibilidad real.';
-    if (text.includes('margen')) return 'Recomendacion: enfoca promociones en productos y servicios con mejor margen, y revisa gastos operativos para proteger la utilidad.';
-    if (text.includes('ventas')) return 'Recomendacion: usa los productos mas vendidos para planificar compras, combos y campanas de venta.';
-    return 'Recomendacion: revisa estos indicadores diariamente y toma acciones primero sobre stock, caja y ordenes pendientes.';
-  }
-
-  private buildSafePrompt(question: string, insights: string[]) {
+  private buildSummaryInsights(context: BusinessContext) {
     return [
-      'Actua como analista de negocio. Usa solo datos agregados y no solicites informacion sensible.',
-      `Pregunta: ${question}`,
-      `Datos resumidos: ${insights.slice(0, 15).join(' | ')}`,
-      'Responde en espanol, claro, profesional y accionable.',
-    ].join('\n');
+      ...this.buildSalesInsights(context).slice(0, 2),
+      ...this.buildInventoryInsights(context).slice(0, 4),
+      ...this.buildCashInsights(context).slice(0, 2),
+      ...this.buildServiceOrderInsights(context).slice(0, 2),
+      ...this.buildPurchaseInsights(context).slice(0, 2),
+      ...context.alerts,
+    ];
   }
 
-  private buildResponse(answer: string, insights: string[]): InsightResponse {
-    return { mode: 'MOCK', answer, insights, generatedAt: new Date().toISOString() };
+  private buildSalesInsights(context: BusinessContext) {
+    const sales = context.sales as {
+      salesToday?: number;
+      incomeToday?: number;
+      incomeMonth?: number;
+      salesMonth?: number;
+      topProductsSold?: Array<{ name: string; quantity: number; total: number }>;
+    };
+
+    return [
+      `Hoy se registran ${sales.salesToday ?? 0} ventas por S/ ${this.money(sales.incomeToday)}.`,
+      `En el mes se registran ${sales.salesMonth ?? 0} ventas por S/ ${this.money(sales.incomeMonth)}.`,
+      ...(sales.topProductsSold ?? []).map((item) => `${item.name}: ${item.quantity} unidades vendidas, S/ ${this.money(item.total)}.`),
+    ];
+  }
+
+  private buildInventoryInsights(context: BusinessContext) {
+    const inventory = context.inventory as {
+      lowStock?: Array<{ name: string; stock: number; minStock: number; category: string }>;
+      outOfStock?: Array<{ name: string; category: string }>;
+      possibleLowRotation?: Array<{ name: string; stock: number; minStock: number }>;
+    };
+
+    return [
+      ...(inventory.lowStock ?? []).map((product) => `Reponer ${product.name}: stock ${product.stock}, minimo ${product.minStock}, categoria ${product.category}.`),
+      ...(inventory.outOfStock ?? []).map((product) => `${product.name} esta sin stock en ${product.category}.`),
+      ...(inventory.possibleLowRotation ?? []).map((product) => `${product.name} podria tener baja rotacion: stock ${product.stock}, minimo ${product.minStock}.`),
+    ];
+  }
+
+  private buildCashInsights(context: BusinessContext) {
+    const cash = context.cash as { currentCashStatus?: string; income?: number; expenses?: number; net?: number; difference?: number };
+    const insights = [
+      `Caja actual: ${cash.currentCashStatus ?? 'CLOSED'}. Ingresos recientes S/ ${this.money(cash.income)}, gastos S/ ${this.money(cash.expenses)}, neto S/ ${this.money(cash.net)}.`,
+    ];
+    if (Number(cash.difference ?? 0) !== 0) {
+      insights.push(`Diferencia de caja registrada: S/ ${this.money(cash.difference)}.`);
+    }
+    return insights;
+  }
+
+  private buildPurchaseInsights(context: BusinessContext) {
+    const purchases = context.purchases as {
+      pending?: Array<{ code: string; status: string; total: number }>;
+      byStatus?: Array<{ status: string; count: number; total: number }>;
+    };
+    return [
+      ...((purchases.byStatus ?? []).map((item) => `Compras ${item.status}: ${item.count}, monto S/ ${this.money(item.total)}.`)),
+      ...((purchases.pending ?? []).map((item) => `Compra pendiente ${item.code}: ${item.status}, S/ ${this.money(item.total)}.`)),
+    ];
+  }
+
+  private buildServiceOrderInsights(context: BusinessContext) {
+    const orders = context.serviceOrders as { pending?: number; ready?: number; byStatus?: Array<{ status: string; count: number }> };
+    return [
+      `Ordenes tecnicas pendientes/en proceso: ${orders.pending ?? 0}.`,
+      `Ordenes listas para entregar: ${orders.ready ?? 0}.`,
+      ...((orders.byStatus ?? []).map((item) => `Ordenes ${item.status}: ${item.count}.`)),
+    ];
+  }
+
+  private buildQuickServiceInsights(context: BusinessContext) {
+    const quick = context.quickServices as { topServices?: Array<{ name: string; quantity: number; income: number }> };
+    return (quick.topServices ?? []).map((item) => `${item.name}: ${item.quantity} operaciones/unidades, ingreso S/ ${this.money(item.income)}.`);
+  }
+
+  private buildProfitabilityInsights(context: BusinessContext) {
+    const profitability = context.profitability as {
+      estimatedProductMargin?: number;
+      estimatedServiceMargin?: number;
+      expenses?: number;
+      estimatedNetProfit?: number;
+      topProductMargins?: Array<{ name: string; margin: number }>;
+      topServiceMargins?: Array<{ name: string; margin: number }>;
+    };
+    return [
+      `Margen estimado de productos: S/ ${this.money(profitability.estimatedProductMargin)}.`,
+      `Margen estimado de servicios rapidos: S/ ${this.money(profitability.estimatedServiceMargin)}.`,
+      `Gastos recientes registrados: S/ ${this.money(profitability.expenses)}.`,
+      `Utilidad neta estimada: S/ ${this.money(profitability.estimatedNetProfit)}.`,
+      ...((profitability.topProductMargins ?? []).map((item) => `${item.name}: margen unitario S/ ${this.money(item.margin)}.`)),
+      ...((profitability.topServiceMargins ?? []).map((item) => `${item.name}: margen estimado S/ ${this.money(item.margin)}.`)),
+    ];
+  }
+
+  private buildAlerts(context: BusinessContext) {
+    const inventory = context.inventory as { lowStock?: unknown[]; outOfStock?: unknown[] };
+    const purchases = context.purchases as { pending?: unknown[] };
+    const serviceOrders = context.serviceOrders as { pending?: number; ready?: number };
+    const cash = context.cash as { difference?: number };
+    const alerts: string[] = [];
+
+    if ((inventory.lowStock?.length ?? 0) > 0) alerts.push(`Stock bajo: ${inventory.lowStock?.length ?? 0} productos requieren revision.`);
+    if ((inventory.outOfStock?.length ?? 0) > 0) alerts.push(`Sin stock: ${inventory.outOfStock?.length ?? 0} productos no tienen disponibilidad.`);
+    if ((purchases.pending?.length ?? 0) > 0) alerts.push(`Compras pendientes: ${purchases.pending?.length ?? 0} ordenes por revisar.`);
+    if ((serviceOrders.pending ?? 0) > 0) alerts.push(`Ordenes tecnicas pendientes/en proceso: ${serviceOrders.pending}.`);
+    if ((serviceOrders.ready ?? 0) > 0) alerts.push(`Ordenes listas para entregar: ${serviceOrders.ready}.`);
+    if (Number(cash.difference ?? 0) !== 0) alerts.push(`Diferencia de caja detectada: S/ ${this.money(cash.difference)}.`);
+
+    return alerts;
+  }
+
+  private ruleBasedResponse(answer: string, insights: string[], metadata?: Record<string, unknown>): InsightResponse {
+    return {
+      success: true,
+      provider: 'RULE_BASED',
+      mode: 'RULE_BASED_FALLBACK',
+      answer,
+      insights: insights.length ? insights : ['Aun no hay suficientes datos para generar un analisis completo.'],
+      warnings: [],
+      generatedAt: new Date().toISOString(),
+      metadata,
+    };
+  }
+
+  private composeAnswer(question: string, base: string, insights: string[], recommendations: string[]) {
+    if (!insights.length) return 'Aun no hay suficientes datos para generar un analisis completo.';
+    return [
+      `Para la pregunta "${question}", el sistema analizo datos reales agregados del negocio.`,
+      base,
+      recommendations.length ? `Accion prioritaria: ${recommendations[0]}` : 'Accion prioritaria: revisar los indicadores criticos antes de tomar decisiones.',
+    ].join(' ');
+  }
+
+  private recommendations(insights: string[]) {
+    const text = insights.join(' ').toLowerCase();
+    const output: string[] = [];
+    if (text.includes('sin stock') || text.includes('reponer') || text.includes('stock bajo')) {
+      output.push('Prioriza reposicion de productos criticos y valida proveedores antes de que impacte ventas.');
+    }
+    if (text.includes('margen') || text.includes('utilidad')) {
+      output.push('Impulsa productos y servicios con mejor margen y revisa gastos operativos frecuentes.');
+    }
+    if (text.includes('ventas') || text.includes('vendidas')) {
+      output.push('Usa los productos mas vendidos para planificar compras, combos y promociones controladas.');
+    }
+    if (text.includes('caja') || text.includes('gastos')) {
+      output.push('Revisa movimientos de caja y diferencias antes del cierre diario.');
+    }
+    if (!output.length) {
+      output.push('Revisa primero stock, caja, compras pendientes y ordenes tecnicas activas.');
+    }
+    return output;
+  }
+
+  private shouldUseOpenAi() {
+    const enabled = (this.config.get<string>('AI_ENABLED') ?? this.config.get<string>('AI_MODE') ?? 'false').toLowerCase();
+    const provider = (this.config.get<string>('AI_PROVIDER') ?? '').toLowerCase();
+    return ['true', '1', 'yes', 'real', 'production'].includes(enabled) && provider === 'openai' && Boolean(this.config.get<string>('OPENAI_API_KEY')?.trim());
+  }
+
+  private openAiDisabledReason() {
+    const provider = (this.config.get<string>('AI_PROVIDER') ?? '').toLowerCase();
+    const keyConfigured = Boolean(this.config.get<string>('OPENAI_API_KEY')?.trim());
+    const enabled = (this.config.get<string>('AI_ENABLED') ?? this.config.get<string>('AI_MODE') ?? 'false').toLowerCase();
+
+    if (!['true', '1', 'yes', 'real', 'production'].includes(enabled)) {
+      return 'IA cloud deshabilitada. Se usara analisis interno.';
+    }
+    if (provider !== 'openai') {
+      return 'AI_PROVIDER no esta configurado como openai. Se usara analisis interno.';
+    }
+    if (!keyConfigured) {
+      return 'OpenAI no esta configurado. Se usara analisis interno.';
+    }
+    return 'Se usara analisis interno.';
+  }
+
+  private maxContextItems() {
+    const value = Number(this.config.get<string>('AI_MAX_CONTEXT_ITEMS') ?? 20);
+    return Number.isFinite(value) && value > 0 ? Math.min(value, 50) : 20;
+  }
+
+  private limitContextForAi(context: BusinessContext) {
+    const max = this.maxContextItems();
+    return {
+      ...context,
+      alerts: context.alerts.slice(0, max),
+      sales: this.limitNestedArrays(context.sales, max),
+      inventory: this.limitNestedArrays(context.inventory, max),
+      cash: context.cash,
+      purchases: this.limitNestedArrays(context.purchases, max),
+      serviceOrders: context.serviceOrders,
+      quickServices: this.limitNestedArrays(context.quickServices, max),
+      profitability: this.limitNestedArrays(context.profitability, max),
+    };
+  }
+
+  private limitNestedArrays(value: Record<string, unknown>, max: number) {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, entry]) => [key, Array.isArray(entry) ? entry.slice(0, max) : entry]),
+    );
+  }
+
+  private resolveDataSources(question: string) {
+    const normalized = question.toLowerCase();
+    const sources = new Set<string>(['sales', 'inventory', 'cash']);
+    if (this.matches(normalized, ['compra', 'proveedor', 'reponer'])) sources.add('purchases');
+    if (this.matches(normalized, ['orden', 'tecnica', 'técnica'])) sources.add('service-orders');
+    if (this.matches(normalized, ['servicio', 'rapido', 'rápido'])) sources.add('quick-services');
+    if (this.matches(normalized, ['rentabilidad', 'ganancia', 'margen', 'utilidad'])) sources.add('profitability');
+    return [...sources];
+  }
+
+  private systemPrompt() {
+    return [
+      'Eres un analista empresarial experto integrado a un sistema de gestion de ventas, inventario, caja, compras, servicios tecnicos, reportes y rentabilidad.',
+      'Responde unicamente con base en los datos entregados por el sistema. No inventes cifras ni hechos.',
+      'Si faltan datos, indicalo claramente. Prioriza recomendaciones accionables, riesgos, oportunidades y decisiones concretas para el negocio.',
+      'No solicites ni reveles passwords, tokens, claves, documentos personales completos ni informacion sensible.',
+      'Responde en espanol profesional, claro, ejecutivo y estructurado.',
+      'Incluye cuando corresponda: diagnostico, hallazgos relevantes, recomendaciones, acciones prioritarias, riesgos, datos usados y nivel de confianza.',
+      businessSummaryPrompt,
+    ].join(' ');
   }
 
   private matches(value: string, terms: string[]) {
     return terms.some((term) => value.includes(term));
   }
 
-  private shouldUseExternalProvider() {
-    const mode = (this.config.get<string>('AI_MODE') ?? 'mock').toLowerCase();
-    return mode === 'real' || mode === 'production' || mode === 'gemini';
+  private money(value: unknown) {
+    return Number(value ?? 0).toFixed(2);
   }
 
-  private audit(userId: string, action: string, description: string) {
-    return this.prisma.auditLog.create({ data: { userId, module: 'AI_ANALYTICS', action, description, entityType: 'AI' } });
+  private async audit(userId: string, action: string, description: string) {
+    try {
+      await this.prisma.auditLog.create({ data: { userId, module: 'AI_ANALYTICS', action, description, entityType: 'AI' } });
+    } catch {
+      // La auditoria no debe bloquear una respuesta analitica.
+    }
   }
 }

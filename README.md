@@ -178,7 +178,28 @@ npm.cmd run preview --workspace @techcenter/frontend
 
 Luego abrir el sistema en el navegador y usar la opcion `Instalar aplicacion`.
 
-## IA Local con Ollama + LlamaIndex + ChromaDB
+## IA Analytics con OpenAI
+
+En produccion Render, IA Analytics puede usar OpenAI desde el backend NestJS:
+
+```txt
+React -> NestJS /api/ai-analytics -> OpenAI API
+```
+
+Variables principales:
+
+- `AI_ENABLED=true`
+- `AI_PROVIDER=openai`
+- `AI_MODEL=gpt-4.1-mini`
+- `OPENAI_API_KEY=`
+- `AI_TIMEOUT_MS=30000`
+- `AI_MAX_CONTEXT_ITEMS=20`
+
+Si OpenAI no esta configurado o falla, el sistema mantiene un fallback interno basado en reglas y estadisticas reales. El frontend nunca recibe `OPENAI_API_KEY`.
+
+Documentacion completa: `docs/apis-ia.md`.
+
+## IA Local opcional con Ollama + LlamaIndex + ChromaDB
 
 El proyecto incluye un microservicio separado en `apps/ai-service` para IA local. La arquitectura mantiene al frontend protegido:
 

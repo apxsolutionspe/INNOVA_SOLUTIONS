@@ -12,7 +12,7 @@ export class GeminiProvider {
 
   async ask(prompt: string): Promise<AiProviderResponse> {
     if (!this.isConfigured()) {
-      return { mode: 'MOCK', answer: 'Falta AI_API_KEY. Se usa analisis interno seguro.' };
+      return { provider: 'GEMINI', mode: 'RULE_BASED_FALLBACK', answer: 'Falta AI_API_KEY. Se usa analisis interno seguro.' };
     }
 
     const model = this.config.get<string>('AI_MODEL') ?? 'gemini-1.5-flash';
@@ -24,16 +24,20 @@ export class GeminiProvider {
     });
 
     if (!response.ok) {
-      return { mode: 'MOCK', answer: 'No se pudo consultar Gemini. Se recomienda usar el analisis interno mientras se valida la credencial.' };
+      return {
+        provider: 'GEMINI',
+        mode: 'RULE_BASED_FALLBACK',
+        answer: 'No se pudo consultar Gemini. Se recomienda usar el analisis interno mientras se valida la credencial.',
+      };
     }
 
     const data = await response.json();
-    return { mode: 'REAL', answer: data?.candidates?.[0]?.content?.parts?.[0]?.text ?? 'Gemini no devolvio contenido util.' };
+    return { provider: 'GEMINI', mode: 'CLOUD_AI', answer: data?.candidates?.[0]?.content?.parts?.[0]?.text ?? 'Gemini no devolvio contenido util.' };
   }
 
   async testConnection(): Promise<AiProviderResponse> {
     return this.isConfigured()
-      ? { mode: 'REAL', answer: 'AI_API_KEY configurada para Gemini.' }
-      : { mode: 'MOCK', answer: 'Falta AI_API_KEY para Gemini.' };
+      ? { provider: 'GEMINI', mode: 'CLOUD_AI', answer: 'AI_API_KEY configurada para Gemini.' }
+      : { provider: 'GEMINI', mode: 'RULE_BASED_FALLBACK', answer: 'Falta AI_API_KEY para Gemini.' };
   }
 }

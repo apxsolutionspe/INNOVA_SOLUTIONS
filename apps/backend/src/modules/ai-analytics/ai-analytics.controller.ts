@@ -24,6 +24,8 @@ export class AiAnalyticsController {
   @Get('profitability-insights') profitability() { return this.service.profitabilityInsights(); }
   @Roles('ADMIN', 'WORKER', 'TECHNICIAN')
   @Post('ask') ask(@Body() dto: AiQueryDto, @CurrentUser() user: AuthenticatedUser) { return this.service.ask(dto, user); }
+  @Roles('ADMIN', 'WORKER', 'TECHNICIAN')
+  @Get('test-connection') testGet(@CurrentUser() user: AuthenticatedUser) { return this.service.testConnection(user); }
   @Roles('ADMIN')
   @Post('test-connection') test(@CurrentUser() user: AuthenticatedUser) { return this.service.testConnection(user); }
 }
