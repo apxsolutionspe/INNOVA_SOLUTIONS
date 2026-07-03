@@ -33,12 +33,12 @@ export function PosPage() {
           : '';
 
   return (
-    <section className="mx-auto flex w-full max-w-[100rem] flex-col gap-5 px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
+    <section className="mx-auto flex w-full max-w-[100rem] min-w-0 flex-col gap-4 px-3 py-4 sm:gap-5 sm:px-6 sm:py-6 lg:px-8">
       <PosHeader cashSession={pos.cashSession} isLoading={pos.isLoading} onRefresh={() => void pos.refresh()} />
 
       {pos.error ? <PosErrorState message={pos.error} /> : null}
 
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_25rem] 2xl:grid-cols-[minmax(0,1fr)_27rem]">
+      <div className="grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1fr)_25rem] 2xl:grid-cols-[minmax(0,1fr)_27rem]">
         <section className="min-w-0 space-y-4">
           <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
             <div className="flex flex-wrap items-center justify-between gap-3">

@@ -98,7 +98,7 @@ export function QuickServicesPage() {
             />
           </section>
 
-          <aside className="space-y-4 xl:sticky xl:top-20 xl:max-h-[calc(100vh-6rem)] xl:self-start xl:overflow-y-auto xl:pr-1">
+          <aside className="space-y-4 xl:sticky xl:top-20 xl:max-h-[calc(100dvh-6rem)] xl:self-start xl:overflow-y-auto xl:pr-1">
             <QuickServiceCartPanel
               cart={quick.cart}
               subtotal={quick.totals.subtotal}

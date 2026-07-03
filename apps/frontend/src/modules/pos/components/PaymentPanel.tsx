@@ -38,7 +38,7 @@ export function PaymentPanel({ payments, total, onChange }: PaymentPanelProps) {
         <button
           type="button"
           onClick={() => onChange([...payments, { method: 'YAPE', amount: Number(pending.toFixed(2)), reference: '' }])}
-          className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-blue-50 px-3 text-xs font-black text-brand-blue transition hover:bg-blue-100"
+          className="inline-flex min-h-11 items-center gap-1.5 rounded-lg bg-blue-50 px-3 text-xs font-black text-brand-blue transition hover:bg-blue-100 sm:min-h-9"
         >
           <Plus size={14} />
           Pago mixto
@@ -48,7 +48,7 @@ export function PaymentPanel({ payments, total, onChange }: PaymentPanelProps) {
       <div className="mt-3 space-y-3">
         {payments.map((payment, index) => (
           <div key={index} className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-            <div className="flex items-start justify-between gap-2">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
               <div className="grid flex-1 grid-cols-2 gap-2">
                 {methods.map((method) => {
                   const Icon = method.icon;
@@ -58,7 +58,7 @@ export function PaymentPanel({ payments, total, onChange }: PaymentPanelProps) {
                       key={method.value}
                       type="button"
                       onClick={() => updatePayment(index, { ...payment, method: method.value })}
-                      className={`inline-flex h-10 items-center justify-center gap-2 rounded-lg border px-2 text-xs font-black transition ${
+                      className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border px-2 text-xs font-black transition sm:min-h-10 ${
                         isActive
                           ? 'border-brand-blue bg-brand-blue text-white shadow-sm'
                           : 'border-slate-200 bg-white text-slate-600 hover:border-brand-cyan'
@@ -74,7 +74,7 @@ export function PaymentPanel({ payments, total, onChange }: PaymentPanelProps) {
                 <button
                   type="button"
                   onClick={() => onChange(payments.filter((_, currentIndex) => currentIndex !== index))}
-                  className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-red-100 bg-white text-red-600 transition hover:bg-red-50"
+                  className="grid h-11 w-full shrink-0 place-items-center rounded-lg border border-red-100 bg-white text-red-600 transition hover:bg-red-50 sm:h-10 sm:w-10"
                   title="Quitar pago"
                 >
                   <Trash2 size={15} />

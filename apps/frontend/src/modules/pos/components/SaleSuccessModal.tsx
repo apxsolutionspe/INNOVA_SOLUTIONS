@@ -12,11 +12,11 @@ interface SaleSuccessModalProps {
 
 export function SaleSuccessModal({ sale, onReceipt, onWhatsapp, onClose }: SaleSuccessModalProps) {
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/50 px-4 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/50 px-3 py-3 backdrop-blur-sm sm:px-4 sm:py-6">
       <motion.div
         initial={{ opacity: 0, y: 24, scale: 0.97 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
-        className="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl"
+        className="max-h-[calc(100dvh-1.5rem)] w-full max-w-md overflow-y-auto rounded-2xl bg-white shadow-2xl sm:max-h-[calc(100dvh-3rem)]"
       >
         <div className="bg-gradient-to-br from-emerald-500 to-cyan-500 p-6 text-center text-white">
           <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-white/20">

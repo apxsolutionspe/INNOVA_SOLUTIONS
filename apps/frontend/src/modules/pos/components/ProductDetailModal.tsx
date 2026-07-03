@@ -63,16 +63,16 @@ export function ProductDetailModal({ product, inCartQuantity, onAdd, onClose }: 
   };
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/55 px-4 py-6 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label={`Detalle de ${product.name}`}>
+    <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/55 px-3 py-3 backdrop-blur-sm sm:px-4 sm:py-6" role="dialog" aria-modal="true" aria-label={`Detalle de ${product.name}`}>
       <button type="button" aria-label="Cerrar detalle de producto" className="absolute inset-0 cursor-default" onClick={onClose} />
       <motion.article
         initial={{ opacity: 0, y: 18, scale: 0.98 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 18, scale: 0.98 }}
         transition={{ duration: 0.18 }}
-        className="relative grid max-h-[92vh] w-full max-w-4xl overflow-hidden rounded-2xl border border-white/20 bg-white shadow-2xl shadow-slate-950/30 lg:grid-cols-[0.9fr_1.1fr]"
+        className="relative grid max-h-[calc(100dvh-1.5rem)] w-full max-w-4xl overflow-hidden rounded-2xl border border-white/20 bg-white shadow-2xl shadow-slate-950/30 sm:max-h-[calc(100dvh-3rem)] lg:grid-cols-[0.9fr_1.1fr]"
       >
-        <div className="relative min-h-64 bg-[radial-gradient(circle_at_20%_20%,rgba(6,182,212,0.32),transparent_32%),linear-gradient(135deg,#0f172a,#1d4ed8_48%,#06b6d4)] p-6 text-white">
+        <div className="relative min-h-48 bg-[radial-gradient(circle_at_20%_20%,rgba(6,182,212,0.32),transparent_32%),linear-gradient(135deg,#0f172a,#1d4ed8_48%,#06b6d4)] p-5 text-white sm:min-h-64 sm:p-6">
           <button
             type="button"
             onClick={onClose}

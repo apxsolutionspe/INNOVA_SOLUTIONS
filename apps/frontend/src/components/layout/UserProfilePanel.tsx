@@ -60,7 +60,7 @@ export function UserProfilePanel({ user, isOpen, onClose }: UserProfilePanelProp
     <div className="fixed inset-0 z-50 bg-slate-950/30 p-3 backdrop-blur-sm sm:p-5">
       <div
         ref={panelRef}
-        className="ml-auto flex max-h-[calc(100vh-1.5rem)] w-full max-w-md flex-col overflow-hidden rounded-[1.75rem] border border-white/80 bg-white shadow-2xl shadow-slate-950/20 sm:max-h-[calc(100vh-2.5rem)]"
+        className="ml-auto flex max-h-[calc(100dvh-1.5rem)] w-full max-w-md flex-col overflow-hidden rounded-[1.75rem] border border-white/80 bg-white shadow-2xl shadow-slate-950/20 sm:max-h-[calc(100dvh-2.5rem)]"
       >
         <div className="relative overflow-hidden bg-gradient-to-br from-slate-950 via-blue-950 to-cyan-900 px-6 py-6 text-white">
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_5%,rgba(34,211,238,0.34),transparent_28%),radial-gradient(circle_at_90%_0%,rgba(124,58,237,0.28),transparent_30%)]" />

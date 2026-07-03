@@ -37,7 +37,7 @@ export function DataTable<T>({
   if (!items.length) return <EmptyState title={emptyTitle} description={emptyDescription} />;
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm shadow-slate-200/70">
+    <div className="min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm shadow-slate-200/70">
       <TableShell maxHeight={maxHeight} className="hidden rounded-none border-0 shadow-none md:block">
         <table className="min-w-full divide-y divide-slate-200 text-sm">
           <thead className="sticky top-0 z-10 bg-slate-50/95 text-left text-xs font-black uppercase tracking-wide text-slate-500 backdrop-blur">
@@ -65,11 +65,11 @@ export function DataTable<T>({
 
       <div className="table-scroll-shell max-h-[70vh] divide-y divide-slate-100 overflow-y-auto md:hidden">
         {items.map((item) => (
-          <div key={getRowKey(item)} onClick={() => onRowClick?.(item)} className={cn('space-y-3 p-4', onRowClick && 'cursor-pointer')}>
+          <div key={getRowKey(item)} onClick={() => onRowClick?.(item)} className={cn('space-y-3 p-3.5 sm:p-4', onRowClick && 'cursor-pointer')}>
             {columns.map((column) => (
-              <div key={column.key} className={column.hideOnMobile ? 'hidden' : 'flex items-start justify-between gap-4'}>
-                <span className="text-xs font-black uppercase text-slate-400">{column.header}</span>
-                <div className="text-right text-sm text-slate-700">{column.cell(item)}</div>
+              <div key={column.key} className={column.hideOnMobile ? 'hidden' : 'grid min-w-0 gap-1.5 rounded-xl bg-slate-50/55 px-3 py-2 sm:grid-cols-[7.5rem_minmax(0,1fr)] sm:items-start sm:bg-transparent sm:px-0 sm:py-0'}>
+                <span className="min-w-0 text-[11px] font-black uppercase tracking-wide text-slate-400">{column.header}</span>
+                <div className="min-w-0 break-words text-sm font-semibold text-slate-700 sm:text-right">{column.cell(item)}</div>
               </div>
             ))}
           </div>

@@ -24,12 +24,12 @@ export function QuickServiceDetailModal({ service, onClose, onAdd }: QuickServic
   };
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-end bg-slate-950/55 px-0 backdrop-blur-sm sm:place-items-center sm:px-4">
+    <div className="fixed inset-0 z-50 grid place-items-end bg-slate-950/55 px-0 py-0 backdrop-blur-sm sm:place-items-center sm:px-4 sm:py-6">
       <button type="button" aria-label="Cerrar detalle" className="absolute inset-0" onClick={onClose} />
       <motion.div
         initial={{ opacity: 0, y: 28, scale: 0.98 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
-        className="relative max-h-[92vh] w-full overflow-hidden rounded-t-3xl bg-white shadow-2xl sm:max-w-2xl sm:rounded-3xl"
+        className="relative flex max-h-[100dvh] w-full flex-col overflow-hidden rounded-t-3xl bg-white shadow-2xl sm:max-h-[calc(100dvh-3rem)] sm:max-w-2xl sm:rounded-3xl"
       >
         <div className="border-b border-slate-200 bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 p-5 text-white sm:p-6">
           <div className="flex items-start justify-between gap-4">
@@ -52,7 +52,7 @@ export function QuickServiceDetailModal({ service, onClose, onAdd }: QuickServic
           </div>
         </div>
 
-        <div className="max-h-[calc(92vh-9rem)] overflow-y-auto p-5 sm:p-6">
+        <div className="min-h-0 flex-1 overflow-y-auto p-5 sm:p-6">
           <div className="grid gap-4 sm:grid-cols-[1fr_12rem]">
             <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
               <div className="flex items-center gap-2 text-sm font-black text-slate-950">
@@ -141,7 +141,7 @@ export function QuickServiceDetailModal({ service, onClose, onAdd }: QuickServic
           </div>
         </div>
 
-        <div className="border-t border-slate-200 bg-white p-4">
+        <div className="shrink-0 border-t border-slate-200 bg-white p-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-xs font-bold uppercase text-slate-400">Subtotal preliminar</p>

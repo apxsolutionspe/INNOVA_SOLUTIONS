@@ -32,14 +32,28 @@ export function MainLayout() {
     return () => window.removeEventListener('keydown', closeOnEscape);
   }, []);
 
+  useEffect(() => {
+    if (!isSidebarOpen) return undefined;
+
+    const media = window.matchMedia('(max-width: 1023px)');
+    if (!media.matches) return undefined;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isSidebarOpen]);
+
   return (
-    <div className="min-h-screen bg-brand-surface">
-      <div className="min-h-screen">
+    <div className="min-h-dvh overflow-x-clip bg-brand-surface">
+      <div className="min-h-dvh min-w-0">
         <Sidebar isOpen={isSidebarOpen} onClose={closeSidebar} />
         <div className={`min-w-0 transition-[padding] duration-300 ease-out ${isSidebarOpen ? 'lg:pl-72' : 'lg:pl-0'}`}>
           <Header isMenuOpen={isSidebarOpen} onMenuClick={isSidebarOpen ? closeSidebar : openSidebar} onToggleSidebar={toggleSidebar} />
           <OfflineBanner />
-          <main className="pb-20 lg:pb-0">
+          <main className="min-w-0 pb-[calc(5rem+env(safe-area-inset-bottom))] lg:pb-0">
             <Outlet />
           </main>
           <MobileBottomNav />

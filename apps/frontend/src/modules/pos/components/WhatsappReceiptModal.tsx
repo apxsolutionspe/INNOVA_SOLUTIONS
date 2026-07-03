@@ -140,7 +140,7 @@ export function WhatsappReceiptModal({ sale, defaultPhone, onClose }: WhatsappRe
         onSubmit={handleSubmit}
         initial={{ opacity: 0, y: 18, scale: 0.98 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
-        className="relative flex max-h-[94vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-white/20 bg-white shadow-2xl shadow-slate-950/30 sm:rounded-3xl"
+        className="relative flex max-h-[calc(100dvh-1.5rem)] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-white/20 bg-white shadow-2xl shadow-slate-950/30 sm:max-h-[calc(100dvh-3rem)] sm:rounded-3xl"
       >
         <div className="border-b border-emerald-700/20 bg-[linear-gradient(135deg,#075e54,#128c7e)] px-5 py-5 text-white sm:px-6">
           <div className="flex items-start justify-between gap-4">

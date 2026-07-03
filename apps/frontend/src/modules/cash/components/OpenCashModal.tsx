@@ -31,13 +31,13 @@ export function OpenCashModal({ onClose, onDone }: { onClose: () => void; onDone
   };
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-end bg-slate-950/50 px-0 backdrop-blur-sm sm:place-items-center sm:px-4">
+    <div className="fixed inset-0 z-50 grid place-items-end bg-slate-950/50 px-0 py-0 backdrop-blur-sm sm:place-items-center sm:px-4 sm:py-6">
       <button type="button" aria-label="Cerrar apertura de caja" className="absolute inset-0" onClick={onClose} />
       <motion.form
         initial={{ opacity: 0, y: 24, scale: 0.98 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         onSubmit={submit}
-        className="relative w-full max-w-md overflow-hidden rounded-t-3xl bg-white shadow-2xl sm:rounded-3xl"
+        className="relative max-h-[100dvh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-white shadow-2xl sm:max-h-[calc(100dvh-3rem)] sm:rounded-3xl"
       >
         <div className="bg-gradient-to-br from-brand-blue via-brand-cyan to-emerald-500 p-6 text-white">
           <div className="flex items-start justify-between gap-4">

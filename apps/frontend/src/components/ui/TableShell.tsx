@@ -10,7 +10,7 @@ export function TableShell({ children, maxHeight = 'clamp(360px,52vh,640px)', cl
   return (
     <div
       className={cn(
-        'table-scroll-shell overflow-auto rounded-2xl border border-slate-200 bg-white shadow-sm shadow-slate-200/70',
+        'table-scroll-shell min-w-0 overflow-auto rounded-2xl border border-slate-200 bg-white shadow-sm shadow-slate-200/70',
         className,
       )}
       style={{ maxHeight }}

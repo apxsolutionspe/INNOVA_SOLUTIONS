@@ -61,14 +61,14 @@ export function Header({ onMenuClick, onToggleSidebar, isMenuOpen = false }: Hea
   return (
     <header className="sticky top-0 z-30 border-b border-slate-200/80 bg-white/88 shadow-[0_10px_34px_rgba(15,23,42,0.06)] backdrop-blur-xl">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_8%_0%,rgba(6,182,212,0.12),transparent_28%),linear-gradient(90deg,rgba(37,99,235,0.06),transparent_38%,rgba(124,58,237,0.055))]" />
-      <div className="relative flex h-20 items-center justify-between px-4 sm:px-6 lg:px-8">
-        <div className="flex min-w-0 items-center gap-3">
+      <div className="relative flex min-h-16 items-center justify-between gap-2 px-3 py-2 sm:min-h-20 sm:px-6 lg:px-8">
+        <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
           <button
             type="button"
             onClick={onToggleSidebar ?? onMenuClick}
             aria-label={isMenuOpen ? 'Cerrar menú lateral' : 'Abrir menú lateral'}
             aria-expanded={isMenuOpen}
-            className={`group grid h-11 w-11 place-items-center rounded-2xl border shadow-sm transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-cyan-100 ${
+            className={`group grid h-11 w-11 shrink-0 place-items-center rounded-2xl border shadow-sm transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-cyan-100 ${
               isMenuOpen
                 ? 'border-cyan-200 bg-gradient-to-br from-blue-50 via-cyan-50 to-violet-50 text-brand-blue shadow-cyan-100'
                 : 'border-slate-200/80 bg-white/95 text-slate-700 hover:-translate-y-0.5 hover:border-brand-cyan hover:bg-cyan-50/70 hover:text-brand-blue hover:shadow-cyan-100/70'
@@ -78,14 +78,14 @@ export function Header({ onMenuClick, onToggleSidebar, isMenuOpen = false }: Hea
             {isMenuOpen ? <PanelLeftOpen size={20} className="transition group-hover:scale-105" /> : <Menu size={20} className="transition group-hover:scale-105" />}
           </button>
           <div className="min-w-0">
-            <p className="truncate text-lg font-black tracking-tight text-slate-950 sm:text-xl">{moduleTitle}</p>
+            <p className="truncate text-base font-black tracking-tight text-slate-950 sm:text-xl">{moduleTitle}</p>
             <p className="hidden text-xs font-semibold text-slate-500 sm:block">
               Innova Solutions <span className="text-slate-300">/</span> Sistema Integral de Gestión
             </p>
           </div>
         </div>
 
-        <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+        <div className="flex shrink-0 items-center gap-1.5 sm:gap-3">
           <NotificationBell />
           <button
             type="button"
@@ -122,7 +122,7 @@ export function Header({ onMenuClick, onToggleSidebar, isMenuOpen = false }: Hea
           <button
             type="button"
             onClick={handleLogout}
-            className="group inline-flex h-11 items-center gap-2 rounded-2xl border border-slate-200/80 bg-white/85 px-3 text-sm font-bold text-slate-700 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-red-200 hover:bg-red-50 hover:text-red-600 hover:shadow-red-100/70 focus:outline-none focus:ring-4 focus:ring-red-100"
+            className="group inline-flex h-11 w-11 items-center justify-center gap-2 rounded-2xl border border-slate-200/80 bg-white/85 px-0 text-sm font-bold text-slate-700 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-red-200 hover:bg-red-50 hover:text-red-600 hover:shadow-red-100/70 focus:outline-none focus:ring-4 focus:ring-red-100 sm:w-auto sm:px-3"
           >
             <LogOut size={18} className="transition group-hover:translate-x-0.5" />
             <span className="hidden sm:inline">Cerrar sesión</span>

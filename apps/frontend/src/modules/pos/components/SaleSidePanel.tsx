@@ -41,7 +41,7 @@ export function SaleSidePanel({
   onConfirm,
 }: SaleSidePanelProps) {
   return (
-    <aside className="xl:sticky xl:top-20 xl:self-start">
+    <aside className="min-w-0 xl:sticky xl:top-20 xl:self-start">
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-200/60">
         <div className="border-b border-slate-100 bg-[linear-gradient(135deg,#0f172a,#1d4ed8)] px-5 py-4 text-white">
           <div className="flex items-center justify-between gap-3">
@@ -58,7 +58,7 @@ export function SaleSidePanel({
           </div>
         </div>
 
-        <div className="sidebar-scroll max-h-none space-y-4 overflow-y-visible bg-slate-50/70 p-3 sm:p-4 xl:max-h-[calc(100vh-7rem)] xl:overflow-y-auto">
+        <div className="sidebar-scroll max-h-none space-y-4 overflow-y-visible bg-slate-50/70 p-3 sm:p-4 xl:max-h-[calc(100dvh-7rem)] xl:overflow-y-auto">
           <CartPanel
             items={items}
             onQuantityChange={onQuantityChange}

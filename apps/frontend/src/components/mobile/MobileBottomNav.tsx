@@ -15,17 +15,17 @@ export function MobileBottomNav() {
 
   return (
     <>
-      <nav className="fixed bottom-0 left-0 right-0 z-40 grid h-16 grid-cols-5 border-t border-slate-200 bg-white/95 px-1 pb-[env(safe-area-inset-bottom)] shadow-[0_-10px_30px_rgba(15,23,42,0.08)] backdrop-blur lg:hidden">
+      <nav className="fixed bottom-0 left-0 right-0 z-40 grid min-h-16 grid-cols-5 border-t border-slate-200 bg-white/95 px-1 pb-[env(safe-area-inset-bottom)] pt-1 shadow-[0_-10px_30px_rgba(15,23,42,0.08)] backdrop-blur lg:hidden">
         {mainItems.map((item) => {
           const Icon = item.icon;
           return (
-            <NavLink key={item.path} to={item.path} className={({ isActive }) => `flex flex-col items-center justify-center gap-1 text-[11px] font-bold ${isActive ? 'text-brand-blue' : 'text-slate-500'}`}>
+            <NavLink key={item.path} to={item.path} className={({ isActive }) => `flex min-h-14 flex-col items-center justify-center gap-1 rounded-xl text-[11px] font-bold ${isActive ? 'bg-blue-50 text-brand-blue' : 'text-slate-500'}`}>
               <Icon size={20} />
               {item.label}
             </NavLink>
           );
         })}
-        <button type="button" onClick={() => setIsMoreOpen(true)} className="flex flex-col items-center justify-center gap-1 text-[11px] font-bold text-slate-500">
+        <button type="button" onClick={() => setIsMoreOpen(true)} className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-xl text-[11px] font-bold text-slate-500">
           <MoreHorizontal size={20} />
           Más
         </button>

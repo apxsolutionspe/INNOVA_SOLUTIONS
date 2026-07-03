@@ -8,9 +8,9 @@ import { CashStatusBadge } from './CashStatusBadge';
 
 export function CashSessionDetailModal({ session, onClose }: { session: CashSession; onClose: () => void }) {
   return (
-    <div className="fixed inset-0 z-50 grid place-items-end bg-slate-950/50 px-0 backdrop-blur-sm sm:place-items-center sm:px-4">
+    <div className="fixed inset-0 z-50 grid place-items-end bg-slate-950/50 px-0 py-0 backdrop-blur-sm sm:place-items-center sm:px-4 sm:py-6">
       <button type="button" aria-label="Cerrar detalle" className="absolute inset-0" onClick={onClose} />
-      <div className="relative max-h-[92vh] w-full max-w-5xl overflow-y-auto rounded-t-3xl bg-white shadow-2xl sm:rounded-3xl">
+      <div className="relative flex max-h-[100dvh] w-full max-w-5xl flex-col overflow-hidden rounded-t-3xl bg-white shadow-2xl sm:max-h-[calc(100dvh-3rem)] sm:rounded-3xl">
         <div className="flex items-start justify-between gap-4 border-b border-slate-200 p-5">
           <div>
             <h2 className="text-2xl font-black text-slate-950">{session.code}</h2>
@@ -20,7 +20,7 @@ export function CashSessionDetailModal({ session, onClose }: { session: CashSess
             <X size={18} />
           </button>
         </div>
-        <div className="space-y-5 p-5">
+        <div className="min-h-0 flex-1 space-y-5 overflow-y-auto p-4 sm:p-5">
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
             <Metric label="Estado" value={<CashStatusBadge status={session.status} />} />
             <Metric label="Ventas" value={formatMoney(session.totalSales)} />

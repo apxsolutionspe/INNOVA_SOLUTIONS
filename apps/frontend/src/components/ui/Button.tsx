@@ -19,16 +19,16 @@ const variants: Record<ButtonVariant, string> = {
 };
 
 const sizes: Record<ButtonSize, string> = {
-  sm: 'h-9 px-3 text-xs',
-  md: 'h-10 px-4 text-sm',
-  lg: 'h-11 px-5 text-sm',
+  sm: 'min-h-11 px-3 text-xs sm:min-h-9',
+  md: 'min-h-11 px-4 text-sm',
+  lg: 'min-h-12 px-5 text-sm sm:min-h-11',
 };
 
 export function Button({ variant = 'primary', size = 'md', className, children, ...props }: PropsWithChildren<ButtonProps>) {
   return (
     <button
       className={cn(
-        'inline-flex items-center justify-center gap-2 rounded-lg border font-bold shadow-sm transition disabled:cursor-not-allowed disabled:opacity-60',
+        'inline-flex min-w-0 items-center justify-center gap-2 rounded-lg border font-bold shadow-sm transition disabled:cursor-not-allowed disabled:opacity-60',
         variants[variant],
         sizes[size],
         className,
