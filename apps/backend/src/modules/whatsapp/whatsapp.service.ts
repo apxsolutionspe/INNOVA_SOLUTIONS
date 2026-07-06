@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import PDFDocument from 'pdfkit';
 import { PrismaService } from '../../database/prisma.service';
 import { AuthenticatedUser } from '../auth/types/authenticated-user.type';
+import { CreateReceiptLinkDto } from './dto/create-receipt-link.dto';
 import { SendMessageDto } from './dto/send-message.dto';
 import { SendSaleReceiptDto } from './dto/send-sale-receipt.dto';
 import { SendServiceOrderDto } from './dto/send-service-order.dto';
@@ -15,6 +16,7 @@ import { WhatsappResponse } from './interfaces/whatsapp-response.interface';
 import { WhatsappCloudProvider } from './providers/whatsapp-cloud.provider';
 import { WhatsappMockProvider } from './providers/whatsapp-mock.provider';
 import { SalesService } from '../sales/sales.service';
+import { buildWhatsAppReceiptUrl, normalizePhoneForWhatsApp } from './utils/whatsapp-link.util';
 
 type WhatsappSendStrategy = 'template_test' | 'receipt_template' | 'receipt_pdf' | 'text' | 'document';
 
@@ -105,6 +107,40 @@ export class WhatsappService {
 
   async sendSaleReceiptTemplate(dto: SendSaleReceiptDto, user: AuthenticatedUser) {
     return this.sendSaleReceiptWithStrategy({ ...dto, sendStrategy: 'receipt_template' }, user, 'receipt_template');
+  }
+
+  async createReceiptLink(dto: CreateReceiptLinkDto, user: AuthenticatedUser) {
+    const receipt = await this.resolveReceiptSummary(dto.type, dto.id);
+    const phone = dto.phone ? this.normalizeWhatsappPhone(dto.phone) : '';
+    const receiptUrl = this.buildPublicReceiptUrl(dto.type, receipt.id);
+    const message = this.buildReceiptLinkMessage(receipt, receiptUrl);
+    const whatsappUrl = phone ? buildWhatsAppReceiptUrl(phone, message) : '';
+
+    await this.prisma.auditLog.create({
+      data: {
+        userId: user.id,
+        module: 'WHATSAPP',
+        action: 'CREATE_RECEIPT_LINK',
+        description: `Link WhatsApp generado para ${dto.type} ${receipt.code}`,
+        entityId: receipt.id,
+        entityType: dto.type,
+      },
+    });
+
+    return {
+      success: true,
+      receiptUrl,
+      whatsappUrl,
+      message,
+      data: {
+        type: dto.type,
+        id: receipt.id,
+        code: receipt.code,
+        phone,
+        customerName: receipt.customerName,
+        total: receipt.total,
+      },
+    };
   }
 
   async testApprovedTemplate(dto: TestApprovedTemplateDto, user: AuthenticatedUser) {
@@ -225,6 +261,10 @@ export class WhatsappService {
   }
 
   private async sendSaleReceiptWithStrategy(dto: SendSaleReceiptDto, user: AuthenticatedUser, requestedStrategy?: SendSaleReceiptDto['sendStrategy']) {
+    if (this.mode() === 'link') {
+      return this.createReceiptLink({ type: 'SALE', id: dto.saleId, phone: dto.phone }, user);
+    }
+
     const sale = await this.salesService.findOne(dto.saleId);
 
     if (sale.status === 'CANCELLED') {
@@ -466,14 +506,7 @@ export class WhatsappService {
   }
 
   private normalizeWhatsappPhone(phone: string) {
-    const digits = phone.replace(/[^\d]/g, '');
-    const normalized = digits.length === 9 ? `51${digits}` : digits;
-
-    if (normalized.length < 11 || normalized.length > 15) {
-      throw new BadRequestException('Ingresa un numero de WhatsApp valido con codigo de pais.');
-    }
-
-    return normalized;
+    return normalizePhoneForWhatsApp(phone, this.config.get<string>('WHATSAPP_DEFAULT_COUNTRY_CODE') ?? '51');
   }
 
   private resolveSaleReceiptResponseMessage(mode: string, status: string, strategy: WhatsappSendStrategy) {
@@ -519,6 +552,100 @@ export class WhatsappService {
       'Estado: Venta registrada correctamente.',
       '',
       'Puedes solicitar tu comprobante en tienda o revisarlo desde el sistema.',
+      '',
+      'Gracias por confiar en nosotros.',
+    ].join('\n');
+  }
+
+  private async resolveReceiptSummary(type: CreateReceiptLinkDto['type'], idOrCode: string) {
+    if (type === 'SALE') {
+      const sale = await this.prisma.sale.findFirst({
+        where: { OR: [{ id: idOrCode }, { code: idOrCode }] },
+        include: { customer: true, payments: true },
+      });
+      if (!sale) throw new BadRequestException('No se encontro el comprobante de venta.');
+      if (sale.status === 'CANCELLED') throw new BadRequestException('No se puede compartir una venta anulada.');
+      return {
+        id: sale.id,
+        code: sale.code,
+        customerName: sale.customer?.fullName ?? 'Cliente general',
+        total: Number(sale.total),
+        paymentMethod: sale.payments[0]?.method ?? 'MIXED',
+        createdAt: sale.createdAt,
+      };
+    }
+
+    if (type === 'QUICK_SERVICE') {
+      const sale = await this.prisma.quickServiceSale.findFirst({
+        where: { OR: [{ id: idOrCode }, { code: idOrCode }] },
+        include: { customer: true },
+      });
+      if (!sale) throw new BadRequestException('No se encontro el comprobante de servicio rapido.');
+      if (sale.status === 'CANCELLED') throw new BadRequestException('No se puede compartir una operacion cancelada.');
+      return {
+        id: sale.id,
+        code: sale.code,
+        customerName: sale.customer?.fullName ?? 'Cliente general',
+        total: Number(sale.total),
+        paymentMethod: sale.paymentMethod,
+        createdAt: sale.createdAt,
+      };
+    }
+
+    const order = await this.prisma.serviceOrder.findFirst({
+      where: { OR: [{ id: idOrCode }, { code: idOrCode }] },
+      include: { customer: true },
+    });
+    if (!order) throw new BadRequestException('No se encontro la orden tecnica.');
+    return {
+      id: order.id,
+      code: order.code,
+      customerName: order.customer.fullName,
+      total: Number(order.total),
+      paymentMethod: 'PENDIENTE',
+      createdAt: order.createdAt,
+    };
+  }
+
+  private buildPublicReceiptUrl(type: CreateReceiptLinkDto['type'], id: string) {
+    const baseUrl = this.resolvePublicAppUrl();
+    const path = type === 'SALE'
+      ? `/api/public/receipts/sales/${encodeURIComponent(id)}`
+      : type === 'QUICK_SERVICE'
+        ? `/api/public/receipts/quick-services/${encodeURIComponent(id)}`
+        : `/api/public/receipts/service-orders/${encodeURIComponent(id)}`;
+
+    return `${baseUrl}${path}`;
+  }
+
+  private resolvePublicAppUrl() {
+    const configured = this.config.get<string>('PUBLIC_APP_URL')?.trim();
+    const nodeEnv = (this.config.get<string>('NODE_ENV') ?? 'development').trim().toLowerCase();
+    if (configured) {
+      const normalized = configured.replace(/\/+$/, '');
+      if (nodeEnv === 'production' && /localhost|127\.0\.0\.1/i.test(normalized)) {
+        throw new BadRequestException('PUBLIC_APP_URL no puede apuntar a localhost en produccion.');
+      }
+      return normalized;
+    }
+
+    if (nodeEnv === 'production') {
+      throw new BadRequestException('PUBLIC_APP_URL es obligatorio para compartir comprobantes en produccion.');
+    }
+
+    const port = this.config.get<string>('PORT')?.trim() || '3000';
+    return `http://localhost:${port}`;
+  }
+
+  private buildReceiptLinkMessage(receipt: { code: string; customerName: string; total: number; createdAt: Date }, receiptUrl: string) {
+    return [
+      `Hola ${receipt.customerName}, gracias por tu compra en Innova Solutions.`,
+      '',
+      'Tu comprobante:',
+      receiptUrl,
+      '',
+      `Total: S/ ${receipt.total.toFixed(2)}`,
+      `Codigo: ${receipt.code}`,
       '',
       'Gracias por confiar en nosotros.',
     ].join('\n');

@@ -26,9 +26,34 @@ export interface SendSaleReceiptResponse {
   };
 }
 
+export interface CreateReceiptLinkPayload {
+  type: 'SALE' | 'SERVICE_ORDER' | 'QUICK_SERVICE';
+  id: string;
+  phone?: string;
+}
+
+export interface CreateReceiptLinkResponse {
+  success: boolean;
+  receiptUrl: string;
+  whatsappUrl: string;
+  message: string;
+  data: {
+    type: CreateReceiptLinkPayload['type'];
+    id: string;
+    code: string;
+    phone: string;
+    customerName: string;
+    total: number;
+  };
+}
+
 export const whatsappReceiptService = {
   async sendSaleReceipt(payload: SendSaleReceiptPayload) {
     const { data } = await httpClient.post<SendSaleReceiptResponse>('/whatsapp/send-sale-receipt', payload);
+    return data;
+  },
+  async createReceiptLink(payload: CreateReceiptLinkPayload) {
+    const { data } = await httpClient.post<CreateReceiptLinkResponse>('/whatsapp/receipt-link', payload);
     return data;
   },
 };

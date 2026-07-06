@@ -16,6 +16,7 @@ import { IntegrationsModule } from './modules/integrations/integrations.module';
 import { InventoryModule } from './modules/inventory/inventory.module';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { PurchasesModule } from './modules/purchases/purchases.module';
+import { PublicReceiptsModule } from './modules/public-receipts/public-receipts.module';
 import { ProfitabilityModule } from './modules/profitability/profitability.module';
 import { QuickServicesModule } from './modules/quick-services/quick-services.module';
 import { ReportsModule } from './modules/reports/reports.module';
@@ -57,6 +58,7 @@ import { WhatsappModule } from './modules/whatsapp/whatsapp.module';
     SunatModule,
     WhatsappModule,
     PaymentsModule,
+    PublicReceiptsModule,
     AiAnalyticsModule,
     AiLocalModule,
     EcommerceModule,
