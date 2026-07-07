@@ -94,7 +94,10 @@ export class SalesService {
       });
 
       for (const item of builtItems) {
-        await item.stockUpdate;
+        const stockUpdate = await item.stockUpdate;
+        if (stockUpdate.count !== 1) {
+          throw new BadRequestException(`Stock insuficiente para ${item.product.name}`);
+        }
         await item.movement;
       }
 

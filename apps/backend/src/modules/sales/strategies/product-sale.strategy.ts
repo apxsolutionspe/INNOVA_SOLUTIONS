@@ -44,9 +44,12 @@ export class ProductSaleStrategy {
         subtotal,
         total,
       },
-      stockUpdate: tx.product.update({
-        where: { id: product.id },
-        data: { stock: newStock },
+      stockUpdate: tx.product.updateMany({
+        where: {
+          id: product.id,
+          stock: { gte: item.quantity },
+        },
+        data: { stock: { decrement: item.quantity } },
       }),
       movement: tx.inventoryMovement.create({
         data: {

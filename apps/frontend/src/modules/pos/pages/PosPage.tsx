@@ -26,11 +26,13 @@ export function PosPage() {
     ? 'Debe abrir caja antes de registrar ventas.'
     : !pos.cart.length
       ? 'Agrega productos al carrito antes de confirmar.'
-      : pos.totals.paid < pos.totals.total
-        ? 'El monto pagado no cubre el total de la venta.'
-        : hasReferenceIssue
-          ? 'Los pagos digitales o por transferencia requieren referencia.'
-          : '';
+      : pos.totals.total <= 0
+        ? 'El total de la venta debe ser mayor a cero.'
+        : pos.totals.paid < pos.totals.total
+          ? 'El monto pagado no cubre el total de la venta.'
+          : hasReferenceIssue
+            ? 'Los pagos digitales o por transferencia requieren referencia.'
+            : '';
 
   return (
     <section className="mx-auto flex w-full max-w-[100rem] min-w-0 flex-col gap-4 px-3 py-4 sm:gap-5 sm:px-6 sm:py-6 lg:px-8">

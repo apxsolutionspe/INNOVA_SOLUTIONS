@@ -45,7 +45,7 @@ export function ProductCard({ product, inCartQuantity, onAdd, onViewDetail }: Pr
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={stock.canAdd ? { y: -2 } : undefined}
-      className={`group flex h-full min-h-[18rem] flex-col overflow-hidden rounded-2xl border bg-white p-4 shadow-sm transition ${
+      className={`group flex h-full min-h-[21rem] flex-col overflow-hidden rounded-2xl border bg-white p-4 shadow-sm transition ${
         stock.canAdd ? 'border-slate-200 hover:border-brand-cyan hover:shadow-lg hover:shadow-cyan-100/60' : 'border-red-100 opacity-80'
       }`}
     >
@@ -67,10 +67,10 @@ export function ProductCard({ product, inCartQuantity, onAdd, onViewDetail }: Pr
         className="mt-4 block outline-none focus-visible:ring-2 focus-visible:ring-brand-cyan"
         aria-label={`Ver detalle de ${product.name}`}
       >
-        <ProductImage product={product} className="h-28 w-full transition group-hover:scale-[1.01] group-hover:ring-cyan-200" />
+        <ProductImage product={product} className="h-36 w-full transition group-hover:scale-[1.01] group-hover:ring-cyan-200" imageClassName="p-4" />
       </button>
 
-      <div className="mt-4 flex flex-col items-start gap-2">
+      <div className="mt-4 grid gap-2">
         <span className="inline-flex max-w-full items-center gap-1.5 rounded-full bg-slate-50 px-2.5 py-1 text-[11px] font-bold text-slate-500 ring-1 ring-slate-100">
           <Barcode size={13} className="shrink-0" />
           <span className="truncate">{product.sku || 'Sin SKU'}</span>

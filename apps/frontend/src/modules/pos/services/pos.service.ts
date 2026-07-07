@@ -6,7 +6,7 @@ import { Sale } from '../../sales/types/sale.types';
 export const posService = {
   async searchProducts(search: string) {
     const { data } = await httpClient.get<ProductsResponse>('/inventory/products', {
-      params: { search, page: 1, limit: 24 },
+      params: { search, page: 1, limit: 100 },
     });
     return data.items;
   },

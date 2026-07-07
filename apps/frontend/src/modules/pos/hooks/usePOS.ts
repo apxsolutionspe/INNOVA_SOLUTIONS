@@ -42,6 +42,19 @@ export function usePOS() {
         settingsService.tax(),
       ]);
       setProducts(productsResponse);
+      setCart((current) =>
+        current
+          .map((item) => {
+            const freshProduct = productsResponse.find((product) => product.id === item.product.id);
+            if (!freshProduct) return item;
+            return {
+              ...item,
+              product: freshProduct,
+              quantity: Math.min(item.quantity, Math.max(freshProduct.stock, 0)),
+            };
+          })
+          .filter((item): item is CartItem => Boolean(item) && item.quantity > 0),
+      );
       setCustomers(customersResponse.items);
       setCashSession(currentCash);
       setTaxSettings(currentTaxSettings);
@@ -88,7 +101,7 @@ export function usePOS() {
       if (existing) {
         const nextQuantity = existing.quantity + quantityToAdd;
         if (nextQuantity > product.stock) {
-          setError('No hay stock disponible para agregar mas unidades.');
+          setError('Stock maximo disponible alcanzado.');
           return current;
         }
         return current.map((item) =>
@@ -102,11 +115,14 @@ export function usePOS() {
   const updateQuantity = (productId: string, quantity: number) => {
     setError('');
     setCart((current) =>
-      current.map((item) =>
-        item.product.id === productId
-          ? { ...item, quantity: Math.max(1, Math.min(Number.isFinite(quantity) ? quantity : 1, item.product.stock)) }
-          : item,
-      ),
+      current.map((item) => {
+        if (item.product.id !== productId) return item;
+        const nextQuantity = Math.max(1, Number.isFinite(quantity) ? Math.floor(quantity) : 1);
+        if (nextQuantity > item.product.stock) {
+          setError('Stock maximo disponible alcanzado.');
+        }
+        return { ...item, quantity: Math.min(nextQuantity, item.product.stock) };
+      }),
     );
   };
 
@@ -132,6 +148,10 @@ export function usePOS() {
     }
     if (!cashSession || cashSession.status !== 'OPEN') {
       setError('Debe abrir caja antes de registrar ventas.');
+      return;
+    }
+    if (totals.total <= 0) {
+      setError('El total de la venta debe ser mayor a cero.');
       return;
     }
     const validPayments = payments
@@ -171,6 +191,7 @@ export function usePOS() {
       await loadInitialData();
     } catch (saleError) {
       setError(saleError instanceof Error ? saleError.message : 'No se pudo registrar la venta.');
+      await loadInitialData();
     } finally {
       setIsSaving(false);
     }

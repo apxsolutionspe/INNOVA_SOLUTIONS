@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { Banknote, Building2, CreditCard, Plus, Smartphone, Trash2 } from 'lucide-react';
 
 import { PaymentInput, PaymentMethod } from '../types/pos.types';
@@ -8,6 +9,19 @@ const methods: Array<{ value: Exclude<PaymentMethod, 'MIXED'>; label: string; ic
   { value: 'PLIN', label: 'Plin', icon: Smartphone },
   { value: 'TRANSFER', label: 'Transferencia', icon: Building2 },
 ];
+
+function sanitizeMoneyInput(value: string) {
+  const normalized = value.replace(',', '.').replace(/[^\d.]/g, '');
+  const [integer = '', ...decimalParts] = normalized.split('.');
+  const decimal = decimalParts.join('').slice(0, 2);
+  return decimalParts.length ? `${integer}.${decimal}` : integer;
+}
+
+function parseMoneyInput(value: string) {
+  if (!value.trim()) return 0;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
+}
 
 interface PaymentPanelProps {
   payments: PaymentInput[];
@@ -85,14 +99,9 @@ export function PaymentPanel({ payments, total, onChange }: PaymentPanelProps) {
             <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
               <label className="block">
                 <span className="text-xs font-bold text-slate-500">Monto pagado</span>
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
+                <MoneyInput
                   value={payment.amount}
-                  onChange={(event) => updatePayment(index, { ...payment, amount: Number(event.target.value) })}
-                  className="mt-1 h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-bold text-slate-900 outline-none transition focus:border-brand-cyan focus:ring-4 focus:ring-cyan-100"
-                  placeholder={`S/ ${total.toFixed(2)}`}
+                  onChange={(amount) => updatePayment(index, { ...payment, amount })}
                 />
               </label>
               <label className="block">
@@ -116,5 +125,37 @@ export function PaymentPanel({ payments, total, onChange }: PaymentPanelProps) {
         <span>S/ {pending.toFixed(2)}</span>
       </div>
     </div>
+  );
+}
+
+function MoneyInput({ value, onChange }: { value: number; onChange: (value: number) => void }) {
+  const [displayValue, setDisplayValue] = useState(value > 0 ? String(value) : '');
+
+  useEffect(() => {
+    setDisplayValue(value > 0 ? String(value) : '');
+  }, [value]);
+
+  return (
+    <input
+      type="text"
+      inputMode="decimal"
+      value={displayValue}
+      onFocus={() => {
+        if (displayValue === '0' || displayValue === '0.00') setDisplayValue('');
+      }}
+      onChange={(event) => {
+        const sanitized = sanitizeMoneyInput(event.target.value);
+        setDisplayValue(sanitized);
+        onChange(parseMoneyInput(sanitized));
+      }}
+      onBlur={() => {
+        if (!displayValue.trim() || parseMoneyInput(displayValue) === 0) {
+          setDisplayValue('');
+          onChange(0);
+        }
+      }}
+      className="mt-1 h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-bold text-slate-900 outline-none transition focus:border-brand-cyan focus:ring-4 focus:ring-cyan-100"
+      placeholder="0.00"
+    />
   );
 }

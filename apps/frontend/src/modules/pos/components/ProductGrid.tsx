@@ -23,8 +23,8 @@ export function ProductGrid({ products, isLoading, cartQuantities, onAdd, onView
   }
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white/80 p-3 shadow-sm sm:p-4">
-      <div className="grid grid-cols-1 items-stretch gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-3 min-[1680px]:grid-cols-4">
+    <div className="sidebar-scroll max-h-none rounded-2xl border border-slate-200 bg-white/80 p-3 shadow-sm sm:p-4 lg:max-h-[calc(100dvh-18rem)] lg:overflow-y-auto lg:pr-3">
+      <div className="grid grid-cols-1 items-stretch gap-4 sm:grid-cols-2 lg:grid-cols-2 2xl:grid-cols-3 min-[1680px]:grid-cols-4">
         {products.map((product) => (
           <ProductCard
             key={product.id}
