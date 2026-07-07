@@ -15,7 +15,7 @@ export function CartPanel({ items, onQuantityChange, onRemove, onClear }: CartPa
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+    <section className="flex min-h-[18rem] flex-col rounded-2xl border border-slate-200 bg-white p-3 shadow-sm xl:min-h-[22rem]">
       <div className="mb-3 flex items-center justify-between gap-3 px-1">
         <div>
           <div className="flex items-center gap-2 text-sm font-black text-slate-950">
@@ -37,13 +37,15 @@ export function CartPanel({ items, onQuantityChange, onRemove, onClear }: CartPa
       </div>
 
       {!items.length ? (
-        <PosEmptyState
-          title="Agrega productos para iniciar una venta"
-          description="El carrito mostrara cantidades, subtotales y limites de stock."
-          icon={ShoppingCart}
-        />
+        <div className="grid min-h-[13rem] flex-1 place-items-center rounded-xl border border-dashed border-slate-200 bg-slate-50/70 px-3">
+          <PosEmptyState
+            title="Agrega productos para iniciar una venta"
+            description="El carrito mostrara cantidades, subtotales y limites de stock."
+            icon={ShoppingCart}
+          />
+        </div>
       ) : (
-        <div className="sidebar-scroll max-h-[32vh] space-y-3 overflow-y-auto pr-1 xl:max-h-[34vh]">
+        <div className="sidebar-scroll min-h-[13rem] flex-1 space-y-3 overflow-y-auto pr-1 xl:max-h-[38vh]">
           {items.map((item) => (
             <CartItemRow
               key={item.product.id}

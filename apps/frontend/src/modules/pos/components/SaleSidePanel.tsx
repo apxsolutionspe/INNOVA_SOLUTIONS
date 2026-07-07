@@ -42,7 +42,7 @@ export function SaleSidePanel({
 }: SaleSidePanelProps) {
   return (
     <aside className="min-w-0 xl:sticky xl:top-20 xl:self-start">
-      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-200/60">
+      <div className="flex min-h-0 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-200/60 xl:min-h-[calc(100dvh-11rem)] xl:max-h-[calc(100dvh-6rem)]">
         <div className="border-b border-slate-100 bg-[linear-gradient(135deg,#0f172a,#1d4ed8)] px-5 py-4 text-white">
           <div className="flex items-center justify-between gap-3">
             <div>
@@ -58,7 +58,7 @@ export function SaleSidePanel({
           </div>
         </div>
 
-        <div className="sidebar-scroll max-h-none space-y-4 overflow-y-visible bg-slate-50/70 p-3 sm:p-4 xl:max-h-[calc(100dvh-7rem)] xl:overflow-y-auto">
+        <div className="sidebar-scroll flex min-h-0 flex-1 flex-col gap-4 overflow-y-visible bg-slate-50/70 p-3 sm:p-4 xl:overflow-y-auto">
           <CartPanel
             items={items}
             onQuantityChange={onQuantityChange}
@@ -67,13 +67,15 @@ export function SaleSidePanel({
           />
           <CustomerSelector customers={customers} selectedCustomer={selectedCustomer} onSelect={onSelectCustomer} />
           <PaymentPanel payments={payments} total={totals.total} onChange={onPaymentsChange} />
-          <SaleSummary
-            totals={totals}
-            cartCount={cartCount}
-            isSaving={isSaving}
-            disabledReason={disabledReason}
-            onConfirm={onConfirm}
-          />
+          <div className="mt-auto">
+            <SaleSummary
+              totals={totals}
+              cartCount={cartCount}
+              isSaving={isSaving}
+              disabledReason={disabledReason}
+              onConfirm={onConfirm}
+            />
+          </div>
         </div>
       </div>
     </aside>
