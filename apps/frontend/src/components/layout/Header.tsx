@@ -1,5 +1,5 @@
-import { ChevronDown, LogOut, Menu, PanelLeftOpen } from 'lucide-react';
-import { useState } from 'react';
+import { BriefcaseBusiness, ChevronDown, LogOut, Menu, PanelLeftOpen } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { NotificationBell } from '../../modules/notifications/components/NotificationBell';
@@ -48,6 +48,7 @@ export function Header({ onMenuClick, onToggleSidebar, isMenuOpen = false }: Hea
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const moduleTitle = resolveRouteTitle(location.pathname);
   const displayName = getDisplayUserName(user);
   const displayRole = getRoleBadgeLabel(user?.role);
@@ -58,11 +59,27 @@ export function Header({ onMenuClick, onToggleSidebar, isMenuOpen = false }: Hea
     navigate('/login', { replace: true });
   };
 
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 8);
+    };
+
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
-    <header className="sticky top-0 z-30 border-b border-slate-200/80 bg-white/88 shadow-[0_10px_34px_rgba(15,23,42,0.06)] backdrop-blur-xl">
+    <header
+      className={`sticky top-0 z-50 isolate border-b bg-white/90 backdrop-blur-xl transition-all duration-200 ${
+        isScrolled
+          ? 'border-slate-200/90 shadow-[0_14px_34px_rgba(15,23,42,0.10)]'
+          : 'border-slate-200/70 shadow-[0_8px_24px_rgba(15,23,42,0.045)]'
+      }`}
+    >
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_8%_0%,rgba(6,182,212,0.12),transparent_28%),linear-gradient(90deg,rgba(37,99,235,0.06),transparent_38%,rgba(124,58,237,0.055))]" />
-      <div className="relative flex min-h-16 items-center justify-between gap-2 px-3 py-2 sm:min-h-20 sm:px-6 lg:px-8">
-        <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
+      <div className="relative flex min-h-16 min-w-0 items-center justify-between gap-2 px-3 py-2 sm:min-h-20 sm:px-6 lg:px-8">
+        <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden sm:gap-3">
           <button
             type="button"
             onClick={onToggleSidebar ?? onMenuClick}
@@ -77,10 +94,25 @@ export function Header({ onMenuClick, onToggleSidebar, isMenuOpen = false }: Hea
           >
             {isMenuOpen ? <PanelLeftOpen size={20} className="transition group-hover:scale-105" /> : <Menu size={20} className="transition group-hover:scale-105" />}
           </button>
-          <div className="min-w-0">
-            <p className="truncate text-base font-black tracking-tight text-slate-950 sm:text-xl">{moduleTitle}</p>
-            <p className="hidden text-xs font-semibold text-slate-500 sm:block">
-              Innova Solutions <span className="text-slate-300">/</span> Sistema Integral de Gestión
+          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-brand-blue via-brand-cyan to-brand-violet text-white shadow-[0_12px_28px_rgba(6,182,212,0.24)] ring-1 ring-white/80 sm:h-12 sm:w-12">
+            <BriefcaseBusiness size={20} className="sm:size-[22px]" />
+          </div>
+          <div className="min-w-0 flex-1 overflow-hidden">
+            <div className="flex min-w-0 items-center gap-2">
+              <p className="truncate text-base font-black tracking-tight text-slate-950 sm:text-xl">
+                Innova Solutions
+              </p>
+              <span className="hidden shrink-0 rounded-full border border-blue-100 bg-blue-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-brand-blue sm:inline-flex">
+                {moduleTitle}
+              </span>
+            </div>
+            <div className="mt-0.5 flex min-w-0 items-center gap-1.5">
+              <p className="truncate text-xs font-semibold text-slate-500 sm:text-[13px]">Manager Suite</p>
+              <span className="hidden h-1 w-1 rounded-full bg-slate-300 sm:block" />
+              <p className="hidden truncate text-xs font-semibold text-slate-500 sm:block">Sistema Integral de Gestion</p>
+            </div>
+            <p className="mt-1 truncate text-[11px] font-black uppercase tracking-wide text-brand-blue sm:hidden">
+              {moduleTitle}
             </p>
           </div>
         </div>

@@ -6,7 +6,7 @@ export function OfflineBanner() {
   if (isOnline) return null;
 
   return (
-    <div className="sticky top-16 z-30 flex items-center justify-center gap-2 bg-orange-500 px-4 py-2 text-center text-sm font-bold text-white">
+    <div className="sticky top-16 z-40 flex items-center justify-center gap-2 bg-orange-500 px-4 py-2 text-center text-sm font-bold text-white sm:top-20">
       <WifiOff size={17} />
       Estas sin conexion. Algunas funciones estan limitadas.
     </div>
