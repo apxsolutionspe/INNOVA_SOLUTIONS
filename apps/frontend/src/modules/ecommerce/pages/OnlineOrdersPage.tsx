@@ -1,4 +1,4 @@
-import { ClipboardList, RefreshCw, ShoppingCart } from 'lucide-react';
+﻿import { ClipboardList, RefreshCw, ShoppingCart } from 'lucide-react';
 
 import { Button } from '../../../components/ui/Button';
 import { PageContainer } from '../../../components/layout/PageContainer';
@@ -9,7 +9,7 @@ import { OnlineOrdersTable } from '../components/OnlineOrdersTable';
 
 export function OnlineOrdersPage() {
   return (
-    <PageContainer title="Pedidos online" description="Gestion futura de pedidos recibidos desde tienda online.">
+    <PageContainer title="Pedidos online" description="Gestión futura de pedidos recibidos desde tienda online.">
       <ExecutiveHeader
         eyebrow="eCommerce"
         title="Pedidos online"
@@ -18,11 +18,12 @@ export function OnlineOrdersPage() {
       />
       <div className="grid gap-4 md:grid-cols-2">
         <ExecutiveKpiCard title="Flujo" value="Web" description="Pedidos desde canal online" icon={ShoppingCart} tone="violet" />
-        <ExecutiveKpiCard title="Gestion" value="Admin" description="Confirmacion y preparacion" icon={ClipboardList} tone="blue" />
+        <ExecutiveKpiCard title="Gestión" value="Admin" description="Confirmación y preparación" icon={ClipboardList} tone="blue" />
       </div>
-      <ExecutivePanel title="Listado de pedidos" description="Estados PENDING, CONFIRMED, PREPARING, DELIVERED o CANCELLED.">
+      <ExecutivePanel title="Listado de pedidos" description="Estados: pendiente, confirmado, en preparación, entregado o anulado.">
         <OnlineOrdersTable />
       </ExecutivePanel>
     </PageContainer>
   );
 }
+

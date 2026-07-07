@@ -45,6 +45,7 @@ export class ServiceOrdersRepository {
       customer: true,
       user: this.userSafeInclude(),
       items: { include: { product: true } },
+      photos: { orderBy: { createdAt: 'asc' } },
       logs: { include: { user: this.userSafeInclude() }, orderBy: { createdAt: 'desc' } },
     } satisfies Prisma.ServiceOrderInclude;
   }

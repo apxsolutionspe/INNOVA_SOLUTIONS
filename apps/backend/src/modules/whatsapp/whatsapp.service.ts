@@ -114,7 +114,7 @@ export class WhatsappService {
     const receipt = await this.resolveReceiptSummary(dto.type, dto.id);
     const phone = dto.phone ? this.normalizeWhatsappPhone(dto.phone) : '';
     const receiptUrl = this.buildPublicReceiptUrl(dto.type, receipt.id);
-    const message = this.buildReceiptLinkMessage(receipt, receiptUrl);
+    const message = this.buildReceiptLinkMessage(receipt, receiptUrl, dto.type);
     const whatsappUrl = phone ? buildWhatsAppReceiptUrl(phone, message) : '';
 
     await this.prisma.auditLog.create({
@@ -713,7 +713,21 @@ export class WhatsappService {
     return `http://localhost:${port}`;
   }
 
-  private buildReceiptLinkMessage(receipt: { code: string; customerName: string; total: number; createdAt: Date }, receiptUrl: string) {
+  private buildReceiptLinkMessage(receipt: { code: string; customerName: string; total: number; createdAt: Date }, receiptUrl: string, type: CreateReceiptLinkDto['type'] = 'SALE') {
+    if (type === 'SERVICE_ORDER') {
+      return [
+        `Hola ${receipt.customerName}, Innova Solutions registró tu orden técnica.`,
+        '',
+        'Puedes revisar tu constancia aquí:',
+        receiptUrl,
+        '',
+        `Código: ${receipt.code}`,
+        `Total estimado: S/ ${receipt.total.toFixed(2)}`,
+        '',
+        'Conserva esta constancia para recoger tu equipo.',
+      ].join('\n');
+    }
+
     return [
       `Hola ${receipt.customerName}, gracias por tu compra en Innova Solutions.`,
       '',
@@ -737,7 +751,7 @@ export class WhatsappService {
     userId: string,
     warning?: string,
   ) {
-    const text = this.buildReceiptLinkMessage(receipt, receiptUrl);
+    const text = this.buildReceiptLinkMessage(receipt, receiptUrl, type);
     const whatsappUrl = buildWhatsAppReceiptUrl(phone, text);
 
     return this.prisma.auditLog.create({

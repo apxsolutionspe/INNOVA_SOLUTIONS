@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+﻿import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Check, Clock3, FileText, Minus, Plus, Tag, X } from 'lucide-react';
 
@@ -57,7 +57,7 @@ export function QuickServiceDetailModal({ service, onClose, onAdd }: QuickServic
             <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
               <div className="flex items-center gap-2 text-sm font-black text-slate-950">
                 <FileText size={17} />
-                Descripcion
+                Descripción
               </div>
               <p className="mt-2 text-sm leading-6 text-slate-600">
                 {service.description || 'Servicio rapido configurable para operaciones de mostrador.'}
@@ -169,3 +169,4 @@ export function QuickServiceDetailModal({ service, onClose, onAdd }: QuickServic
     </div>
   );
 }
+

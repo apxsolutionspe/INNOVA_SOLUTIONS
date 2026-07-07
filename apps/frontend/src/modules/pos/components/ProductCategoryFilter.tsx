@@ -1,4 +1,4 @@
-import { Boxes } from 'lucide-react';
+﻿import { Boxes } from 'lucide-react';
 
 import { ProductCategory } from '../../inventory/types/inventory.types';
 
@@ -15,7 +15,7 @@ export function ProductCategoryFilter({ categories, selectedCategoryId, onChange
     <div className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
       <div className="mb-3 flex items-center gap-2 text-xs font-black uppercase text-slate-500">
         <Boxes size={15} />
-        Categorias
+        Categorías
       </div>
       <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <button
@@ -48,3 +48,4 @@ export function ProductCategoryFilter({ categories, selectedCategoryId, onChange
     </div>
   );
 }
+

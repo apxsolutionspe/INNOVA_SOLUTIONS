@@ -13,6 +13,36 @@ export class UpdateServiceOrderDto {
   @IsOptional()
   @IsString()
   @MaxLength(800)
+  initialDiagnosis?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(800)
+  receptionNotes?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  physicalCondition?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(300)
+  accessoriesReceived?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(60)
+  color?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(800)
   solutionApplied?: string;
 
   @ApiPropertyOptional()

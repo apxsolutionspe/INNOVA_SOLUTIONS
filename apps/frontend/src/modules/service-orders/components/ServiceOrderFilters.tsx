@@ -1,11 +1,11 @@
-import { RotateCcw, Search, X } from 'lucide-react';
+﻿import { RotateCcw, Search, X } from 'lucide-react';
 
 import { Button } from '../../../components/ui';
 import { ServiceOrderStatus } from '../types/service-order.types';
 
 const statuses: Array<{ value: ServiceOrderStatus; label: string }> = [
   { value: 'RECEIVED', label: 'Recibido' },
-  { value: 'DIAGNOSIS', label: 'En diagnostico' },
+  { value: 'DIAGNOSIS', label: 'En diagnóstico' },
   { value: 'IN_PROGRESS', label: 'En proceso' },
   { value: 'READY', label: 'Listo' },
   { value: 'DELIVERED', label: 'Entregado' },
@@ -29,7 +29,7 @@ export function ServiceOrderFilters({ search, status, onSearch, onStatus, onRefr
           <input
             value={search}
             onChange={(event) => onSearch(event.target.value)}
-            placeholder="Buscar por codigo, cliente, equipo, marca o serie"
+            placeholder="Buscar por código, cliente, equipo, marca o serie"
             className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-4 text-sm font-semibold text-slate-800 outline-none transition focus:border-brand-blue focus:bg-white focus:ring-4 focus:ring-blue-100"
           />
         </label>
@@ -49,3 +49,5 @@ export function ServiceOrderFilters({ search, status, onSearch, onStatus, onRefr
     </section>
   );
 }
+
+

@@ -30,6 +30,25 @@ export interface ServiceOrderLog {
   user: AuthUser;
 }
 
+export interface ServiceOrderPhoto {
+  id: string;
+  serviceOrderId: string;
+  imageData: string;
+  fileName?: string | null;
+  mimeType: string;
+  sizeBytes?: number | null;
+  note?: string | null;
+  createdAt: string;
+}
+
+export interface ServiceOrderPhotoPayload {
+  imageData: string;
+  fileName?: string;
+  mimeType: string;
+  sizeBytes?: number;
+  note?: string;
+}
+
 export interface ServiceOrder {
   id: string;
   code: string;
@@ -40,7 +59,12 @@ export interface ServiceOrder {
   brand?: string | null;
   model?: string | null;
   serialNumber?: string | null;
+  color?: string | null;
+  physicalCondition?: string | null;
+  accessoriesReceived?: string | null;
   reportedIssue: string;
+  initialDiagnosis?: string | null;
+  receptionNotes?: string | null;
   technicalDiagnosis?: string | null;
   solutionApplied?: string | null;
   status: ServiceOrderStatus;
@@ -53,6 +77,7 @@ export interface ServiceOrder {
   total: number;
   notes?: string | null;
   items: ServiceOrderItem[];
+  photos: ServiceOrderPhoto[];
   logs: ServiceOrderLog[];
 }
 
@@ -67,7 +92,13 @@ export interface CreateServiceOrderPayload {
   brand?: string;
   model?: string;
   serialNumber?: string;
+  color?: string;
+  physicalCondition?: string;
+  accessoriesReceived?: string;
   reportedIssue: string;
+  initialDiagnosis?: string;
+  receptionNotes?: string;
   estimatedDeliveryDate?: string;
   notes?: string;
+  photos?: ServiceOrderPhotoPayload[];
 }

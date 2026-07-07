@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { MessageCircle, Send, TestTube2 } from 'lucide-react';
 
 import { Button } from '../../../components/ui/Button';
@@ -37,18 +37,18 @@ export function WhatsappPage() {
       <ExecutiveHeader
         eyebrow="Comunicacion externa"
         title="WhatsApp Cloud API"
-        description="Plantillas, historial y pruebas de envio desde backend. Los tokens no se exponen al frontend."
+        description="Plantillas, historial y pruebas de envío desde backend. Los tokens no se exponen al frontend."
         actions={
           <>
             <ModeBadge label="MOCK / REAL" tone="mock" />
-            <Button type="button" onClick={() => void test()} disabled={loading}><TestTube2 size={17} /> Probar conexion</Button>
+            <Button type="button" onClick={() => void test()} disabled={loading}><TestTube2 size={17} /> Probar conexión</Button>
           </>
         }
       />
       {error ? <ErrorState message={error} /> : null}
       {message ? <div className="rounded-lg border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-700">{message}</div> : null}
       <div className="grid gap-4 md:grid-cols-3">
-        <ExecutiveKpiCard title="Modo" value="Mock seguro" description="Sin envio real si no hay token" icon={MessageCircle} tone="violet" />
+        <ExecutiveKpiCard title="Modo" value="Prueba segura" description="Sin envío real si no hay token" icon={MessageCircle} tone="violet" />
         <ExecutiveKpiCard title="Plantillas" value="4" description="Ventas, ordenes y avisos" icon={Send} tone="blue" />
         <ExecutiveKpiCard title="Seguridad" value="Backend" description="Token protegido" icon={TestTube2} tone="green" />
       </div>
@@ -56,7 +56,7 @@ export function WhatsappPage() {
         <ExecutivePanel title="Plantillas disponibles" description="Mensajes preparados para operaciones frecuentes.">
           <WhatsappTemplateList />
         </ExecutivePanel>
-        <ExecutivePanel title="Vista previa" description="Contenido de ejemplo antes del envio.">
+        <ExecutivePanel title="Vista previa" description="Contenido de ejemplo antes del envío.">
           <WhatsappMessagePreview />
         </ExecutivePanel>
       </div>
@@ -66,3 +66,4 @@ export function WhatsappPage() {
     </PageContainer>
   );
 }
+

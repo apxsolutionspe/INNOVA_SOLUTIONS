@@ -2,9 +2,9 @@ import { ServiceOrderStatus } from '../types/service-order.types';
 
 export const serviceOrderStatusLabels: Record<ServiceOrderStatus, string> = {
   RECEIVED: 'Recibido',
-  DIAGNOSIS: 'En diagnostico',
-  IN_PROGRESS: 'En proceso',
-  READY: 'Listo',
+  DIAGNOSIS: 'En diagnóstico',
+  IN_PROGRESS: 'En reparación',
+  READY: 'Listo para entrega',
   DELIVERED: 'Entregado',
   CANCELLED: 'Cancelado',
 };

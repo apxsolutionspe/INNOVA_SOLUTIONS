@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+﻿import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { inventoryService } from '../services/inventory.service';
 import { AdjustStockPayload, Product, ProductCategory, ProductPayload } from '../types/inventory.types';
@@ -98,7 +98,7 @@ export function useInventory() {
 
   const createCategory = async (payload: { name: string; description?: string }) => {
     await inventoryService.createCategory(payload);
-    setMessage('Categoria creada correctamente.');
+    setMessage('Categoría creada correctamente.');
     await loadInventory();
   };
 
@@ -128,3 +128,4 @@ export function useInventory() {
     adjustStock,
   };
 }
+

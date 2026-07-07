@@ -6,6 +6,7 @@ import { Roles } from '../../common/decorators/roles.decorator';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { AuthenticatedUser } from '../auth/types/authenticated-user.type';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { AddServiceOrderPhotosDto } from './dto/add-service-order-photos.dto';
 import { AddServiceOrderItemDto } from './dto/add-service-order-item.dto';
 import { ChangeStatusDto } from './dto/change-status.dto';
 import { CreateServiceOrderDto } from './dto/create-service-order.dto';
@@ -63,6 +64,26 @@ export class ServiceOrdersController {
   @Get(':id/receipt')
   receipt(@Param('id') id: string) {
     return this.serviceOrdersService.receipt(id);
+  }
+
+  @Get(':id/ticket')
+  ticket(@Param('id') id: string) {
+    return this.serviceOrdersService.ticket(id);
+  }
+
+  @Post(':id/photos')
+  addPhotos(@Param('id') id: string, @Body() dto: AddServiceOrderPhotosDto, @CurrentUser() user: AuthenticatedUser) {
+    return this.serviceOrdersService.addPhotos(id, dto, user);
+  }
+
+  @Delete(':id/photos/:photoId')
+  deletePhoto(@Param('id') id: string, @Param('photoId') photoId: string, @CurrentUser() user: AuthenticatedUser) {
+    return this.serviceOrdersService.deletePhoto(id, photoId, user);
+  }
+
+  @Post(':id/send-whatsapp')
+  sendWhatsApp(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
+    return this.serviceOrdersService.sendWhatsApp(id, user);
   }
 
   @Post(':id/deliver')

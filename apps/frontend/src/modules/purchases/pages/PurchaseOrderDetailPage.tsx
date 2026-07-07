@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Printer, RotateCcw, XCircle } from 'lucide-react';
 
 import { PageContainer } from '../../../components/layout/PageContainer';
+import { formatPaymentMethod, formatStatusLabel } from '../../../utils/display-formatters';
 import { CancelPurchaseModal } from '../components/CancelPurchaseModal';
 import { PurchaseOrderItemsTable } from '../components/PurchaseOrderItemsTable';
 import { PurchaseReceiptModal } from '../components/PurchaseReceiptModal';
@@ -39,13 +40,13 @@ export function PurchaseOrderDetailPage() {
   }
 
   if (!purchase) {
-    return <PageContainer title="Detalle de compra" description="Cargando informacion...">{error ? <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-700">{error}</div> : null}</PageContainer>;
+    return <PageContainer title="Detalle de compra" description="Cargando información...">{error ? <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-700">{error}</div> : null}</PageContainer>;
   }
 
   const canManage = purchase.status !== 'RECEIVED' && purchase.status !== 'CANCELLED';
 
   return (
-    <PageContainer title={`Compra ${purchase.code}`} description="Detalle, recepcion, comprobante y movimientos asociados.">
+    <PageContainer title={`Compra ${purchase.code}`} description="Detalle, recepción, comprobante y movimientos asociados.">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <Link to="/purchases" className="inline-flex items-center gap-2 rounded-lg bg-slate-100 px-3 py-2 text-sm font-bold text-slate-700"><ArrowLeft size={17} /> Volver</Link>
         <div className="flex flex-wrap gap-2">
@@ -61,7 +62,7 @@ export function PurchaseOrderDetailPage() {
         <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm lg:col-span-2">
           <p className="text-xs font-bold uppercase text-slate-400">Proveedor</p>
           <h2 className="mt-2 text-2xl font-bold text-slate-950">{purchase.supplier.name}</h2>
-          <p className="mt-1 text-sm text-slate-500">{purchase.supplier.ruc || 'Sin RUC'} | {purchase.supplier.phone || 'Sin telefono'}</p>
+          <p className="mt-1 text-sm text-slate-500">{purchase.supplier.ruc || 'Sin RUC'} | {purchase.supplier.phone || 'Sin teléfono'}</p>
         </div>
         <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
           <p className="text-xs font-bold uppercase text-slate-400">Estado</p>
@@ -76,9 +77,9 @@ export function PurchaseOrderDetailPage() {
       <PurchaseOrderItemsTable items={purchase.items} />
 
       <section className="grid gap-4 md:grid-cols-3">
-        <div className="rounded-lg border border-slate-200 bg-white p-4"><p className="text-xs font-bold uppercase text-slate-400">Pago</p><p className="mt-2 font-bold text-slate-900">{purchase.paymentStatus} {purchase.paymentMethod ? `- ${purchase.paymentMethod}` : ''}</p></div>
+        <div className="rounded-lg border border-slate-200 bg-white p-4"><p className="text-xs font-bold uppercase text-slate-400">Pago</p><p className="mt-2 font-bold text-slate-900">{formatStatusLabel(purchase.paymentStatus)} {purchase.paymentMethod ? `- ${formatPaymentMethod(purchase.paymentMethod)}` : ''}</p></div>
         <div className="rounded-lg border border-slate-200 bg-white p-4"><p className="text-xs font-bold uppercase text-slate-400">Responsable</p><p className="mt-2 font-bold text-slate-900">{purchase.user.fullName}</p></div>
-        <div className="rounded-lg border border-slate-200 bg-white p-4"><p className="text-xs font-bold uppercase text-slate-400">Recepcion</p><p className="mt-2 font-bold text-slate-900">{purchase.receivedAt ? new Date(purchase.receivedAt).toLocaleDateString() : 'Pendiente'}</p></div>
+        <div className="rounded-lg border border-slate-200 bg-white p-4"><p className="text-xs font-bold uppercase text-slate-400">Recepción</p><p className="mt-2 font-bold text-slate-900">{purchase.receivedAt ? new Date(purchase.receivedAt).toLocaleDateString() : 'Pendiente'}</p></div>
       </section>
 
       {isReceiveOpen ? <ReceivePurchaseModal purchase={purchase} onClose={() => setIsReceiveOpen(false)} onSubmit={async (items, notes) => { setPurchase(await purchasesService.receive(purchase.id, { items, notes })); setIsReceiveOpen(false); }} /> : null}

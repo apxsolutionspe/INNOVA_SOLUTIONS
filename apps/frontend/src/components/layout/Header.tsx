@@ -1,4 +1,4 @@
-import { BriefcaseBusiness, ChevronDown, LogOut, Menu, PanelLeftOpen } from 'lucide-react';
+﻿import { BriefcaseBusiness, ChevronDown, LogOut, Menu, PanelLeftOpen } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -17,7 +17,7 @@ const routeTitles: Array<{ path: string; title: string }> = [
   { path: '/dashboard', title: 'Inicio' },
   { path: '/pos', title: 'POS' },
   { path: '/sales', title: 'Historial de ventas' },
-  { path: '/quick-services', title: 'Servicios rápidos' },
+  { path: '/quick-services', title: 'Servicios r?pidos' },
   { path: '/quick-service-sales', title: 'Historial Servicios' },
   { path: '/payments', title: 'Pagos Online' },
   { path: '/customers', title: 'Clientes' },
@@ -28,10 +28,10 @@ const routeTitles: Array<{ path: string; title: string }> = [
   { path: '/suppliers', title: 'Proveedores' },
   { path: '/reports', title: 'Reportes' },
   { path: '/profitability', title: 'Rentabilidad' },
-  { path: '/ai-analytics', title: 'IA Analytics' },
+  { path: '/ai-analytics', title: 'Analítica IA' },
   { path: '/users', title: 'Usuarios' },
-  { path: '/audit', title: 'Auditoría' },
-  { path: '/settings', title: 'Configuración' },
+  { path: '/audit', title: 'Auditor?a' },
+  { path: '/settings', title: 'Configuraci?n' },
   { path: '/integrations', title: 'Integraciones' },
   { path: '/sunat', title: 'SUNAT' },
   { path: '/whatsapp', title: 'WhatsApp' },
@@ -83,14 +83,14 @@ export function Header({ onMenuClick, onToggleSidebar, isMenuOpen = false }: Hea
           <button
             type="button"
             onClick={onToggleSidebar ?? onMenuClick}
-            aria-label={isMenuOpen ? 'Cerrar menú lateral' : 'Abrir menú lateral'}
+            aria-label={isMenuOpen ? 'Cerrar men? lateral' : 'Abrir men? lateral'}
             aria-expanded={isMenuOpen}
             className={`group grid h-11 w-11 shrink-0 place-items-center rounded-2xl border shadow-sm transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-cyan-100 ${
               isMenuOpen
                 ? 'border-cyan-200 bg-gradient-to-br from-blue-50 via-cyan-50 to-violet-50 text-brand-blue shadow-cyan-100'
                 : 'border-slate-200/80 bg-white/95 text-slate-700 hover:-translate-y-0.5 hover:border-brand-cyan hover:bg-cyan-50/70 hover:text-brand-blue hover:shadow-cyan-100/70'
             }`}
-            title={isMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
+            title={isMenuOpen ? 'Cerrar men?' : 'Abrir men?'}
           >
             {isMenuOpen ? <PanelLeftOpen size={20} className="transition group-hover:scale-105" /> : <Menu size={20} className="transition group-hover:scale-105" />}
           </button>
@@ -107,9 +107,9 @@ export function Header({ onMenuClick, onToggleSidebar, isMenuOpen = false }: Hea
               </span>
             </div>
             <div className="mt-0.5 flex min-w-0 items-center gap-1.5">
-              <p className="truncate text-xs font-semibold text-slate-500 sm:text-[13px]">Manager Suite</p>
+              <p className="truncate text-xs font-semibold text-slate-500 sm:text-[13px]">Suite de Gestión</p>
               <span className="hidden h-1 w-1 rounded-full bg-slate-300 sm:block" />
-              <p className="hidden truncate text-xs font-semibold text-slate-500 sm:block">Sistema Integral de Gestion</p>
+              <p className="hidden truncate text-xs font-semibold text-slate-500 sm:block">Sistema Integral de Gestión</p>
             </div>
             <p className="mt-1 truncate text-[11px] font-black uppercase tracking-wide text-brand-blue sm:hidden">
               {moduleTitle}
@@ -157,7 +157,7 @@ export function Header({ onMenuClick, onToggleSidebar, isMenuOpen = false }: Hea
             className="group inline-flex h-11 w-11 items-center justify-center gap-2 rounded-2xl border border-slate-200/80 bg-white/85 px-0 text-sm font-bold text-slate-700 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-red-200 hover:bg-red-50 hover:text-red-600 hover:shadow-red-100/70 focus:outline-none focus:ring-4 focus:ring-red-100 sm:w-auto sm:px-3"
           >
             <LogOut size={18} className="transition group-hover:translate-x-0.5" />
-            <span className="hidden sm:inline">Cerrar sesión</span>
+            <span className="hidden sm:inline">Cerrar sesi?n</span>
           </button>
         </div>
       </div>
@@ -166,3 +166,4 @@ export function Header({ onMenuClick, onToggleSidebar, isMenuOpen = false }: Hea
     </header>
   );
 }
+

@@ -24,7 +24,7 @@ export function DashboardHeader({ isLoading, onRefresh }: DashboardHeaderProps) 
         <div className="relative flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
           <div className="min-w-0">
             <p className="text-xs font-bold uppercase tracking-wide text-brand-blue">{currentDate}</p>
-            <h1 className="mt-2 text-2xl font-black text-slate-950 sm:text-3xl">Dashboard</h1>
+            <h1 className="mt-2 text-2xl font-black text-slate-950 sm:text-3xl">Panel principal</h1>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
               Resumen general del negocio en tiempo real.
               {user?.fullName ? <span className="font-semibold text-slate-800"> Bienvenido, {user.fullName}.</span> : null}
@@ -47,7 +47,7 @@ export function DashboardHeader({ isLoading, onRefresh }: DashboardHeaderProps) 
             </Link>
             <Link to="/ai-analytics" className="inline-flex h-10 items-center gap-2 rounded-lg bg-slate-950 px-3 text-sm font-bold text-white transition hover:bg-slate-800">
               <Brain size={17} />
-              IA Analytics
+              IA empresarial
             </Link>
           </div>
         </div>

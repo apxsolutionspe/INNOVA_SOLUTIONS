@@ -1,4 +1,5 @@
 import { TableShell } from '../../../components/ui';
+import { formatPaymentMethod, formatStatusLabel } from '../../../utils/display-formatters';
 import { QuickServiceSale } from '../types/quick-service.types';
 
 export function QuickServiceSalesTable({ sales, onReceipt, onCancel }: { sales: QuickServiceSale[]; onReceipt: (sale: QuickServiceSale) => void; onCancel: (sale: QuickServiceSale) => void }) {
@@ -22,9 +23,9 @@ export function QuickServiceSalesTable({ sales, onReceipt, onCancel }: { sales: 
                 <td className="px-4 py-3 font-bold">{sale.code}</td>
                 <td className="px-4 py-3">{sale.customer?.fullName ?? 'Cliente general'}</td>
                 <td className="px-4 py-3 font-bold">S/ {sale.total.toFixed(2)}</td>
-                <td className="px-4 py-3">{sale.paymentMethod}</td>
+                <td className="px-4 py-3">{formatPaymentMethod(sale.paymentMethod)}</td>
                 <td className="px-4 py-3">
-                  <span className={sale.status === 'COMPLETED' ? 'font-bold text-emerald-700' : 'font-bold text-red-600'}>{sale.status}</span>
+                  <span className={sale.status === 'COMPLETED' ? 'font-bold text-emerald-700' : 'font-bold text-red-600'}>{formatStatusLabel(sale.status)}</span>
                 </td>
                 <td className="px-4 py-3 text-right">
                   <button onClick={() => onReceipt(sale)} className="mr-2 rounded-lg border px-3 py-1">Comprobante</button>

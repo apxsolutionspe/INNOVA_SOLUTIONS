@@ -1,4 +1,4 @@
-import { Package, ShoppingCart, Store } from 'lucide-react';
+﻿import { Package, ShoppingCart, Store } from 'lucide-react';
 
 import { PageContainer } from '../../../components/layout/PageContainer';
 import { ExecutiveHeader } from '../../business-intelligence/components/ExecutiveHeader';
@@ -10,7 +10,7 @@ import { OnlineOrderForm } from '../components/OnlineOrderForm';
 
 export function EcommercePage() {
   return (
-    <PageContainer title="eCommerce" description="Base para catalogo online y pedidos web conectados al inventario.">
+    <PageContainer title="eCommerce" description="Base para catálogo online y pedidos web conectados al inventario.">
       <ExecutiveHeader
         eyebrow="Canal digital"
         title="eCommerce interno"
@@ -31,3 +31,4 @@ export function EcommercePage() {
     </PageContainer>
   );
 }
+

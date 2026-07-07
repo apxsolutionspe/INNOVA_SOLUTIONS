@@ -1,4 +1,4 @@
-import { FormEvent, useState } from 'react';
+﻿import { FormEvent, useState } from 'react';
 import { Loader2, PlusCircle } from 'lucide-react';
 
 import { cashService } from '../services/cash.service';
@@ -78,7 +78,7 @@ export function CashMovementForm({ onDone }: { onDone: () => void }) {
           </select>
         </label>
         <label className="block">
-          <span className="text-xs font-black uppercase text-slate-500">Método</span>
+          <span className="text-xs font-black uppercase text-slate-500">M?todo</span>
           <select value={paymentMethod} onChange={(event) => setPaymentMethod(event.target.value as PaymentMethod)} className="mt-1 h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm font-semibold outline-none focus:border-brand-cyan focus:bg-white focus:ring-4 focus:ring-cyan-100">
             <option value="CASH">Efectivo</option>
             <option value="YAPE">Yape</option>
@@ -96,7 +96,7 @@ export function CashMovementForm({ onDone }: { onDone: () => void }) {
         </label>
         <label className="block lg:col-span-2">
           <span className="text-xs font-black uppercase text-slate-500">Referencia</span>
-          <input value={reference} onChange={(event) => setReference(event.target.value)} placeholder="Operacion, voucher o codigo" className="mt-1 h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm font-semibold outline-none focus:border-brand-cyan focus:bg-white focus:ring-4 focus:ring-cyan-100" />
+          <input value={reference} onChange={(event) => setReference(event.target.value)} placeholder="Operación, voucher o código" className="mt-1 h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm font-semibold outline-none focus:border-brand-cyan focus:bg-white focus:ring-4 focus:ring-cyan-100" />
         </label>
         <label className="block lg:col-span-3">
           <span className="text-xs font-black uppercase text-slate-500">Observacion</span>
@@ -109,3 +109,4 @@ export function CashMovementForm({ onDone }: { onDone: () => void }) {
     </form>
   );
 }
+

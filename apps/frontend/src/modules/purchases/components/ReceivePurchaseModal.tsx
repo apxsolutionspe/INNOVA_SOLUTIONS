@@ -1,4 +1,4 @@
-import { FormEvent, useState } from 'react';
+﻿import { FormEvent, useState } from 'react';
 
 import { PurchaseOrder } from '../types/purchase.types';
 
@@ -35,9 +35,10 @@ export function ReceivePurchaseModal({ purchase, onSubmit, onClose }: Props) {
             </label>
           ))}
         </div>
-        <textarea value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="Notas de recepcion" className="mt-4 min-h-20 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-blue" />
-        <button disabled={isSaving} type="submit" className="mt-5 h-11 w-full rounded-lg bg-brand-success text-sm font-bold text-white disabled:opacity-60">{isSaving ? 'Recibiendo...' : 'Confirmar recepcion'}</button>
+        <textarea value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="Notas de recepción" className="mt-4 min-h-20 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-blue" />
+        <button disabled={isSaving} type="submit" className="mt-5 h-11 w-full rounded-lg bg-brand-success text-sm font-bold text-white disabled:opacity-60">{isSaving ? 'Recibiendo...' : 'Confirmar recepción'}</button>
       </form>
     </div>
   );
 }
+

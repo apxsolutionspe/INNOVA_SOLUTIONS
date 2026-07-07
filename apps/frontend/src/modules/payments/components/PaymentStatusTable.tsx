@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { formatStatusLabel } from '../../../utils/display-formatters';
 import { PaymentTransaction, paymentsService } from '../services/payments.service';
 
 export function PaymentStatusTable() {
@@ -15,9 +16,9 @@ export function PaymentStatusTable() {
           {items.length ? items.map((item) => (
             <tr key={item.id} className="border-b">
               <td className="px-4 py-3 font-bold">{item.provider}</td>
-              <td className="px-4 py-3">{item.status}</td>
+              <td className="px-4 py-3">{formatStatusLabel(item.status)}</td>
               <td className="px-4 py-3">{item.currency} {Number(item.amount).toFixed(2)}</td>
-              <td className="px-4 py-3 truncate">{item.paymentLink ?? 'Sin link'}</td>
+              <td className="px-4 py-3 truncate">{item.paymentLink ?? 'Sin enlace'}</td>
             </tr>
           )) : <tr><td className="px-4 py-6 text-slate-500">No hay transacciones registradas.</td></tr>}
         </tbody>

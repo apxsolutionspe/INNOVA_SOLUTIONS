@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useState } from 'react';
+﻿import { FormEvent, useEffect, useState } from 'react';
 import { Building2, CheckCircle2, Search, UserRound } from 'lucide-react';
 
 import { Button, FormGrid, Input, Modal, Select, Textarea } from '../../../components/ui';
@@ -35,8 +35,8 @@ const normalizeLookupMessage = (message: string | undefined, fallback: string) =
   if (!message) return fallback;
   const normalized = message.toLowerCase();
 
-  if (normalized.includes('timeout') || normalized.includes('respondio a tiempo') || normalized.includes('respondió a tiempo') || normalized.includes('no respondio') || normalized.includes('no respondió')) {
-    return 'Json.pe no respondió dentro del tiempo esperado. Intenta nuevamente.';
+  if (normalized.includes('timeout') || normalized.includes('respondio a tiempo') || normalized.includes('respondi? a tiempo') || normalized.includes('no respondio') || normalized.includes('no respondi?')) {
+    return 'Json.pe no respondi? dentro del tiempo esperado. Intenta nuevamente.';
   }
 
   return message;
@@ -104,7 +104,7 @@ export function CustomerForm({ customer, onSubmit, onClose }: CustomerFormProps)
 
     if (isCompany && !canLookupRuc) {
       setLookupStatus('error');
-      setLookupMessage('El RUC debe tener exactamente 11 dígitos numéricos.');
+      setLookupMessage('El RUC debe tener exactamente 11 d?gitos num?ricos.');
       return;
     }
 
@@ -116,7 +116,7 @@ export function CustomerForm({ customer, onSubmit, onClose }: CustomerFormProps)
 
     if (!isCompany && !canLookupDni) {
       setLookupStatus('error');
-      setLookupMessage('El DNI debe tener exactamente 8 dígitos numéricos.');
+      setLookupMessage('El DNI debe tener exactamente 8 d?gitos num?ricos.');
       return;
     }
 
@@ -126,7 +126,7 @@ export function CustomerForm({ customer, onSubmit, onClose }: CustomerFormProps)
         const result = await documentLookupService.lookupRuc(documentNumber);
         if (!result.success || !result.data) {
           setLookupStatus(result.message?.toLowerCase().includes('configur') ? 'error' : 'warning');
-          setLookupMessage(normalizeLookupMessage(result.message, 'No se encontró información para el documento consultado.'));
+          setLookupMessage(normalizeLookupMessage(result.message, 'No se encontr? informaci?n para el documento consultado.'));
           return;
         }
 
@@ -149,7 +149,7 @@ export function CustomerForm({ customer, onSubmit, onClose }: CustomerFormProps)
       const result = await documentLookupService.lookupDni(documentNumber);
       if (!result.success || !result.data) {
         setLookupStatus(result.message?.toLowerCase().includes('configur') ? 'error' : 'warning');
-        setLookupMessage(normalizeLookupMessage(result.message, 'No se encontró información para el documento consultado.'));
+        setLookupMessage(normalizeLookupMessage(result.message, 'No se encontr? informaci?n para el documento consultado.'));
         return;
       }
 
@@ -209,12 +209,12 @@ export function CustomerForm({ customer, onSubmit, onClose }: CustomerFormProps)
   );
 
   const dniInlineMessage = !isCompany && form.documentType === 'DNI' && documentNumber.length > 0 && !canLookupDni
-    ? 'El DNI debe tener exactamente 8 dígitos numéricos.'
+    ? 'El DNI debe tener exactamente 8 d?gitos num?ricos.'
     : '';
 
   const validate = () => {
     if (isCompany) {
-      if (!form.documentNumber.trim() || form.documentNumber.trim().length !== 11) return 'El RUC debe tener exactamente 11 dígitos numéricos.';
+      if (!form.documentNumber.trim() || form.documentNumber.trim().length !== 11) return 'El RUC debe tener exactamente 11 d?gitos num?ricos.';
       if (!form.businessName?.trim()) return 'La razon social es obligatoria.';
       return '';
     }
@@ -245,7 +245,7 @@ export function CustomerForm({ customer, onSubmit, onClose }: CustomerFormProps)
   return (
     <Modal
       title={customer ? 'Editar cliente' : 'Nuevo cliente'}
-      description="Registra personas naturales o empresas para ventas, servicios y facturacion."
+      description="Registra personas naturales o empresas para ventas, servicios y facturación."
       size="lg"
       onClose={onClose}
       footer={(
@@ -301,9 +301,9 @@ export function CustomerForm({ customer, onSubmit, onClose }: CustomerFormProps)
               <Input required label="Razon social" value={form.businessName ?? ''} onChange={(event) => update('businessName', event.target.value)} containerClassName="sm:col-span-2" />
               <Input label="Nombre comercial" value={form.tradeName ?? ''} onChange={(event) => update('tradeName', event.target.value)} />
               <Input label="Representante legal" value={form.legalRepresentative ?? ''} onChange={(event) => update('legalRepresentative', event.target.value)} />
-              <Input label="Telefono / WhatsApp" value={form.phone ?? ''} onChange={(event) => update('phone', event.target.value)} />
+              <Input label="Teléfono / WhatsApp" value={form.phone ?? ''} onChange={(event) => update('phone', event.target.value)} />
               <Input type="email" label="Correo empresarial" value={form.email ?? ''} onChange={(event) => update('email', event.target.value)} />
-              <Input label="Direccion fiscal" value={form.address ?? ''} onChange={(event) => update('address', event.target.value)} />
+              <Input label="Dirección fiscal" value={form.address ?? ''} onChange={(event) => update('address', event.target.value)} />
               <Input label="Rubro" value={form.businessLine ?? ''} onChange={(event) => update('businessLine', event.target.value)} />
             </>
           ) : (
@@ -312,18 +312,18 @@ export function CustomerForm({ customer, onSubmit, onClose }: CustomerFormProps)
                 {naturalDocumentTypes.map((type) => <option key={type}>{type}</option>)}
               </Select>
               <div className="block">
-                <span className="mb-1.5 block text-xs font-bold text-slate-600">Numero de documento</span>
+                <span className="mb-1.5 block text-xs font-bold text-slate-600">Número de documento</span>
                 <div className="flex gap-2">
-                  <Input required aria-label="Numero de documento" maxLength={form.documentType === 'DNI' ? 8 : undefined} value={form.documentNumber} onChange={(event) => update('documentNumber', form.documentType === 'DNI' ? event.target.value.replace(/\D/g, '') : event.target.value)} containerClassName="min-w-0 flex-1" />
+                  <Input required aria-label="Número de documento" maxLength={form.documentType === 'DNI' ? 8 : undefined} value={form.documentNumber} onChange={(event) => update('documentNumber', form.documentType === 'DNI' ? event.target.value.replace(/\D/g, '') : event.target.value)} containerClassName="min-w-0 flex-1" />
                   {form.documentType === 'DNI' ? lookupButton : null}
                 </div>
                 {dniInlineMessage ? <p className="mt-1.5 text-xs font-semibold text-amber-600">{dniInlineMessage}</p> : null}
               </div>
               <Input required label="Nombres" value={form.firstName ?? ''} onChange={(event) => update('firstName', event.target.value)} />
               <Input label="Apellidos" value={form.lastName ?? ''} onChange={(event) => update('lastName', event.target.value)} />
-              <Input label="Telefono / WhatsApp" value={form.phone ?? ''} onChange={(event) => update('phone', event.target.value)} />
+              <Input label="Teléfono / WhatsApp" value={form.phone ?? ''} onChange={(event) => update('phone', event.target.value)} />
               <Input type="email" label="Correo" value={form.email ?? ''} onChange={(event) => update('email', event.target.value)} />
-              <Input label="Direccion" value={form.address ?? ''} onChange={(event) => update('address', event.target.value)} />
+              <Input label="Dirección" value={form.address ?? ''} onChange={(event) => update('address', event.target.value)} />
               <Select label="Estado" value={form.isActive ? 'active' : 'inactive'} onChange={(event) => update('isActive', event.target.value === 'active')}>
                 <option value="active">Activo</option>
                 <option value="inactive">Inactivo</option>
@@ -336,3 +336,4 @@ export function CustomerForm({ customer, onSubmit, onClose }: CustomerFormProps)
     </Modal>
   );
 }
+

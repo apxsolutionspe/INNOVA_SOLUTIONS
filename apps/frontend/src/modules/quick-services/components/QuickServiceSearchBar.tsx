@@ -1,4 +1,4 @@
-import { Search } from 'lucide-react';
+﻿import { Search } from 'lucide-react';
 
 interface QuickServiceSearchBarProps {
   search: string;
@@ -20,8 +20,9 @@ export function QuickServiceSearchBar({ search, resultCount, onChange }: QuickSe
       </label>
       <div className="mt-3 flex items-center justify-between text-xs font-bold text-slate-500">
         <span>{resultCount} servicios disponibles</span>
-        <span className="rounded-full bg-violet-50 px-2.5 py-1 text-brand-violet">Operacion rapida</span>
+        <span className="rounded-full bg-violet-50 px-2.5 py-1 text-brand-violet">Operación rápida</span>
       </div>
     </div>
   );
 }
+

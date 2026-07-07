@@ -1,5 +1,6 @@
 import { Sale } from '../types/sale.types';
 import { Button, DataTable, StatusBadge, TableActions } from '../../../components/ui';
+import { formatPaymentMethod, formatStatusLabel } from '../../../utils/display-formatters';
 
 interface SalesTableProps {
   sales: Sale[];
@@ -9,14 +10,6 @@ interface SalesTableProps {
   onReceipt: (sale: Sale) => void;
   canCancel: boolean;
 }
-
-const paymentLabels: Record<string, string> = {
-  CASH: 'Efectivo',
-  YAPE: 'Yape',
-  PLIN: 'Plin',
-  TRANSFER: 'Transferencia',
-  MIXED: 'Mixto',
-};
 
 function formatMoney(value: number) {
   return `S/ ${Number(value || 0).toFixed(2)}`;
@@ -29,7 +22,7 @@ function getPaidAmount(sale: Sale) {
 function getPaymentMethods(sale: Sale) {
   const methods = Array.from(new Set(sale.payments.map((payment) => payment.method)));
   if (!methods.length) return 'Sin pago';
-  return methods.map((method) => paymentLabels[method] ?? method).join(' / ');
+  return methods.map(formatPaymentMethod).join(' / ');
 }
 
 export function SalesTable({ sales, isLoading, onDetail, onCancel, onReceipt, canCancel }: SalesTableProps) {
@@ -67,7 +60,7 @@ export function SalesTable({ sales, isLoading, onDetail, onCancel, onReceipt, ca
           cell: (sale) => (
             <div>
               <span className="font-bold text-slate-800">{getPaymentMethods(sale)}</span>
-              <p className="mt-0.5 text-xs text-slate-400">{sale.paymentStatus}</p>
+              <p className="mt-0.5 text-xs text-slate-400">{formatStatusLabel(sale.paymentStatus)}</p>
             </div>
           ),
         },

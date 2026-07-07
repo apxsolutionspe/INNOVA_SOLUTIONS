@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { Eye, ReceiptText, Search, XCircle } from 'lucide-react';
 
 import { TableShell } from '../../../components/ui';
+import { formatPaymentMethod, formatStatusLabel } from '../../../utils/display-formatters';
 import { PaymentMethod, QuickServiceSale, QuickServiceSaleStatus } from '../types/quick-service.types';
 import { QuickServiceEmptyState } from './QuickServiceEmptyState';
 
@@ -42,24 +43,24 @@ export function QuickServiceSalesHistory({ sales, isAdmin, onReceipt, onCancel }
             <input
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              placeholder="Buscar por codigo, cliente o servicio"
+              placeholder="Buscar por código, cliente o servicio"
               className="h-11 w-full rounded-lg border border-slate-200 bg-slate-50 pl-10 pr-3 text-sm font-semibold outline-none focus:border-brand-cyan focus:bg-white focus:ring-4 focus:ring-cyan-100"
             />
           </label>
           <input type="date" value={date} onChange={(event) => setDate(event.target.value)} className="h-11 rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm font-semibold outline-none focus:border-brand-cyan focus:bg-white focus:ring-4 focus:ring-cyan-100" />
           <select value={paymentMethod} onChange={(event) => setPaymentMethod(event.target.value)} className="h-11 rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm font-semibold outline-none focus:border-brand-cyan focus:bg-white focus:ring-4 focus:ring-cyan-100">
             <option value="">Todos los pagos</option>
-            {(['CASH', 'YAPE', 'PLIN', 'TRANSFER'] as PaymentMethod[]).map((method) => <option key={method}>{method}</option>)}
+            {(['CASH', 'YAPE', 'PLIN', 'TRANSFER'] as PaymentMethod[]).map((method) => <option key={method} value={method}>{formatPaymentMethod(method)}</option>)}
           </select>
           <select value={status} onChange={(event) => setStatus(event.target.value)} className="h-11 rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm font-semibold outline-none focus:border-brand-cyan focus:bg-white focus:ring-4 focus:ring-cyan-100">
             <option value="">Todos los estados</option>
-            {(['COMPLETED', 'CANCELLED'] as QuickServiceSaleStatus[]).map((item) => <option key={item}>{item}</option>)}
+            {(['COMPLETED', 'CANCELLED'] as QuickServiceSaleStatus[]).map((item) => <option key={item} value={item}>{formatStatusLabel(item)}</option>)}
           </select>
         </div>
       </div>
 
       {!filteredSales.length ? (
-        <QuickServiceEmptyState title="No hay operaciones para mostrar" description="Ajusta los filtros o registra una nueva operacion rapida." />
+        <QuickServiceEmptyState title="No hay operaciones para mostrar" description="Ajusta los filtros o registra una nueva operación rápida." />
       ) : (
         <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm shadow-slate-200/70">
           <TableShell maxHeight="clamp(360px,52vh,620px)" className="rounded-none border-0 shadow-none">
@@ -83,11 +84,11 @@ export function QuickServiceSalesHistory({ sales, isAdmin, onReceipt, onCancel }
                     <td className="px-4 py-3 text-slate-600">{formatDate(sale.createdAt)}</td>
                     <td className="px-4 py-3 text-slate-700">{sale.customer?.fullName ?? 'Cliente general'}</td>
                     <td className="px-4 py-3 text-slate-600">{sale.items.map((item) => item.description).slice(0, 2).join(', ')}</td>
-                    <td className="px-4 py-3 font-bold text-slate-700">{sale.paymentMethod}</td>
+                    <td className="px-4 py-3 font-bold text-slate-700">{formatPaymentMethod(sale.paymentMethod)}</td>
                     <td className="px-4 py-3 font-black text-slate-950">S/ {sale.total.toFixed(2)}</td>
                     <td className="px-4 py-3">
                       <span className={`rounded-full px-2.5 py-1 text-xs font-black ${sale.status === 'COMPLETED' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}>
-                        {sale.status}
+                        {formatStatusLabel(sale.status)}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-right">

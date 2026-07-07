@@ -1,4 +1,4 @@
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+﻿import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 import { InventoryReport } from '../types/report.types';
 import { formatCurrency } from '../utils/report-formatters';
@@ -23,10 +23,11 @@ export function InventoryReportSection({ report, isExporting, onExport }: { repo
       </div>
       <div className="mt-5">
         <ReportDataTable
-          columns={['Producto', 'SKU', 'Categoria', 'Stock', 'Venta']}
+          columns={['Producto', 'SKU', 'Categoría', 'Stock', 'Venta']}
           rows={(report?.rows ?? []).slice(0, 14).map((row) => [row.name, row.sku, row.category, `${row.stock}/${row.minStock}`, formatCurrency(row.salePrice)])}
         />
       </div>
     </ReportChartCard>
   );
 }
+

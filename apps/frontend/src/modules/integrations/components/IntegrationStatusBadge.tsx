@@ -8,6 +8,6 @@ export function IntegrationStatusBadge({ status }: { status: string }) {
         : normalized === 'ERROR'
           ? 'bg-red-50 text-red-700'
           : 'bg-orange-50 text-orange-700';
-  const label: Record<string, string> = { CONNECTED: 'Conectado', CONFIGURED: 'Configurado', MOCK: 'Mock', ERROR: 'Error', NOT_CONFIGURED: 'No configurado' };
+  const label: Record<string, string> = { CONNECTED: 'Conectado', CONFIGURED: 'Configurado', MOCK: 'Modo de prueba', ERROR: 'Error', NOT_CONFIGURED: 'No configurado' };
   return <span className={`rounded-full px-2 py-1 text-xs font-bold ${style}`}>{label[normalized] ?? status}</span>;
 }

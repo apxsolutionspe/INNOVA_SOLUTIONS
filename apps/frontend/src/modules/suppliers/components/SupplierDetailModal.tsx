@@ -1,4 +1,4 @@
-import { Supplier } from '../types/supplier.types';
+﻿import { Supplier } from '../types/supplier.types';
 
 interface Props {
   supplier: Supplier;
@@ -18,10 +18,10 @@ export function SupplierDetailModal({ supplier, onClose }: Props) {
         </div>
         <dl className="mt-5 grid gap-3 text-sm">
           {[
-            ['Telefono', supplier.phone],
+            ['Teléfono', supplier.phone],
             ['Correo', supplier.email],
             ['Contacto', supplier.contactName],
-            ['Direccion', supplier.address],
+            ['Dirección', supplier.address],
             ['Notas', supplier.notes],
           ].map(([label, value]) => (
             <div key={label} className="rounded-lg bg-slate-50 p-3">
@@ -34,3 +34,4 @@ export function SupplierDetailModal({ supplier, onClose }: Props) {
     </div>
   );
 }
+

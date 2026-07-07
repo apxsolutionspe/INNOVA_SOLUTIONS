@@ -1,4 +1,4 @@
-import { Building2, Eye, Pencil, Power, UserRound } from 'lucide-react';
+﻿import { Building2, Eye, Pencil, Power, UserRound } from 'lucide-react';
 
 import { Button, DataTable, StatusBadge } from '../../../components/ui';
 import { Customer } from '../types/customer.types';
@@ -51,7 +51,7 @@ export function CustomerTable({ customers, isLoading, onView, onEdit, onStatusCh
         },
         { key: 'type', header: 'Tipo', cell: (customer) => <CustomerTypeBadge customer={customer} /> },
         { key: 'document', header: 'Documento', cell: (customer) => `${customer.documentType} ${customer.documentNumber}` },
-        { key: 'phone', header: 'Telefono', cell: (customer) => customer.phone || '-' },
+        { key: 'phone', header: 'Teléfono', cell: (customer) => customer.phone || '-' },
         { key: 'email', header: 'Correo', cell: (customer) => customer.email || '-' },
         { key: 'status', header: 'Estado', cell: (customer) => <StatusBadge status={customer.isActive} /> },
         {
@@ -104,3 +104,4 @@ export function CustomerTable({ customers, isLoading, onView, onEdit, onStatusCh
     />
   );
 }
+

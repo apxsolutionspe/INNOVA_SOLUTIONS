@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+﻿import { motion } from 'framer-motion';
 import { ShieldCheck, Sparkles } from 'lucide-react';
 
 import { LoginBenefits } from './LoginBenefits';
@@ -13,7 +13,7 @@ export function LoginBrandPanel() {
     >
       <div className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/10 px-4 py-2 text-sm font-bold text-cyan-50 shadow-sm backdrop-blur">
         <Sparkles size={16} />
-        Gestion multiservicios tecnologicos
+        Gestión multiservicios tecnológicos
       </div>
 
       <h1 className="mt-7 max-w-2xl text-4xl font-black leading-tight tracking-tight sm:text-5xl xl:text-6xl">
@@ -32,3 +32,4 @@ export function LoginBrandPanel() {
     </motion.section>
   );
 }
+

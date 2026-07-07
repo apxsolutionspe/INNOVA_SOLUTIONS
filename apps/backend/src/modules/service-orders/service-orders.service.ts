@@ -3,9 +3,12 @@ import { InventoryMovementType, Prisma, ServiceOrderStatus } from '@prisma/clien
 
 import { PrismaService } from '../../database/prisma.service';
 import { AuthenticatedUser } from '../auth/types/authenticated-user.type';
+import { WhatsappService } from '../whatsapp/whatsapp.service';
+import { AddServiceOrderPhotosDto } from './dto/add-service-order-photos.dto';
 import { AddServiceOrderItemDto } from './dto/add-service-order-item.dto';
 import { ChangeStatusDto } from './dto/change-status.dto';
 import { CreateServiceOrderDto } from './dto/create-service-order.dto';
+import { ServiceOrderPhotoDto } from './dto/service-order-photo.dto';
 import { ServiceOrderQueryDto } from './dto/service-order-query.dto';
 import { UpdateServiceOrderDto } from './dto/update-service-order.dto';
 import { ServiceOrderPdfService } from './pdf/service-order-pdf.service';
@@ -26,6 +29,7 @@ export class ServiceOrdersService {
     private readonly prisma: PrismaService,
     private readonly repository: ServiceOrdersRepository,
     private readonly receiptService: ServiceOrderPdfService,
+    private readonly whatsappService: WhatsappService,
   ) {}
 
   findAll(query: ServiceOrderQueryDto) {
@@ -40,16 +44,19 @@ export class ServiceOrdersService {
 
   async create(dto: CreateServiceOrderDto, user: AuthenticatedUser) {
     return this.prisma.$transaction(async (tx) => {
+      const { photos = [], ...orderData } = dto;
       const customer = await tx.customer.findUnique({ where: { id: dto.customerId } });
       if (!customer || !customer.isActive) throw new BadRequestException('Cliente no disponible');
+      const normalizedPhotos = this.normalizePhotos(photos);
       const code = await this.generateCode(tx);
       const order = await tx.serviceOrder.create({
         data: {
-          ...dto,
+          ...orderData,
           estimatedDeliveryDate: dto.estimatedDeliveryDate ? new Date(dto.estimatedDeliveryDate) : undefined,
           code,
           userId: user.id,
           total: 0,
+          photos: normalizedPhotos.length ? { create: normalizedPhotos } : undefined,
           logs: { create: { userId: user.id, action: 'CREATE_ORDER', newStatus: ServiceOrderStatus.RECEIVED, comment: 'Orden recibida' } },
         },
         include: this.repository.include(),
@@ -140,6 +147,44 @@ export class ServiceOrdersService {
     return this.repository.mapOrder(order);
   }
 
+  async addPhotos(id: string, dto: AddServiceOrderPhotosDto, user: AuthenticatedUser) {
+    await this.ensureEditable(id);
+    return this.prisma.$transaction(async (tx) => {
+      const currentPhotos = await tx.serviceOrderPhoto.count({ where: { serviceOrderId: id } });
+      if (currentPhotos + dto.photos.length > 6) {
+        throw new BadRequestException('La orden solo puede tener hasta 6 fotos de evidencia.');
+      }
+
+      const normalizedPhotos = this.normalizePhotos(dto.photos);
+      await tx.serviceOrderPhoto.createMany({
+        data: normalizedPhotos.map((photo) => ({ ...photo, serviceOrderId: id })),
+      });
+      await tx.serviceOrderLog.create({
+        data: {
+          serviceOrderId: id,
+          userId: user.id,
+          action: 'ADD_PHOTOS',
+          comment: `${normalizedPhotos.length} foto(s) de recepción agregada(s)`,
+        },
+      });
+      await this.audit(tx, user.id, 'ADD_SERVICE_ORDER_PHOTOS', `Fotos agregadas a orden ${id}`);
+      const order = await tx.serviceOrder.findUniqueOrThrow({ where: { id }, include: this.repository.include() });
+      return this.repository.mapOrder(order);
+    });
+  }
+
+  async deletePhoto(id: string, photoId: string, user: AuthenticatedUser) {
+    await this.ensureEditable(id);
+    const photo = await this.prisma.serviceOrderPhoto.findUnique({ where: { id: photoId } });
+    if (!photo || photo.serviceOrderId !== id) throw new NotFoundException('Foto no encontrada');
+    await this.prisma.serviceOrderPhoto.delete({ where: { id: photoId } });
+    await this.prisma.serviceOrderLog.create({
+      data: { serviceOrderId: id, userId: user.id, action: 'REMOVE_PHOTO', comment: 'Foto de recepción retirada' },
+    });
+    await this.audit(this.prisma, user.id, 'REMOVE_SERVICE_ORDER_PHOTO', `Foto retirada de orden ${id}`);
+    return this.findOne(id);
+  }
+
   logs(id: string) {
     return this.repository.logs(id);
   }
@@ -147,6 +192,17 @@ export class ServiceOrdersService {
   async receipt(id: string) {
     const order = await this.findOne(id);
     return { order, html: this.receiptService.buildReceiptHtml(order) };
+  }
+
+  ticket(id: string) {
+    return this.receipt(id);
+  }
+
+  async sendWhatsApp(id: string, user: AuthenticatedUser) {
+    const order = await this.findOne(id);
+    const phone = order.customer?.phone;
+    if (!phone) throw new BadRequestException('El cliente no tiene teléfono registrado.');
+    return this.whatsappService.sendReceipt({ type: 'SERVICE_ORDER', id: order.id, phone }, user);
   }
 
   deliver(id: string, user: AuthenticatedUser) {
@@ -179,6 +235,25 @@ export class ServiceOrdersService {
 
   private calculateTotal(laborCost: number, partsCost: number, discount: number) {
     return Math.max(laborCost + partsCost - discount, 0);
+  }
+
+  private normalizePhotos(photos: ServiceOrderPhotoDto[]) {
+    return photos.map((photo) => {
+      const mimeType = photo.mimeType;
+      if (!/^data:image\/(jpeg|png|webp);base64,/i.test(photo.imageData)) {
+        throw new BadRequestException('Cada foto debe enviarse como Data URL válido.');
+      }
+      if (photo.sizeBytes && photo.sizeBytes > 2 * 1024 * 1024) {
+        throw new BadRequestException('Cada foto debe pesar como máximo 2 MB.');
+      }
+      return {
+        imageData: photo.imageData,
+        fileName: photo.fileName,
+        mimeType,
+        sizeBytes: photo.sizeBytes,
+        note: photo.note,
+      };
+    });
   }
 
   private async generateCode(tx: Prisma.TransactionClient) {

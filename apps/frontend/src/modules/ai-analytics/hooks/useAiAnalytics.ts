@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 
 import { aiAnalyticsService } from '../services/ai-analytics.service';
 import {
@@ -33,7 +33,7 @@ export function useAiAnalytics() {
         configured: false,
         keyConfigured: false,
         timeoutMs: 30000,
-        answer: 'No se pudo probar la IA cloud. El analisis interno sigue disponible.',
+        answer: 'No se pudo probar la IA en la nube. El análisis interno sigue disponible.',
         warnings: [err instanceof Error ? err.message : 'No se pudo probar la IA cloud.'],
         generatedAt: new Date().toISOString(),
       });
@@ -67,7 +67,7 @@ export function useAiAnalytics() {
       setQuestion(cleanQuestion);
       setResult(await aiAnalyticsService.ask(cleanQuestion));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'No se pudo generar el analisis empresarial.');
+      setError(err instanceof Error ? err.message : 'No se pudo generar el análisis empresarial.');
     } finally {
       setLoading(false);
     }
@@ -87,7 +87,7 @@ export function useAiAnalytics() {
             : await aiAnalyticsService.profitabilityInsights();
       setPanelResult(response);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'No se pudo cargar el analisis.');
+      setError(err instanceof Error ? err.message : 'No se pudo cargar el análisis.');
     } finally {
       setPanelLoading('');
     }
@@ -124,3 +124,4 @@ export function useAiAnalytics() {
     rebuildIndex,
   };
 }
+

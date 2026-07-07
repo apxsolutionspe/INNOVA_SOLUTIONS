@@ -1,4 +1,4 @@
-import { Building2, Mail, MapPin, Phone, UserRound } from 'lucide-react';
+﻿import { Building2, Mail, MapPin, Phone, UserRound } from 'lucide-react';
 
 import { Button, Modal, StatusBadge } from '../../../components/ui';
 import { Customer } from '../types/customer.types';
@@ -66,14 +66,14 @@ export function CustomerDetailModal({ customer, onClose }: CustomerDetailModalPr
             <DetailItem label="Nombre comercial" value={customer.tradeName} />
             <DetailItem label="Representante legal" value={customer.legalRepresentative} />
             <DetailItem label="Rubro" value={customer.businessLine} />
-            <DetailItem label="Direccion fiscal" value={customer.address} />
+            <DetailItem label="Dirección fiscal" value={customer.address} />
             <DetailItem label="Observaciones" value={customer.notes} />
           </section>
         ) : (
           <section className="grid gap-3 sm:grid-cols-2">
             <DetailItem label="Nombres" value={customer.firstName || customer.fullName} />
             <DetailItem label="Apellidos" value={customer.lastName} />
-            <DetailItem label="Direccion" value={customer.address} />
+            <DetailItem label="Dirección" value={customer.address} />
             <DetailItem label="Observaciones" value={customer.notes} />
           </section>
         )}
@@ -86,3 +86,4 @@ export function CustomerDetailModal({ customer, onClose }: CustomerDetailModalPr
     </Modal>
   );
 }
+

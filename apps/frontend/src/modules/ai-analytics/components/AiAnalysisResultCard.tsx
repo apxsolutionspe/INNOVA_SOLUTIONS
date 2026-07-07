@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+﻿import { motion } from 'framer-motion';
 import { AlertTriangle, CheckCircle2, ListChecks, Sparkles } from 'lucide-react';
 import { AiAnalysisResult, AiInsightResponse } from '../types/ai-analytics.types';
 import { AiStatusBadge } from './AiStatusBadge';
@@ -103,7 +103,8 @@ function formatAnswer(answer: string) {
 
 function humanizeWarning(warning: string) {
   if (warning.toLowerCase().includes('gemini') || warning.toLowerCase().includes('openai')) {
-    return 'Usando analisis interno del sistema.';
+    return 'Usando análisis interno del sistema.';
   }
   return warning;
 }
+

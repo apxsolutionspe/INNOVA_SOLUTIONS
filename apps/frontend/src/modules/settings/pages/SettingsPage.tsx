@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Building2, FileCheck2, Globe, MessageCircle, Plug, ShieldCheck, Store, Wallet, type LucideIcon } from 'lucide-react';
 
@@ -33,29 +33,29 @@ const tabs: TabConfig[] = [
 
 const accessCards: Record<Exclude<SettingsTab, 'general' | 'business' | 'security'>, AccessCard> = {
   fiscal: {
-    title: 'Configuracion fiscal y SUNAT',
-    description: 'Gestiona documentos, modo mock/sandbox y preparacion de comprobantes fiscales.',
+    title: 'Configuración fiscal y SUNAT',
+    description: 'Gestiona documentos, modo de prueba/sandbox y preparación de comprobantes fiscales.',
     path: '/sunat',
     icon: FileCheck2,
     badge: 'Fiscal',
   },
   integrations: {
     title: 'Centro de integraciones',
-    description: 'Administra proveedores externos, pruebas de conexion y estados de integracion.',
+    description: 'Administra proveedores externos, pruebas de conexión y estados de integracion.',
     path: '/integrations',
     icon: Plug,
     badge: 'Admin',
   },
   whatsapp: {
     title: 'WhatsApp Cloud API',
-    description: 'Configura plantillas, pruebas de envio y trazabilidad de mensajes del sistema.',
+    description: 'Configura plantillas, pruebas de envío y trazabilidad de mensajes del sistema.',
     path: '/whatsapp',
     icon: MessageCircle,
     badge: 'Mensajeria',
   },
   ecommerce: {
     title: 'eCommerce interno',
-    description: 'Revisa catalogo web, pedidos online y preparacion futura de tienda publica.',
+    description: 'Revisa catálogo web, pedidos online y preparación futura de tienda pública.',
     path: '/ecommerce',
     icon: Store,
     badge: 'Futuro',
@@ -83,7 +83,7 @@ function SettingsAccessCard({ card }: { card: AccessCard }) {
             to={card.path}
             className="mt-4 inline-flex h-10 items-center rounded-xl bg-slate-950 px-4 text-sm font-bold text-white transition hover:bg-brand-blue"
           >
-            Abrir modulo
+            Abrir módulo
           </Link>
         </div>
       </div>
@@ -95,7 +95,7 @@ export function SettingsPage() {
   const [activeTab, setActiveTab] = useState<SettingsTab>('general');
 
   return (
-    <PageContainer title="Configuracion" description="Parametros del negocio, seguridad e integraciones internas.">
+    <PageContainer title="Configuración" description="Parámetros del negocio, seguridad e integraciones internas.">
       <div className="rounded-2xl border border-slate-200 bg-white p-2 shadow-sm">
         <div className="flex gap-2 overflow-x-auto">
           {tabs.map((tab) => (
@@ -119,7 +119,7 @@ export function SettingsPage() {
             <div className="grid h-11 w-11 place-items-center rounded-xl bg-cyan-50 text-cyan-700">
               <Building2 size={21} />
             </div>
-            <h2 className="mt-4 text-base font-black text-slate-950">Operacion del negocio</h2>
+            <h2 className="mt-4 text-base font-black text-slate-950">Operación del negocio</h2>
             <p className="mt-2 text-sm leading-6 text-slate-600">Centraliza datos de empresa, comprobantes, canales de pago y configuraciones internas.</p>
           </div>
           <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -134,7 +134,7 @@ export function SettingsPage() {
               <ShieldCheck size={21} />
             </div>
             <h2 className="mt-4 text-base font-black text-slate-950">Acceso administrativo</h2>
-            <p className="mt-2 text-sm leading-6 text-slate-600">Usuarios, auditoria y configuracion se mantienen protegidos para administradores.</p>
+            <p className="mt-2 text-sm leading-6 text-slate-600">Usuarios, auditoría y configuración se mantienen protegidos para administradores.</p>
           </div>
         </div>
       ) : null}
@@ -150,14 +150,14 @@ export function SettingsPage() {
             <div>
               <h2 className="text-base font-black text-slate-950">Seguridad y permisos</h2>
               <p className="mt-2 text-sm leading-6 text-slate-600">
-                La administracion de usuarios, roles y auditoria permanece separada para mantener trazabilidad y control de accesos.
+                La administración de usuarios, roles y auditoría permanece separada para mantener trazabilidad y control de accesos.
               </p>
               <div className="mt-4 flex flex-wrap gap-2">
                 <Link to="/users" className="inline-flex h-10 items-center rounded-xl bg-slate-950 px-4 text-sm font-bold text-white transition hover:bg-brand-blue">
                   Gestionar usuarios
                 </Link>
                 <Link to="/audit" className="inline-flex h-10 items-center rounded-xl border border-slate-200 px-4 text-sm font-bold text-slate-700 transition hover:border-brand-blue hover:text-brand-blue">
-                  Ver auditoria
+                  Ver auditoría
                 </Link>
               </div>
             </div>
@@ -191,8 +191,10 @@ export function SettingsPage() {
 
       <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm font-semibold text-slate-600">
         <Wallet className="mr-2 inline-block text-brand-blue" size={18} />
-        WhatsApp sigue disponible en el flujo de comprobantes del POS. SUNAT, eCommerce e Integraciones quedan como accesos internos de configuracion.
+        WhatsApp sigue disponible en el flujo de comprobantes del POS. SUNAT, eCommerce e Integraciones quedan como accesos internos de configuración.
       </div>
     </PageContainer>
   );
 }
+
+

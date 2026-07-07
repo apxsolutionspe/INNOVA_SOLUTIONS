@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { Banknote, Building2, CreditCard, Plus, Smartphone, Trash2 } from 'lucide-react';
 
 import { PaymentInput, PaymentMethod } from '../types/pos.types';
@@ -46,7 +46,7 @@ export function PaymentPanel({ payments, total, onChange }: PaymentPanelProps) {
             Pago
           </h2>
           <p className="mt-1 text-xs font-semibold text-slate-500">
-            {payments.length > 1 ? 'Pago mixto activo' : 'Metodo de pago principal'}
+            {payments.length > 1 ? 'Pago mixto activo' : 'Método de pago principal'}
           </p>
         </div>
         <button
@@ -112,7 +112,7 @@ export function PaymentPanel({ payments, total, onChange }: PaymentPanelProps) {
                   value={payment.reference ?? ''}
                   onChange={(event) => updatePayment(index, { ...payment, reference: event.target.value })}
                   className="mt-1 h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-800 outline-none transition focus:border-brand-cyan focus:ring-4 focus:ring-cyan-100"
-                  placeholder={payment.method === 'CASH' ? 'Opcional' : 'Codigo o operacion'}
+                  placeholder={payment.method === 'CASH' ? 'Opcional' : 'Código u operación'}
                 />
               </label>
             </div>
@@ -159,3 +159,4 @@ function MoneyInput({ value, onChange }: { value: number; onChange: (value: numb
     />
   );
 }
+

@@ -1,4 +1,4 @@
-import { ClipboardList, PackageCheck, Truck, Users, Zap } from 'lucide-react';
+﻿import { ClipboardList, PackageCheck, Truck, Users, Zap } from 'lucide-react';
 import { DashboardSummary } from '../types/dashboard.types';
 
 export function OperationsSummary({ summary }: { summary: DashboardSummary }) {
@@ -14,7 +14,7 @@ export function OperationsSummary({ summary }: { summary: DashboardSummary }) {
   return (
     <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
       <div>
-        <h2 className="text-base font-black text-slate-950">Operacion de hoy</h2>
+        <h2 className="text-base font-black text-slate-950">Operación de hoy</h2>
         <p className="mt-1 text-sm text-slate-500">Lectura compacta de actividad operativa.</p>
       </div>
 
@@ -28,7 +28,7 @@ export function OperationsSummary({ summary }: { summary: DashboardSummary }) {
               </div>
               <div>
                 <p className="text-lg font-black text-slate-950">{item.value}</p>
-                <p className="text-xs font-semibold text-slate-500">{item.label} · {item.detail}</p>
+                <p className="text-xs font-semibold text-slate-500">{item.label} ? {item.detail}</p>
               </div>
             </div>
           );
@@ -37,3 +37,4 @@ export function OperationsSummary({ summary }: { summary: DashboardSummary }) {
     </section>
   );
 }
+

@@ -1,4 +1,4 @@
-import { Plus, Search } from 'lucide-react';
+﻿import { Plus, Search } from 'lucide-react';
 import { PurchaseOrderStatus } from '../types/purchase.types';
 
 interface Props {
@@ -14,7 +14,7 @@ export function PurchaseOrderFilters({ search, status, onSearchChange, onStatusC
     <div className="flex flex-col gap-3 rounded-lg border border-slate-200 bg-white p-4 shadow-sm lg:flex-row lg:items-center">
       <label className="relative flex-1">
         <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-        <input value={search} onChange={(event) => onSearchChange(event.target.value)} placeholder="Buscar por codigo o proveedor" className="h-11 w-full rounded-lg border border-slate-200 pl-10 pr-3 text-sm outline-none focus:border-brand-blue" />
+        <input value={search} onChange={(event) => onSearchChange(event.target.value)} placeholder="Buscar por código o proveedor" className="h-11 w-full rounded-lg border border-slate-200 pl-10 pr-3 text-sm outline-none focus:border-brand-blue" />
       </label>
       <select value={status} onChange={(event) => onStatusChange(event.target.value as PurchaseOrderStatus | '')} className="h-11 rounded-lg border border-slate-200 px-3 text-sm outline-none focus:border-brand-blue">
         <option value="">Todos los estados</option>
@@ -27,3 +27,4 @@ export function PurchaseOrderFilters({ search, status, onSearchChange, onStatusC
     </div>
   );
 }
+

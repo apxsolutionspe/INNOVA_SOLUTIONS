@@ -1,4 +1,4 @@
-import { Banknote, Building2, CheckCircle2, CreditCard, Loader2, Smartphone, UserRound } from 'lucide-react';
+﻿import { Banknote, Building2, CheckCircle2, CreditCard, Loader2, Smartphone, UserRound } from 'lucide-react';
 
 import { Customer } from '../../customers/types/customer.types';
 import { getCustomerSelectLabel } from '../../customers/utils/customer-display';
@@ -64,7 +64,7 @@ export function QuickServicePaymentPanel(props: QuickServicePaymentPanelProps) {
         </label>
 
         <div>
-          <p className="text-sm font-black text-slate-900">Metodo de pago</p>
+          <p className="text-sm font-black text-slate-900">Método de pago</p>
           <div className="mt-2 grid grid-cols-2 gap-2">
             {methods.map((method) => {
               const Icon = method.icon;
@@ -95,7 +95,7 @@ export function QuickServicePaymentPanel(props: QuickServicePaymentPanelProps) {
           <input
             value={props.reference}
             onChange={(event) => props.setReference(event.target.value)}
-            placeholder={props.paymentMethod === 'CASH' ? 'Opcional' : 'Codigo u operacion'}
+            placeholder={props.paymentMethod === 'CASH' ? 'Opcional' : 'Código u operación'}
             className="mt-1 h-11 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm font-semibold text-slate-800 outline-none transition focus:border-brand-cyan focus:bg-white focus:ring-4 focus:ring-cyan-100"
           />
         </label>
@@ -138,3 +138,4 @@ export function QuickServicePaymentPanel(props: QuickServicePaymentPanelProps) {
     </div>
   );
 }
+

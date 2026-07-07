@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { motion } from 'framer-motion';
 
 import { PageContainer } from '../../../components/layout/PageContainer';
@@ -25,7 +25,7 @@ export function SuppliersPage() {
   const lastSupplier = suppliers.suppliers[0]?.name ?? 'Sin registros';
 
   return (
-    <PageContainer title="Proveedores" description="Gestion de proveedores para compras y abastecimiento.">
+    <PageContainer title="Proveedores" description="Gestión de proveedores para compras y abastecimiento.">
       <div className="grid gap-4 md:grid-cols-4">
         {[
           ['Total proveedores', suppliers.suppliers.length],
@@ -48,3 +48,4 @@ export function SuppliersPage() {
     </PageContainer>
   );
 }
+

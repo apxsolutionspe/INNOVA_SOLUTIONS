@@ -1,4 +1,4 @@
-import { Product } from '../types/inventory.types';
+﻿import { Product } from '../types/inventory.types';
 import { ProductImage } from './ProductImage';
 import { StockBadge } from './StockBadge';
 import { Button, DataTable, TableActions } from '../../../components/ui';
@@ -33,7 +33,7 @@ export function ProductTable({ products, isLoading, onEdit, onDeactivate, onAdju
             </div>
           ),
         },
-        { key: 'category', header: 'Categoria', cell: (product) => product.category.name },
+        { key: 'category', header: 'Categoría', cell: (product) => product.category.name },
         { key: 'stock', header: 'Stock', cell: (product) => <StockBadge stock={product.stock} minStock={product.minStock} /> },
         { key: 'price', header: 'Precio venta', cell: (product) => `S/ ${product.salePrice.toFixed(2)}` },
         {
@@ -52,3 +52,4 @@ export function ProductTable({ products, isLoading, onEdit, onDeactivate, onAdju
     />
   );
 }
+

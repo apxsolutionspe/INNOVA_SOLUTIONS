@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { FileCheck2, RefreshCw, ShieldAlert, TestTube2 } from 'lucide-react';
 
 import { Button } from '../../../components/ui/Button';
@@ -23,7 +23,7 @@ export function SunatPage() {
     try {
       setConfig(await sunatService.config());
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'No se pudo cargar configuracion SUNAT.');
+      setError(err instanceof Error ? err.message : 'No se pudo cargar la configuración SUNAT.');
     }
   }
 
@@ -45,11 +45,11 @@ export function SunatPage() {
   useEffect(() => { void load(); }, []);
 
   return (
-    <PageContainer title="SUNAT" description="Preparacion para facturacion electronica. Actualmente funciona en modo mock controlado.">
+    <PageContainer title="SUNAT" description="Preparación para facturación electrónica. Actualmente funciona en modo de prueba controlado.">
       <ExecutiveHeader
-        eyebrow="Facturacion electronica"
+        eyebrow="Facturación electrónica"
         title="SUNAT"
-        description="Gestiona documentos emitidos o simulados y valida la configuracion sin exponer certificados ni credenciales."
+        description="Gestiona documentos emitidos o simulados y valida la configuración sin exponer certificados ni credenciales."
         actions={
           <>
             <ModeBadge label={config?.mode ?? 'MOCK'} tone={(config?.mode ?? 'MOCK') === 'MOCK' ? 'mock' : 'sandbox'} />
@@ -65,7 +65,7 @@ export function SunatPage() {
         <ExecutiveKpiCard title="Estado" value={config?.status ?? 'MOCK'} description="Proveedor SUNAT" icon={FileCheck2} tone={(config?.status ?? 'MOCK') === 'ERROR' ? 'red' : 'blue'} />
         <ExecutiveKpiCard title="RUC" value={config?.ruc ?? 'No configurado'} description="Solo variable backend" icon={FileCheck2} tone="slate" />
       </div>
-      <ExecutivePanel title="Configuracion segura" description="Modo mock activo: no se emiten comprobantes reales a SUNAT. La emision real requiere credenciales, certificado y validacion normativa.">
+      <ExecutivePanel title="Configuración segura" description="Modo mock activo: no se emiten comprobantes reales a SUNAT. La emisión real requiere credenciales, certificado y validación normativa.">
         <SunatConfigForm />
       </ExecutivePanel>
       <ExecutivePanel title="Documentos SUNAT" description="Comprobantes registrados, aceptados o simulados por el sistema.">
@@ -74,3 +74,5 @@ export function SunatPage() {
     </PageContainer>
   );
 }
+
+

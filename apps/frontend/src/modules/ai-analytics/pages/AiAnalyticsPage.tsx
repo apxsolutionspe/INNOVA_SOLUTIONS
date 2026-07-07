@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+﻿import { useEffect } from 'react';
 import { BarChart3, Boxes, DollarSign, RefreshCw, type LucideIcon } from 'lucide-react';
 
 import { AiAnalysisResultCard } from '../components/AiAnalysisResultCard';
@@ -39,7 +39,7 @@ export function AiAnalyticsPage() {
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-2xl font-black tracking-tight text-slate-950 sm:text-3xl">IA Analytics</h1>
+              <h1 className="text-2xl font-black tracking-tight text-slate-950 sm:text-3xl">Analítica IA</h1>
               <AiStatusBadge provider={provider} mode={mode} />
             </div>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
@@ -61,7 +61,7 @@ export function AiAnalyticsPage() {
 
       <div className="grid gap-3 sm:grid-cols-3">
         <QuickAction title="Ventas" description="Demanda e ingresos" icon={BarChart3} loading={panelLoading === 'sales'} onClick={() => void runPanel('sales')} />
-        <QuickAction title="Inventario" description="Reposicion y stock" icon={Boxes} loading={panelLoading === 'inventory'} onClick={() => void runPanel('inventory')} />
+        <QuickAction title="Inventario" description="Reposición y stock" icon={Boxes} loading={panelLoading === 'inventory'} onClick={() => void runPanel('inventory')} />
         <QuickAction title="Rentabilidad" description="Margen y utilidad" icon={DollarSign} loading={panelLoading === 'profitability'} onClick={() => void runPanel('profitability')} />
       </div>
 
@@ -101,3 +101,4 @@ function QuickAction({ title, description, icon: Icon, loading, onClick }: Quick
     </button>
   );
 }
+

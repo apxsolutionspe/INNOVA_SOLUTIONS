@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { LucideIcon } from 'lucide-react';
 import { AlertTriangle, PackageCheck, ShoppingBag, Truck } from 'lucide-react';
@@ -33,7 +33,7 @@ export function PurchasesPage() {
   ];
 
   return (
-    <PageContainer title="Compras" description="Ordenes de compra, recepcion de productos e integracion con inventario.">
+    <PageContainer title="Compras" description="Órdenes de compra, recepción de productos e integración con inventario.">
       <div className="grid gap-4 md:grid-cols-4">
         {cards.map(([label, value, Icon, gradient]) => (
           <motion.article key={label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
@@ -55,3 +55,4 @@ export function PurchasesPage() {
     </PageContainer>
   );
 }
+

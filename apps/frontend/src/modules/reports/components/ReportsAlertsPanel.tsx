@@ -51,7 +51,7 @@ export function ReportsAlertsPanel({ summary }: { summary: ReportsSummary | null
     },
     {
       label: 'Ordenes pendientes',
-      description: 'Atencion tecnica en curso',
+      description: 'Atención técnica en curso',
       value: summary?.pendingServiceOrders ?? 0,
       path: '/service-orders',
       tone: 'blue' as const,
@@ -72,7 +72,7 @@ export function ReportsAlertsPanel({ summary }: { summary: ReportsSummary | null
     <aside className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 shadow-sm">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h2 className="text-base font-black text-slate-950">Atencion inmediata</h2>
+          <h2 className="text-base font-black text-slate-950">Atención inmediata</h2>
           <p className="mt-1 text-sm leading-6 text-slate-500">Pendientes que requieren seguimiento operativo.</p>
         </div>
         <div className={`grid h-10 w-10 place-items-center rounded-xl ${total ? 'bg-orange-100 text-orange-700' : 'bg-emerald-100 text-emerald-700'}`}>

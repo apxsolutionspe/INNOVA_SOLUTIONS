@@ -19,7 +19,7 @@ export function QuickServiceGrid({
     return (
       <QuickServiceEmptyState
         title="No hay servicios para mostrar"
-        description="Ajusta la busqueda o revisa la administracion de servicios."
+        description="Ajusta la búsqueda o revisa la administración de servicios."
       />
     );
   }

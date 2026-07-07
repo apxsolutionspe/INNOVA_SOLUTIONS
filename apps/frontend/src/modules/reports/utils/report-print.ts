@@ -11,6 +11,7 @@ import {
 } from '../types/report.types';
 import { ReportTabId } from '../components/ReportTabs';
 import { formatCurrency, formatDate, formatNumber, formatPercent } from './report-formatters';
+import { formatMovementType, formatStatusLabel } from '../../../utils/display-formatters';
 
 interface ReportsSnapshot {
   summary: ReportsSummary | null;
@@ -94,7 +95,7 @@ function buildReportContent(activeReport: ReportTabId, reports: ReportsSnapshot)
         { label: 'Valor inventario', value: formatCurrency(report?.inventoryValue) },
       ],
       columns: ['Producto', 'Tipo', 'Cantidad', 'Motivo'],
-      rows: report?.movements.slice(0, 40).map((row) => [row.product, row.type, row.quantity, row.reason]) ?? [],
+      rows: report?.movements.slice(0, 40).map((row) => [row.product, formatMovementType(row.type), row.quantity, row.reason]) ?? [],
     };
   }
 
@@ -108,7 +109,7 @@ function buildReportContent(activeReport: ReportTabId, reports: ReportsSnapshot)
         { label: 'Ingresos', value: formatCurrency(report?.serviceOrderIncome) },
       ],
       columns: ['Estado', 'Cantidad'],
-      rows: report?.ordersByStatus.map((row) => [row.name, row.value ?? 0]) ?? [],
+      rows: report?.ordersByStatus.map((row) => [formatStatusLabel(row.name), row.value ?? 0]) ?? [],
     };
   }
 
@@ -149,7 +150,7 @@ function buildReportContent(activeReport: ReportTabId, reports: ReportsSnapshot)
         { label: 'Cajas cerradas', value: formatNumber(report?.closedSessions) },
       ],
       columns: ['Caja', 'Usuario', 'Estado', 'Diferencia'],
-      rows: report?.dailyClosing.map((row) => [row.code, row.user, row.status, formatCurrency(row.difference)]) ?? [],
+      rows: report?.dailyClosing.map((row) => [row.code, row.user, formatStatusLabel(row.status), formatCurrency(row.difference)]) ?? [],
     };
   }
 
@@ -239,7 +240,7 @@ export function printReport(activeReport: ReportTabId, reports: ReportsSnapshot,
             <div class="brand">
               <div class="logo">IS</div>
               <div>
-                <p>Innova Solutions Manager Suite</p>
+                <p>Innova Solutions - Suite de Gestión</p>
                 <h1>${escapeHtml(reportTitles[activeReport])}</h1>
               </div>
             </div>
@@ -251,7 +252,7 @@ export function printReport(activeReport: ReportTabId, reports: ReportsSnapshot,
           ${cardGrid(report.cards)}
           ${table(report.columns, report.rows)}
           <footer>
-            <span>Generado por Innova Solutions Manager Suite</span>
+            <span>Generado por Innova Solutions - Suite de Gestión</span>
             <span>Reporte interno</span>
           </footer>
         </main>

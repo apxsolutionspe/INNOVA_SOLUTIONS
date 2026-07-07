@@ -1,4 +1,4 @@
-import { FormEvent, useState } from 'react';
+﻿import { FormEvent, useState } from 'react';
 import { motion } from 'framer-motion';
 
 interface ProductCategoryFormProps {
@@ -24,7 +24,7 @@ export function ProductCategoryForm({ onSubmit, onClose }: ProductCategoryFormPr
         <h2 className="text-xl font-bold text-slate-950">Nueva categoria</h2>
         <div className="mt-5 space-y-4">
           <input required value={name} onChange={(event) => setName(event.target.value)} placeholder="Nombre" className="h-11 w-full rounded-lg border border-slate-200 px-3 text-sm" />
-          <textarea value={description} onChange={(event) => setDescription(event.target.value)} placeholder="Descripcion" className="min-h-24 w-full rounded-lg border border-slate-200 px-3 py-3 text-sm" />
+          <textarea value={description} onChange={(event) => setDescription(event.target.value)} placeholder="Descripción" className="min-h-24 w-full rounded-lg border border-slate-200 px-3 py-3 text-sm" />
         </div>
         <div className="mt-6 flex justify-end gap-3">
           <button type="button" onClick={onClose} className="h-10 rounded-lg border border-slate-200 px-4 text-sm font-semibold text-slate-600">Cancelar</button>
@@ -34,3 +34,4 @@ export function ProductCategoryForm({ onSubmit, onClose }: ProductCategoryFormPr
     </div>
   );
 }
+

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { ClipboardList } from 'lucide-react';
 
 import { Button, EmptyState, ErrorState } from '../../../components/ui';
@@ -34,8 +34,8 @@ export function ServiceOrdersPage() {
 
       {orders.error ? (
         <ErrorState
-          title="No se pudo cargar el modulo de ordenes tecnicas"
-          message={orders.error || 'Verifica la conexion con el servidor e intenta nuevamente.'}
+          title="No se pudo cargar el módulo de órdenes técnicas"
+          message={orders.error || 'Verifica la conexión con el servidor e intenta nuevamente.'}
           onRetry={() => void orders.reload()}
         />
       ) : (
@@ -44,7 +44,7 @@ export function ServiceOrdersPage() {
           {!orders.isLoading && !orders.orders.length ? (
             <EmptyState
               title={hasFilters ? 'No se encontraron ordenes tecnicas' : 'Aun no hay ordenes tecnicas registradas'}
-              description={hasFilters ? 'Ajusta la busqueda o limpia los filtros para ver otras ordenes.' : 'Registra la primera recepcion de equipo para iniciar el seguimiento tecnico.'}
+              description={hasFilters ? 'Ajusta la búsqueda o limpia los filtros para ver otras órdenes.' : 'Registra la primera recepción de equipo para iniciar el seguimiento técnico.'}
               icon={ClipboardList}
               action={!hasFilters ? <Button type="button" onClick={() => setIsFormOpen(true)}>Crear primera orden</Button> : undefined}
             />
@@ -56,3 +56,5 @@ export function ServiceOrdersPage() {
     </section>
   );
 }
+
+

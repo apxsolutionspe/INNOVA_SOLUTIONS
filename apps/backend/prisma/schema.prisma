@@ -273,7 +273,12 @@ model ServiceOrder {
   brand                 String?
   model                 String?
   serialNumber          String?
+  color                 String?
+  physicalCondition     String?
+  accessoriesReceived   String?
   reportedIssue         String
+  initialDiagnosis      String?
+  receptionNotes        String?
   technicalDiagnosis    String?
   solutionApplied       String?
   status                ServiceOrderStatus  @default(RECEIVED)
@@ -289,6 +294,7 @@ model ServiceOrder {
   updatedAt             DateTime            @updatedAt
   items                 ServiceOrderItem[]
   logs                  ServiceOrderLog[]
+  photos                ServiceOrderPhoto[]
   cashMovements         CashMovement[]
   sunatDocuments        SunatDocument[]
   paymentTransactions   PaymentTransaction[]
@@ -297,6 +303,20 @@ model ServiceOrder {
   @@index([userId])
   @@index([status])
   @@index([createdAt])
+}
+
+model ServiceOrderPhoto {
+  id             String       @id @default(uuid())
+  serviceOrderId String
+  serviceOrder   ServiceOrder @relation(fields: [serviceOrderId], references: [id], onDelete: Cascade)
+  imageData      String       @db.Text
+  fileName       String?
+  mimeType       String
+  sizeBytes      Int?
+  note           String?
+  createdAt      DateTime     @default(now())
+
+  @@index([serviceOrderId])
 }
 
 model ServiceOrderItem {

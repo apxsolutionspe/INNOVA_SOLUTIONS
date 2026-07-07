@@ -1,4 +1,4 @@
-import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+﻿import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { ChartDatum } from '../types/dashboard.types';
 import { DashboardEmptyState } from './DashboardEmptyState';
 
@@ -41,9 +41,10 @@ export function DashboardChartCard({ title, description, data, valuePrefix = '' 
             </BarChart>
           </ResponsiveContainer>
         ) : (
-          <DashboardEmptyState title="Sin datos suficientes" description="Cuando se registren operaciones, este widget mostrara una lectura visual del negocio." />
+          <DashboardEmptyState title="Sin datos suficientes" description="Cuando se registren operaciones, este widget mostrará una lectura visual del negocio." />
         )}
       </div>
     </section>
   );
 }
+

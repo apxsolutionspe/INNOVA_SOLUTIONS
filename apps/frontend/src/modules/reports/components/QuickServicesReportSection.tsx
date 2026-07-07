@@ -1,4 +1,4 @@
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+﻿import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 import { QuickServicesReport } from '../types/report.types';
 import { formatCurrency } from '../utils/report-formatters';
@@ -15,7 +15,7 @@ export function QuickServicesReportSection({ report }: { report: QuickServicesRe
           <ReportMetricCard label="Operaciones" value={report?.totalQuickServices ?? 0} />
           <ReportMetricCard label="Ingresos" value={formatCurrency(report?.quickServicesIncome ?? 0)} />
           <ReportMetricCard label="Canceladas" value={report?.cancelledOperations ?? 0} />
-          <ReportMetricCard label="Categorias" value={report?.incomeByCategory.length ?? 0} />
+          <ReportMetricCard label="Categorías" value={report?.incomeByCategory.length ?? 0} />
         </div>
       </div>
       <div className="mt-5">
@@ -27,3 +27,4 @@ export function QuickServicesReportSection({ report }: { report: QuickServicesRe
     </ReportChartCard>
   );
 }
+

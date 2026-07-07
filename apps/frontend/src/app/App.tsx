@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react';
+﻿import { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 
 import { MainLayout } from '../components/layout/MainLayout';
@@ -33,7 +33,7 @@ const EcommercePage = lazy(() => import('../modules/ecommerce/pages/EcommercePag
 const OnlineOrdersPage = lazy(() => import('../modules/ecommerce/pages/OnlineOrdersPage').then((module) => ({ default: module.OnlineOrdersPage })));
 
 function RouteLoader() {
-  return <div className="p-6 text-sm font-semibold text-slate-500">Cargando modulo...</div>;
+  return <div className="p-6 text-sm font-semibold text-slate-500">Cargando módulo...</div>;
 }
 
 export function App() {
@@ -98,3 +98,4 @@ export function App() {
     </Suspense>
   );
 }
+

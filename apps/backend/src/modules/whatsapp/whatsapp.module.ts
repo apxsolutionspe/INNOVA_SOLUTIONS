@@ -7,5 +7,10 @@ import { WhatsappService } from './whatsapp.service';
 import { WhatsappCloudProvider } from './providers/whatsapp-cloud.provider';
 import { WhatsappMockProvider } from './providers/whatsapp-mock.provider';
 
-@Module({ imports: [ConfigModule, PrismaModule, SalesModule], controllers: [WhatsappController], providers: [WhatsappService, WhatsappCloudProvider, WhatsappMockProvider] })
+@Module({
+  imports: [ConfigModule, PrismaModule, SalesModule],
+  controllers: [WhatsappController],
+  providers: [WhatsappService, WhatsappCloudProvider, WhatsappMockProvider],
+  exports: [WhatsappService],
+})
 export class WhatsappModule {}

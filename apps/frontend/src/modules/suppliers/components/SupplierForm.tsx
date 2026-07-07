@@ -1,4 +1,4 @@
-import { FormEvent, useState } from 'react';
+﻿import { FormEvent, useState } from 'react';
 import { motion } from 'framer-motion';
 
 import { Supplier, SupplierPayload } from '../types/supplier.types';
@@ -43,10 +43,10 @@ export function SupplierForm({ supplier, onSubmit, onClose }: Props) {
         <div className="mt-5 grid gap-4 md:grid-cols-2">
           <input required value={form.name} onChange={(event) => update('name', event.target.value)} placeholder="Nombre del proveedor" className="h-11 rounded-lg border border-slate-200 px-3 text-sm outline-none focus:border-brand-blue" />
           <input value={form.ruc} onChange={(event) => update('ruc', event.target.value)} placeholder="RUC" className="h-11 rounded-lg border border-slate-200 px-3 text-sm outline-none focus:border-brand-blue" />
-          <input value={form.phone} onChange={(event) => update('phone', event.target.value)} placeholder="Telefono" className="h-11 rounded-lg border border-slate-200 px-3 text-sm outline-none focus:border-brand-blue" />
+          <input value={form.phone} onChange={(event) => update('phone', event.target.value)} placeholder="Teléfono" className="h-11 rounded-lg border border-slate-200 px-3 text-sm outline-none focus:border-brand-blue" />
           <input value={form.email} onChange={(event) => update('email', event.target.value)} placeholder="Correo" className="h-11 rounded-lg border border-slate-200 px-3 text-sm outline-none focus:border-brand-blue" />
           <input value={form.contactName} onChange={(event) => update('contactName', event.target.value)} placeholder="Contacto principal" className="h-11 rounded-lg border border-slate-200 px-3 text-sm outline-none focus:border-brand-blue" />
-          <input value={form.address} onChange={(event) => update('address', event.target.value)} placeholder="Direccion" className="h-11 rounded-lg border border-slate-200 px-3 text-sm outline-none focus:border-brand-blue" />
+          <input value={form.address} onChange={(event) => update('address', event.target.value)} placeholder="Dirección" className="h-11 rounded-lg border border-slate-200 px-3 text-sm outline-none focus:border-brand-blue" />
           <textarea value={form.notes} onChange={(event) => update('notes', event.target.value)} placeholder="Notas" className="min-h-24 rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-blue md:col-span-2" />
         </div>
         <button disabled={isSaving} type="submit" className="mt-5 h-11 w-full rounded-lg bg-brand-blue text-sm font-bold text-white disabled:opacity-60">
@@ -56,3 +56,4 @@ export function SupplierForm({ supplier, onSubmit, onClose }: Props) {
     </div>
   );
 }
+

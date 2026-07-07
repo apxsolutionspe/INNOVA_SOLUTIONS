@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useState } from 'react';
+﻿import { FormEvent, useEffect, useState } from 'react';
 import { Percent, Save } from 'lucide-react';
 
 import { settingsService } from '../services/settings.service';
@@ -18,7 +18,7 @@ export function TaxSettingsForm() {
         if (isMounted) setForm(settings);
       })
       .catch(() => {
-        if (isMounted) setError('No se pudo cargar la configuracion tributaria.');
+        if (isMounted) setError('No se pudo cargar la configuración tributaria.');
       })
       .finally(() => {
         if (isMounted) setIsLoading(false);
@@ -40,9 +40,9 @@ export function TaxSettingsForm() {
         taxPercentage: form.taxPercentage,
       });
       setForm(updated);
-      setMessage('Configuracion tributaria actualizada.');
+      setMessage('Configuración tributaria actualizada.');
     } catch {
-      setError('No se pudo guardar la configuracion tributaria.');
+      setError('No se pudo guardar la configuración tributaria.');
     } finally {
       setIsSaving(false);
     }
@@ -55,7 +55,7 @@ export function TaxSettingsForm() {
           <Percent size={21} />
         </div>
         <div className="min-w-0 flex-1">
-          <h2 className="text-base font-black text-slate-950">Configuracion tributaria</h2>
+          <h2 className="text-base font-black text-slate-950">Configuración tributaria</h2>
           <p className="mt-2 text-sm leading-6 text-slate-600">
             Cuando el IGV esta desactivado, las ventas se calculan como exoneradas y el IGV sera S/ 0.00.
           </p>
@@ -108,7 +108,7 @@ export function TaxSettingsForm() {
               className="inline-flex h-11 items-center gap-2 rounded-xl bg-slate-950 px-4 text-sm font-black text-white transition hover:bg-brand-blue disabled:cursor-not-allowed disabled:bg-slate-300"
             >
               <Save size={16} />
-              {isSaving ? 'Guardando...' : 'Guardar configuracion'}
+              {isSaving ? 'Guardando...' : 'Guardar configuración'}
             </button>
             {message ? <span className="text-sm font-bold text-emerald-700">{message}</span> : null}
             {error ? <span className="text-sm font-bold text-red-700">{error}</span> : null}
@@ -118,3 +118,4 @@ export function TaxSettingsForm() {
     </form>
   );
 }
+

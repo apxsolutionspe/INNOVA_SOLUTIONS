@@ -1,4 +1,4 @@
-import axios from 'axios';
+﻿import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api';
 const OFFLINE_CACHE_PREFIX = 'innova_offline_cache:';
@@ -18,7 +18,7 @@ httpClient.interceptors.request.use((config) => {
   const url = config.url ?? '';
 
   if (!navigator.onLine && method !== 'GET' && CRITICAL_MUTATION_PATHS.some((path) => url.includes(path))) {
-    return Promise.reject(new Error('Estas sin conexion. Esta operacion critica requiere internet.'));
+    return Promise.reject(new Error('Estás sin conexión. Esta operación crítica requiere internet.'));
   }
 
   if (token) {
@@ -59,3 +59,4 @@ httpClient.interceptors.response.use(
     return Promise.reject(new Error(Array.isArray(message) ? message[0] : message));
   },
 );
+

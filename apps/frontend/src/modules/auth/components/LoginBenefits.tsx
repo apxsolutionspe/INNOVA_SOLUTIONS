@@ -1,4 +1,4 @@
-import { BarChart3, Boxes, CreditCard, type LucideIcon } from 'lucide-react';
+﻿import { BarChart3, Boxes, CreditCard, type LucideIcon } from 'lucide-react';
 
 const benefits: Array<{ title: string; description: string; icon: LucideIcon }> = [
   {
@@ -13,7 +13,7 @@ const benefits: Array<{ title: string; description: string; icon: LucideIcon }> 
   },
   {
     title: 'Reportes, rentabilidad e IA',
-    description: 'Indicadores para decidir con informacion real.',
+    description: 'Indicadores para decidir con información real.',
     icon: BarChart3,
   },
 ];
@@ -38,3 +38,4 @@ export function LoginBenefits() {
     </div>
   );
 }
+

@@ -1,4 +1,4 @@
-import { CheckCircle2, Cpu, WifiOff } from 'lucide-react';
+﻿import { CheckCircle2, Cpu, WifiOff } from 'lucide-react';
 import { AiMode, AiProvider } from '../types/ai-analytics.types';
 
 interface AiStatusBadgeProps {
@@ -10,7 +10,7 @@ export function AiStatusBadge({ provider, mode }: AiStatusBadgeProps) {
   const isCloud = (provider === 'GEMINI' || provider === 'OPENAI') && mode === 'CLOUD_AI';
   const isInternal = provider === 'RULE_BASED' || mode === 'RULE_BASED_FALLBACK';
   const Icon = isCloud ? CheckCircle2 : isInternal ? Cpu : WifiOff;
-  const label = isCloud ? 'IA conectada' : isInternal ? 'Modo interno' : 'Sin conexion';
+  const label = isCloud ? 'IA conectada' : isInternal ? 'Modo interno' : 'Sin conexión';
   const className = isCloud
     ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
     : isInternal
@@ -24,3 +24,4 @@ export function AiStatusBadge({ provider, mode }: AiStatusBadgeProps) {
     </span>
   );
 }
+

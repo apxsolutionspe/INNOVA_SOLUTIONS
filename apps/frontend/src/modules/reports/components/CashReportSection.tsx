@@ -2,6 +2,7 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxi
 
 import { CashReport } from '../types/report.types';
 import { formatCurrency } from '../utils/report-formatters';
+import { formatStatusLabel } from '../../../utils/display-formatters';
 import { ExportButtons } from './ExportButtons';
 import { ReportDataTable } from './ReportDataTable';
 import { ReportChartCard } from './ReportChartCard';
@@ -28,7 +29,7 @@ export function CashReportSection({ report, isExporting, onExport }: { report: C
       <div className="mt-5">
         <ReportDataTable
           columns={['Caja', 'Usuario', 'Estado', 'Diferencia']}
-          rows={(report?.dailyClosing ?? []).map((row) => [row.code, row.user, row.status, formatCurrency(row.difference)])}
+          rows={(report?.dailyClosing ?? []).map((row) => [row.code, row.user, formatStatusLabel(row.status), formatCurrency(row.difference)])}
         />
       </div>
     </ReportChartCard>

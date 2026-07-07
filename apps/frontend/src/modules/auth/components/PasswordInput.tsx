@@ -1,4 +1,4 @@
-import { type ChangeEvent, useState } from 'react';
+﻿import { type ChangeEvent, useState } from 'react';
 import { Eye, EyeOff, Lock } from 'lucide-react';
 
 interface PasswordInputProps {
@@ -13,7 +13,7 @@ export function PasswordInput({ value, error, disabled, onChange }: PasswordInpu
 
   return (
     <label className="block">
-      <span className="text-sm font-black text-orange-50/90">Contrasena</span>
+      <span className="text-sm font-black text-orange-50/90">Contraseña</span>
       <div
         className={`login-input-shell ${
           error ? 'login-input-shell-error' : ''
@@ -42,3 +42,4 @@ export function PasswordInput({ value, error, disabled, onChange }: PasswordInpu
     </label>
   );
 }
+

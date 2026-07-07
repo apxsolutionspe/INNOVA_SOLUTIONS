@@ -1,4 +1,4 @@
-import { FormEvent, useState } from 'react';
+﻿import { FormEvent, useState } from 'react';
 import { Edit3, Plus, Power, Settings } from 'lucide-react';
 
 import { TableShell } from '../../../components/ui';
@@ -41,7 +41,7 @@ export function QuickServiceAdminPanel({ categories, services, onReload }: Quick
     if (!categoryName.trim()) return;
     await quickServicesService.createCategory({ name: categoryName.trim() });
     setCategoryName('');
-    setMessage('Categoria creada correctamente.');
+    setMessage('Categoría creada correctamente.');
     await onReload();
   };
 
@@ -63,7 +63,7 @@ export function QuickServiceAdminPanel({ categories, services, onReload }: Quick
     if (!category.name.trim()) return;
     await quickServicesService.updateCategory(category.id, { name: category.name.trim() });
     setEditingCategory(null);
-    setMessage('Categoria actualizada.');
+    setMessage('Categoría actualizada.');
     await onReload();
   };
 
@@ -92,7 +92,7 @@ export function QuickServiceAdminPanel({ categories, services, onReload }: Quick
   const deactivateCategory = async (category: QuickServiceCategory) => {
     if (!window.confirm(`Desactivar ${category.name}?`)) return;
     await quickServicesService.deleteCategory(category.id);
-    setMessage('Categoria desactivada.');
+    setMessage('Categoría desactivada.');
     await onReload();
   };
 
@@ -121,7 +121,7 @@ export function QuickServiceAdminPanel({ categories, services, onReload }: Quick
           <div className="mt-3 grid gap-3">
             <input value={service.name} onChange={(event) => setService({ ...service, name: event.target.value })} placeholder="Nombre del servicio" className="h-11 rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm font-semibold outline-none focus:border-brand-cyan focus:bg-white focus:ring-4 focus:ring-cyan-100" />
             <select value={service.categoryId} onChange={(event) => setService({ ...service, categoryId: event.target.value })} className="h-11 rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm font-semibold outline-none focus:border-brand-cyan focus:bg-white focus:ring-4 focus:ring-cyan-100">
-              <option value="">Categoria</option>
+              <option value="">Categoría</option>
               {categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
             </select>
             <div className="grid gap-3 sm:grid-cols-2">
@@ -140,7 +140,7 @@ export function QuickServiceAdminPanel({ categories, services, onReload }: Quick
 
       <div className="space-y-4">
         <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-          <h2 className="text-sm font-black text-slate-950">Categorias</h2>
+          <h2 className="text-sm font-black text-slate-950">Categorías</h2>
           <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
             {categories.map((category) => (
               <div key={category.id} className="flex items-center justify-between gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
@@ -163,7 +163,7 @@ export function QuickServiceAdminPanel({ categories, services, onReload }: Quick
               <thead className="sticky top-0 z-10 bg-slate-50/95 text-left text-xs font-black uppercase text-slate-500 backdrop-blur">
                 <tr>
                   <th className="px-4 py-3">Servicio</th>
-                  <th className="px-4 py-3">Categoria</th>
+                  <th className="px-4 py-3">Categoría</th>
                   <th className="px-4 py-3">Precio</th>
                   <th className="px-4 py-3">Costo</th>
                   <th className="px-4 py-3 text-right">Acciones</th>
@@ -197,7 +197,7 @@ export function QuickServiceAdminPanel({ categories, services, onReload }: Quick
             }}
             className="w-full max-w-md rounded-lg bg-white p-5 shadow-2xl"
           >
-            <h3 className="text-lg font-black text-slate-950">Editar categoria</h3>
+            <h3 className="text-lg font-black text-slate-950">Editar categoría</h3>
             <input
               value={editingCategory.name}
               onChange={(event) => setEditingCategory({ ...editingCategory, name: event.target.value })}
@@ -242,3 +242,4 @@ export function QuickServiceAdminPanel({ categories, services, onReload }: Quick
     </section>
   );
 }
+

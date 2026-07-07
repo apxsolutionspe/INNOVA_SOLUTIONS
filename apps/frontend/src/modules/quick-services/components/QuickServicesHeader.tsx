@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+﻿import { Link } from 'react-router-dom';
 import { History, RefreshCw, Settings, Sparkles, Wallet } from 'lucide-react';
 
 import { CashSession } from '../../cash/types/cash.types';
@@ -25,9 +25,9 @@ export function QuickServicesHeader({ cashSession, isAdmin, isLoading, onRefresh
               <Sparkles size={14} />
               Caja rapida
             </div>
-            <h1 className="mt-3 text-2xl font-black text-slate-950 sm:text-3xl">Servicios Rapidos</h1>
+            <h1 className="mt-3 text-2xl font-black text-slate-950 sm:text-3xl">Servicios Rápidos</h1>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
-              Operaciones rapidas de impresiones, copias, tramites y servicios varios.
+              Operaciones rápidas de impresiones, copias, trámites y servicios varios.
             </p>
           </div>
 
@@ -86,3 +86,4 @@ export function QuickServicesHeader({ cashSession, isAdmin, isLoading, onRefresh
     </header>
   );
 }
+

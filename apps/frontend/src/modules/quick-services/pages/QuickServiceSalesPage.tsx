@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, RefreshCw } from 'lucide-react';
 
@@ -40,7 +40,7 @@ export function QuickServiceSalesPage() {
               Servicios rapidos
             </Link>
             <h1 className="mt-3 text-2xl font-black text-slate-950">Historial de servicios</h1>
-            <p className="mt-2 text-sm text-slate-600">Operaciones de servicios rapidos registradas.</p>
+            <p className="mt-2 text-sm text-slate-600">Operaciones de servicios rápidos registradas.</p>
           </div>
           <button
             type="button"
@@ -75,3 +75,4 @@ export function QuickServiceSalesPage() {
     </section>
   );
 }
+

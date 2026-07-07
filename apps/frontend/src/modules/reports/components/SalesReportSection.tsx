@@ -2,6 +2,7 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxi
 
 import { SalesReport } from '../types/report.types';
 import { formatCurrency, shortDate } from '../utils/report-formatters';
+import { formatStatusLabel } from '../../../utils/display-formatters';
 import { ExportButtons } from './ExportButtons';
 import { ReportDataTable } from './ReportDataTable';
 import { ReportChartCard } from './ReportChartCard';
@@ -24,8 +25,8 @@ export function SalesReportSection({ report, isExporting, onExport }: { report: 
       </div>
       <div className="mt-5">
         <ReportDataTable
-          columns={['Codigo', 'Cliente', 'Usuario', 'Estado', 'Total']}
-          rows={(report?.rows ?? []).slice(0, 12).map((row) => [row.code, row.customer, row.user, row.status, formatCurrency(row.total)])}
+          columns={['Código', 'Cliente', 'Usuario', 'Estado', 'Total']}
+          rows={(report?.rows ?? []).slice(0, 12).map((row) => [row.code, row.customer, row.user, formatStatusLabel(row.status), formatCurrency(row.total)])}
         />
       </div>
     </ReportChartCard>

@@ -1,4 +1,4 @@
-import { Search } from 'lucide-react';
+﻿import { Search } from 'lucide-react';
 
 interface ProductSearchProps {
   search: string;
@@ -16,13 +16,13 @@ export function ProductSearch({ search, onChange, resultCount = 0, isLoading = f
           <input
             value={search}
             onChange={(event) => onChange(event.target.value)}
-            placeholder="Buscar por nombre, SKU o codigo"
+            placeholder="Buscar por nombre, SKU o código"
             className="h-11 w-full rounded-lg border border-slate-200 bg-slate-50 pl-10 pr-4 text-sm font-semibold text-slate-800 outline-none transition focus:border-brand-cyan focus:bg-white focus:ring-4 focus:ring-cyan-100"
           />
         </label>
         <div className="flex flex-wrap items-center gap-2 text-xs font-bold text-slate-500 sm:justify-end">
           <span className="rounded-full bg-slate-100 px-2.5 py-1">
-            {isLoading ? 'Actualizando catalogo...' : `${resultCount} productos`}
+            {isLoading ? 'Actualizando catálogo...' : `${resultCount} productos`}
           </span>
           <span className="rounded-full bg-cyan-50 px-2.5 py-1 text-cyan-700">Inventario conectado</span>
         </div>
@@ -30,3 +30,4 @@ export function ProductSearch({ search, onChange, resultCount = 0, isLoading = f
     </div>
   );
 }
+

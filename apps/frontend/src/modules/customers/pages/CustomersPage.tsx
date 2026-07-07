@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+﻿import { useMemo, useState } from 'react';
 import { Building2, Plus, UserCheck, Users, UserRound } from 'lucide-react';
 
 import { ConfirmDialog, ErrorState, Toast } from '../../../components/ui';
@@ -56,7 +56,7 @@ export function CustomersPage() {
             <div>
               <h1 className="text-2xl font-black text-slate-950 sm:text-3xl">Clientes</h1>
               <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
-                Gestion de personas naturales y empresas para ventas, servicios y facturacion.
+                Gestión de personas naturales y empresas para ventas, servicios y facturación.
               </p>
             </div>
             <button
@@ -123,3 +123,4 @@ export function CustomersPage() {
     </section>
   );
 }
+

@@ -1,4 +1,4 @@
-import { Activity, Clock, ExternalLink, Settings, ShieldCheck, TestTube2 } from 'lucide-react';
+﻿import { Activity, Clock, ExternalLink, Settings, ShieldCheck, TestTube2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '../../../components/ui/Button';
 import { ModeBadge } from '../../business-intelligence/components/ModeBadge';
@@ -34,7 +34,7 @@ export function IntegrationCard({ integration, onConfigure, onTest }: { integrat
           <span className="truncate text-xs font-bold text-slate-500">{integration.lastTestAt ? new Date(integration.lastTestAt).toLocaleString() : 'Sin pruebas'}</span>
         </div>
         <p className="text-xs leading-5 text-slate-500">
-          {integration.lastError ?? (integration.mode === 'MOCK' ? 'Modo mock activo. No se usan credenciales reales.' : 'Configura credenciales en backend antes de operar en produccion.')}
+          {integration.lastError ?? (integration.mode === 'MOCK' ? 'Modo de prueba activo. No se usan credenciales reales.' : 'Configura credenciales en backend antes de operar en producción.')}
         </p>
       </div>
 
@@ -42,9 +42,10 @@ export function IntegrationCard({ integration, onConfigure, onTest }: { integrat
         <Button type="button" size="sm" onClick={onConfigure}><Settings size={16} /> Configurar</Button>
         <Button type="button" size="sm" variant="secondary" onClick={onTest}><TestTube2 size={16} /> Probar</Button>
         <Link to={pathMap[integration.provider] ?? '/integrations'} className="inline-flex h-9 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-bold text-slate-600 shadow-sm transition hover:bg-slate-50">
-          <ExternalLink size={15} /> Ver modulo
+          <ExternalLink size={15} /> Ver módulo
         </Link>
       </div>
     </article>
   );
 }
+

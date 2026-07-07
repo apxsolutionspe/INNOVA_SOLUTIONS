@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+﻿import { motion } from 'framer-motion';
 import { CheckCircle2, ReceiptText, X } from 'lucide-react';
 
 import { QuickServiceSale } from '../types/quick-service.types';
@@ -21,7 +21,7 @@ export function QuickServiceSaleModal({ sale, onReceipt, onClose }: QuickService
           <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-white/20">
             <CheckCircle2 size={34} />
           </div>
-          <p className="mt-4 text-sm font-black uppercase">Operacion registrada</p>
+          <p className="mt-4 text-sm font-black uppercase">Operación registrada</p>
           <h2 className="mt-2 text-3xl font-black">{sale.code}</h2>
           <p className="mt-2 text-sm font-semibold text-cyan-50">Movimiento de caja registrado si existe caja abierta.</p>
         </div>
@@ -51,3 +51,4 @@ export function QuickServiceSaleModal({ sale, onReceipt, onClose }: QuickService
     </div>
   );
 }
+

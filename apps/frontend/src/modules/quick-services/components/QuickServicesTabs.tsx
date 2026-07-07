@@ -1,4 +1,4 @@
-import { History, Settings, ShoppingBasket } from 'lucide-react';
+﻿import { History, Settings, ShoppingBasket } from 'lucide-react';
 
 import { QuickServicesTab } from '../types/quick-service-ui.types';
 
@@ -10,7 +10,7 @@ interface QuickServicesTabsProps {
 
 export function QuickServicesTabs({ activeTab, isAdmin, onChange }: QuickServicesTabsProps) {
   const tabs = [
-    { id: 'operation' as const, label: 'Operacion rapida', icon: ShoppingBasket, visible: true },
+    { id: 'operation' as const, label: 'Operación rápida', icon: ShoppingBasket, visible: true },
     { id: 'admin' as const, label: 'Administracion', icon: Settings, visible: isAdmin },
     { id: 'history' as const, label: 'Historial', icon: History, visible: true },
   ].filter((tab) => tab.visible);
@@ -37,3 +37,4 @@ export function QuickServicesTabs({ activeTab, isAdmin, onChange }: QuickService
     </div>
   );
 }
+

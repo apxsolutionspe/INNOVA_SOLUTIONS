@@ -1,4 +1,4 @@
-import { FormEvent } from 'react';
+﻿import { FormEvent } from 'react';
 import { motion } from 'framer-motion';
 import { Loader2, Mail } from 'lucide-react';
 
@@ -42,7 +42,7 @@ export function LoginCard({
       <div className="pointer-events-none absolute -bottom-24 -left-24 h-52 w-52 rounded-full bg-violet-500/20 blur-3xl" />
       <div className="relative">
         <div className="text-center">
-          <h1 className="login-title">Sistema Integral de Gestion</h1>
+          <h1 className="login-title">Sistema Integral de Gestión</h1>
         </div>
 
         <div className="mt-8 space-y-4">
@@ -87,3 +87,4 @@ export function LoginCard({
     </motion.form>
   );
 }
+

@@ -2,6 +2,7 @@ import { httpClient } from '../../../services/http-client';
 import {
   CreateServiceOrderPayload,
   ServiceOrder,
+  ServiceOrderPhotoPayload,
   ServiceOrdersResponse,
   ServiceOrderStatus,
 } from '../types/service-order.types';
@@ -48,6 +49,16 @@ export const serviceOrdersService = {
     return data;
   },
 
+  async addPhotos(id: string, photos: ServiceOrderPhotoPayload[]) {
+    const { data } = await httpClient.post<ServiceOrder>(`/service-orders/${id}/photos`, { photos });
+    return data;
+  },
+
+  async deletePhoto(id: string, photoId: string) {
+    const { data } = await httpClient.delete<ServiceOrder>(`/service-orders/${id}/photos/${photoId}`);
+    return data;
+  },
+
   async deliver(id: string) {
     const { data } = await httpClient.post<ServiceOrder>(`/service-orders/${id}/deliver`);
     return data;
@@ -60,6 +71,26 @@ export const serviceOrdersService = {
 
   async receipt(id: string) {
     const { data } = await httpClient.get<{ order: ServiceOrder; html: string }>(`/service-orders/${id}/receipt`);
+    return data;
+  },
+
+  async ticket(id: string) {
+    const { data } = await httpClient.get<{ order: ServiceOrder; html: string }>(`/service-orders/${id}/ticket`);
+    return data;
+  },
+
+  async sendWhatsApp(id: string) {
+    const { data } = await httpClient.post<{
+      success: boolean;
+      message: string;
+      mode?: string;
+      status?: string;
+      whatsappUrl?: string;
+      receiptUrl?: string;
+      providerMessageId?: string;
+      manualSendRequired?: boolean;
+      warning?: string;
+    }>(`/service-orders/${id}/send-whatsapp`);
     return data;
   },
 };

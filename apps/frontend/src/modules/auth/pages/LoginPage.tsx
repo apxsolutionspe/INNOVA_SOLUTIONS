@@ -5,7 +5,7 @@ import { useAuthStore } from '../../../store/auth.store';
 import { LoginBackgroundEffects } from '../components/LoginBackgroundEffects';
 import { LoginCard } from '../components/LoginCard';
 
-const genericLoginError = 'No se pudo iniciar sesion. Verifica tus credenciales e intentalo nuevamente.';
+const genericLoginError = 'No se pudo iniciar sesión. Verifica tus credenciales e inténtalo nuevamente.';
 const serverUnavailableError = 'No se pudo conectar con el servidor. Verifica que el backend este activo.';
 
 function getLoginErrorMessage(error: unknown) {

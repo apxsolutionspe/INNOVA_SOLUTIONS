@@ -1,4 +1,4 @@
-import { FileText, Layers, Palette, Repeat2, ScanLine, Search, Smartphone, Sparkles } from 'lucide-react';
+﻿import { FileText, Layers, Palette, Repeat2, ScanLine, Search, Smartphone, Sparkles } from 'lucide-react';
 
 import { QuickService, QuickServiceCategory } from '../types/quick-service.types';
 
@@ -41,7 +41,7 @@ export function QuickServiceCategorySidebar({ categories, services, selectedCate
     <aside className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
       <div className="mb-3 flex items-center gap-2 px-1 text-xs font-black uppercase text-slate-500">
         <Layers size={15} />
-        Categorias
+        Categorías
       </div>
       <div className="flex gap-2 overflow-x-auto pb-1 xl:block xl:space-y-2 xl:overflow-visible xl:pb-0">
         <button
@@ -76,3 +76,4 @@ export function QuickServiceCategorySidebar({ categories, services, selectedCate
     </aside>
   );
 }
+

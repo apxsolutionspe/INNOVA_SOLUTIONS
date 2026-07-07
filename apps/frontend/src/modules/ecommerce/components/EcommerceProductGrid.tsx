@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { PackageSearch } from 'lucide-react';
 
 import { EmptyState } from '../../../components/ui/EmptyState';
@@ -13,8 +13,8 @@ export function EcommerceProductGrid() {
     void ecommerceService.products().then(setProducts).catch(() => setProducts([])).finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div className="rounded-lg border border-slate-200 bg-white p-5 text-sm font-semibold text-slate-500 shadow-sm">Cargando catalogo online...</div>;
-  if (!products.length) return <EmptyState title="Catalogo sin productos" description="El catalogo online mostrara productos activos con stock disponible." icon={PackageSearch} />;
+  if (loading) return <div className="rounded-lg border border-slate-200 bg-white p-5 text-sm font-semibold text-slate-500 shadow-sm">Cargando catálogo online...</div>;
+  if (!products.length) return <EmptyState title="Catálogo sin productos" description="El catálogo online mostrará productos activos con stock disponible." icon={PackageSearch} />;
 
   return (
     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -34,3 +34,5 @@ export function EcommerceProductGrid() {
     </div>
   );
 }
+
+

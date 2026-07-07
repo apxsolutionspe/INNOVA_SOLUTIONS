@@ -1,4 +1,4 @@
-import { QuickService } from '../types/quick-service.types';
+﻿import { QuickService } from '../types/quick-service.types';
 
 export interface QuickServiceOption {
   label: string;
@@ -19,7 +19,7 @@ export function getQuickServiceOptions(service: QuickService): QuickServiceOptio
     return [
       { label: 'Simple', description: 'Impresion por una cara.' },
       { label: 'Doble cara', description: 'Optimizada para ahorrar hojas.' },
-      { label: 'Alta calidad', description: 'Configuracion recomendada para imagenes o presentaciones.' },
+      { label: 'Alta calidad', description: 'Configuración recomendada para imágenes o presentaciones.' },
     ];
   }
 
@@ -42,7 +42,7 @@ export function getQuickServiceOptions(service: QuickService): QuickServiceOptio
     return [
       { label: 'Unir', description: 'Combinar varios documentos.' },
       { label: 'Dividir', description: 'Separar paginas o secciones.' },
-      { label: 'Comprimir', description: 'Reducir peso para envio digital.' },
+      { label: 'Comprimir', description: 'Reducir peso para envío digital.' },
     ];
   }
 
@@ -62,8 +62,8 @@ export function getQuickServiceOptions(service: QuickService): QuickServiceOptio
   }
 
   return [
-    { label: 'Estandar', description: 'Configuracion base del servicio.' },
-    { label: 'Prioritario', description: 'Atencion preferente segun disponibilidad.' },
+    { label: 'Estándar', description: 'Configuración base del servicio.' },
+    { label: 'Prioritario', description: 'Atención preferente según disponibilidad.' },
   ];
 }
 
@@ -75,3 +75,4 @@ export function estimateQuickServiceTime(service: QuickService) {
   if (text.includes('escaneo') || text.includes('pdf')) return '5 a 15 min';
   return '5 a 10 min';
 }
+

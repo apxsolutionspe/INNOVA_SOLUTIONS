@@ -1,4 +1,4 @@
-import { RotateCcw, Search } from 'lucide-react';
+﻿import { RotateCcw, Search } from 'lucide-react';
 
 import { Button } from '../../../components/ui';
 
@@ -27,7 +27,7 @@ export function SalesHistoryFilters({
           <input
             value={search}
             onChange={(event) => onSearchChange(event.target.value)}
-            placeholder="Buscar por codigo o cliente"
+            placeholder="Buscar por código o cliente"
             className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-4 text-sm font-semibold text-slate-800 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-100"
           />
         </label>
@@ -50,3 +50,4 @@ export function SalesHistoryFilters({
     </div>
   );
 }
+

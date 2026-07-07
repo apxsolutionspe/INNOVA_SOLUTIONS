@@ -1,4 +1,4 @@
-import {
+﻿import {
   AlertTriangle,
   Boxes,
   ClipboardList,
@@ -140,7 +140,7 @@ export function DashboardPage() {
     },
     {
       label: "Compras pendientes",
-      description: "Ordenes de compra sin recepcion completa",
+      description: "Órdenes de compra sin recepción completa",
       value: summary.pendingPurchases,
       severity: summary.pendingPurchases > 0 ? "warning" : "success",
       icon: ShoppingBag,
@@ -201,3 +201,4 @@ export function DashboardPage() {
     </section>
   );
 }
+

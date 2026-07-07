@@ -1,4 +1,4 @@
-import { ClipboardPlus, RefreshCw } from 'lucide-react';
+﻿import { ClipboardPlus, RefreshCw } from 'lucide-react';
 
 import { Button } from '../../../components/ui';
 
@@ -16,7 +16,7 @@ export function ServiceOrdersHeader({ isLoading, onRefresh, onCreate }: ServiceO
           <p className="text-xs font-black uppercase tracking-wide text-brand-blue">Servicio tecnico</p>
           <h1 className="mt-2 text-2xl font-black tracking-tight text-slate-950 sm:text-3xl">Ordenes tecnicas</h1>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">
-            Recepcion, diagnostico y entrega de equipos con seguimiento operativo.
+            Recepción, diagnóstico y entrega de equipos con seguimiento operativo.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -33,3 +33,4 @@ export function ServiceOrdersHeader({ isLoading, onRefresh, onCreate }: ServiceO
     </header>
   );
 }
+

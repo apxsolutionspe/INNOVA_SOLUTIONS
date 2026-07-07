@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Boxes, Layers, PackageX, WalletCards } from 'lucide-react';
 
@@ -21,7 +21,7 @@ export function InventoryPage() {
 
   const cards = [
     { label: 'Total productos', value: inventory.summary.productsCount, icon: Boxes, gradient: 'from-brand-blue to-brand-cyan' },
-    { label: 'Categorias', value: inventory.summary.categoriesCount, icon: Layers, gradient: 'from-brand-violet to-brand-blue' },
+    { label: 'Categorías', value: inventory.summary.categoriesCount, icon: Layers, gradient: 'from-brand-violet to-brand-blue' },
     { label: 'Stock bajo', value: inventory.summary.lowStockCount, icon: PackageX, gradient: 'from-brand-warning to-red-400' },
     { label: 'Valor estimado', value: `S/ ${inventory.summary.inventoryValue.toFixed(2)}`, icon: WalletCards, gradient: 'from-brand-success to-emerald-400' },
   ];
@@ -39,7 +39,7 @@ export function InventoryPage() {
   };
 
   return (
-    <PageContainer title="Inventario" description="Gestion base de productos y stock para preparar POS y ventas.">
+    <PageContainer title="Inventario" description="Gestión base de productos y stock para preparar POS y ventas.">
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {cards.map((card, index) => {
           const Icon = card.icon;
@@ -93,3 +93,4 @@ export function InventoryPage() {
     </PageContainer>
   );
 }
+

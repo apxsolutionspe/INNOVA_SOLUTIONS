@@ -1,4 +1,4 @@
-import { Filter, RotateCcw, X } from 'lucide-react';
+﻿import { Filter, RotateCcw, X } from 'lucide-react';
 import { Button } from '../../../components/ui';
 import { ReportFilters as Filters } from '../types/report.types';
 
@@ -64,7 +64,7 @@ export function ReportFilters({ filters, onChange, onRefresh }: Props) {
         <input
           value={filters.categoryId ?? ''}
           onChange={(event) => onChange({ ...filters, categoryId: event.target.value || undefined })}
-          placeholder="Categoria ID opcional"
+          placeholder="Categoría ID opcional"
           className="h-11 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm font-semibold text-slate-800 outline-none transition focus:border-brand-blue focus:bg-white focus:ring-4 focus:ring-blue-100"
         />
         <Button type="button" variant="secondary" onClick={() => onChange({})} disabled={!hasFilters}>
@@ -79,3 +79,4 @@ export function ReportFilters({ filters, onChange, onRefresh }: Props) {
     </section>
   );
 }
+

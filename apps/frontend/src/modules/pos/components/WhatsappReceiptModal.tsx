@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useMemo, useState } from 'react';
+﻿import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { CheckCircle2, Clipboard, ExternalLink, FileText, Link2, Loader2, MessageCircle, Send, X } from 'lucide-react';
 
@@ -50,7 +50,7 @@ function toUserError(error?: string) {
   if (!error) return 'No se pudo generar el enlace del comprobante.';
   const normalized = error.toLowerCase();
   if (normalized.includes('telefono') || normalized.includes('whatsapp') || normalized.includes('numero')) {
-    return 'Numero de WhatsApp invalido.';
+    return 'Número de WhatsApp inválido.';
   }
   if (normalized.includes('comprobante') || normalized.includes('venta')) return error;
   return 'No se pudo generar el enlace del comprobante.';
@@ -91,7 +91,7 @@ export function WhatsappReceiptModal({ sale, defaultPhone, onClose }: WhatsappRe
 
   async function generateReceiptLink(requirePhone = true) {
     if (requirePhone && !canUsePhone) {
-      setError('Numero de WhatsApp invalido.');
+      setError('Número de WhatsApp inválido.');
       return null;
     }
 
@@ -133,7 +133,7 @@ export function WhatsappReceiptModal({ sale, defaultPhone, onClose }: WhatsappRe
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!canUsePhone) {
-      setError('Numero de WhatsApp invalido.');
+      setError('Número de WhatsApp inválido.');
       return;
     }
     setIsGenerating(true);
@@ -174,7 +174,7 @@ export function WhatsappReceiptModal({ sale, defaultPhone, onClose }: WhatsappRe
     });
 
     if (response.deliveryConfirmed) {
-      setStatusMessage('Comprobante enviado. WhatsApp acepto el envio del documento.');
+      setStatusMessage('Comprobante enviado. WhatsApp aceptó el envío del documento.');
       return;
     }
 
@@ -212,7 +212,7 @@ export function WhatsappReceiptModal({ sale, defaultPhone, onClose }: WhatsappRe
     }
 
     if (!canUsePhone) {
-      setError('Numero de WhatsApp invalido.');
+      setError('Número de WhatsApp inválido.');
       return;
     }
     const response = receiptLink ?? (await generateReceiptLink(true));
@@ -229,7 +229,7 @@ export function WhatsappReceiptModal({ sale, defaultPhone, onClose }: WhatsappRe
 
   return (
     <div className="fixed inset-0 z-[60] grid place-items-center bg-slate-950/55 px-3 py-4 backdrop-blur-sm sm:px-4 sm:py-6" role="dialog" aria-modal="true" aria-label="Enviar comprobante por WhatsApp">
-      <button type="button" aria-label="Cerrar envio por WhatsApp" className="absolute inset-0 cursor-default" onClick={onClose} />
+      <button type="button" aria-label="Cerrar envío por WhatsApp" className="absolute inset-0 cursor-default" onClick={onClose} />
       <motion.form
         onSubmit={handleSubmit}
         initial={{ opacity: 0, y: 18, scale: 0.98 }}
@@ -262,7 +262,7 @@ export function WhatsappReceiptModal({ sale, defaultPhone, onClose }: WhatsappRe
 
         <div className="space-y-5 overflow-y-auto p-5 sm:p-6">
           <label className="block">
-            <span className="text-sm font-black text-slate-900">Numero de WhatsApp</span>
+            <span className="text-sm font-black text-slate-900">Número de WhatsApp</span>
             <input
               value={phone}
               onChange={(event) => resetForPhoneChange(event.target.value)}
@@ -292,7 +292,7 @@ export function WhatsappReceiptModal({ sale, defaultPhone, onClose }: WhatsappRe
               <div>
                 <p className="text-sm font-black text-slate-900">Comprobante PDF por WhatsApp</p>
                 <p className="mt-1 text-sm font-semibold leading-5 text-slate-600">
-                  El sistema intentara enviar el PDF por WhatsApp Cloud API. Si Meta rechaza el envio, se generara enlace manual.
+                  El sistema intentará enviar el PDF por WhatsApp Cloud API. Si Meta rechaza el envío, se generará enlace manual.
                 </p>
               </div>
             </div>
@@ -302,7 +302,7 @@ export function WhatsappReceiptModal({ sale, defaultPhone, onClose }: WhatsappRe
             <div className="flex items-center justify-between gap-3">
               <p className="text-xs font-black uppercase tracking-wide text-slate-500">Resumen</p>
               <span className="rounded-full bg-white px-3 py-1 text-[11px] font-black text-emerald-700 ring-1 ring-emerald-100">
-                {receiptLink?.deliveryConfirmed ? 'Cloud API' : 'Fallback link'}
+                {receiptLink?.deliveryConfirmed ? 'API de WhatsApp' : 'Enlace manual'}
               </span>
             </div>
             <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
@@ -387,7 +387,7 @@ export function WhatsappReceiptModal({ sale, defaultPhone, onClose }: WhatsappRe
           </div>
 
           <p className="text-xs font-semibold leading-5 text-slate-500">
-            Si WhatsApp Cloud API no confirma el envio, usa el fallback manual. El link del comprobante no requiere iniciar sesion.
+            Si WhatsApp Cloud API no confirma el envío, usa el enlace manual. El enlace del comprobante no requiere iniciar sesión.
           </p>
 
           <button
@@ -402,3 +402,4 @@ export function WhatsappReceiptModal({ sale, defaultPhone, onClose }: WhatsappRe
     </div>
   );
 }
+

@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useState } from 'react';
+﻿import { FormEvent, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 
 import { Product, ProductCategory, ProductPayload } from '../types/inventory.types';
@@ -124,7 +124,7 @@ export function ProductForm({ product, categories, onSubmit, onClose }: ProductF
             <input value={form.barcode} onChange={(event) => setForm({ ...form, barcode: event.target.value })} placeholder="Opcional" className="h-11 rounded-lg border border-slate-200 px-3 text-sm outline-none transition focus:border-brand-cyan focus:ring-4 focus:ring-cyan-100" />
           </label>
           <label className="grid gap-1.5">
-            <span className="text-xs font-black uppercase tracking-wide text-slate-500">Categoria</span>
+            <span className="text-xs font-black uppercase tracking-wide text-slate-500">Categoría</span>
             <select required value={form.categoryId} onChange={(event) => setForm({ ...form, categoryId: event.target.value })} className="h-11 rounded-lg border border-slate-200 px-3 text-sm outline-none transition focus:border-brand-cyan focus:ring-4 focus:ring-cyan-100">
               <option value="">Seleccionar categoria</option>
               {categories.map((category) => (
@@ -153,8 +153,8 @@ export function ProductForm({ product, categories, onSubmit, onClose }: ProductF
             <input type="number" min="0" value={numberValue('minStock')} onFocus={() => setFocusedNumber('minStock')} onBlur={() => setFocusedNumber('')} onChange={(event) => updateNumber('minStock', event.target.value, true)} placeholder="0" className="h-11 rounded-lg border border-slate-200 px-3 text-sm outline-none transition focus:border-brand-cyan focus:ring-4 focus:ring-cyan-100" />
           </label>
           <label className="grid gap-1.5 sm:col-span-2">
-            <span className="text-xs font-black uppercase tracking-wide text-slate-500">Descripcion</span>
-            <textarea value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} placeholder="Descripcion breve del producto" className="min-h-24 rounded-lg border border-slate-200 px-3 py-3 text-sm outline-none transition focus:border-brand-cyan focus:ring-4 focus:ring-cyan-100" />
+            <span className="text-xs font-black uppercase tracking-wide text-slate-500">Descripción</span>
+            <textarea value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} placeholder="Descripción breve del producto" className="min-h-24 rounded-lg border border-slate-200 px-3 py-3 text-sm outline-none transition focus:border-brand-cyan focus:ring-4 focus:ring-cyan-100" />
           </label>
         </div>
         </div>
@@ -168,3 +168,4 @@ export function ProductForm({ product, categories, onSubmit, onClose }: ProductF
     </div>
   );
 }
+

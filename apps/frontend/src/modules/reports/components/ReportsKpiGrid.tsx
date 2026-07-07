@@ -1,4 +1,4 @@
-import { AlertTriangle, Banknote, Boxes, ClipboardList, ReceiptText, ShoppingBag, TrendingUp, Zap } from 'lucide-react';
+﻿import { AlertTriangle, Banknote, Boxes, ClipboardList, ReceiptText, ShoppingBag, TrendingUp, Zap } from 'lucide-react';
 
 import { ReportsSummary } from '../types/report.types';
 import { formatCurrency } from '../utils/report-formatters';
@@ -74,7 +74,7 @@ export function ReportsKpiGrid({ summary }: { summary: ReportsSummary | null }) 
     <section className="space-y-3">
       <div>
         <h2 className="text-lg font-black text-slate-950">Resumen ejecutivo</h2>
-        <p className="mt-1 text-sm text-slate-500">Indicadores clave consolidados sin duplicar informacion operativa.</p>
+        <p className="mt-1 text-sm text-slate-500">Indicadores clave consolidados sin duplicar información operativa.</p>
       </div>
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {cards.map((card) => (
@@ -84,3 +84,4 @@ export function ReportsKpiGrid({ summary }: { summary: ReportsSummary | null }) 
     </section>
   );
 }
+

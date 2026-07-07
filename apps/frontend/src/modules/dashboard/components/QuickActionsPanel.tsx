@@ -1,4 +1,4 @@
-import { ClipboardPlus, CreditCard, FileText, ShoppingBag, ShoppingCart, UserPlus } from 'lucide-react';
+﻿import { ClipboardPlus, CreditCard, FileText, ShoppingBag, ShoppingCart, UserPlus } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { QuickAction } from '../types/dashboard.types';
 
@@ -38,3 +38,4 @@ export function QuickActionsPanel() {
     </section>
   );
 }
+
