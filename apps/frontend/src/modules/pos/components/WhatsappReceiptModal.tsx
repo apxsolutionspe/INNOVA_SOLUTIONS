@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { CheckCircle2, Clipboard, ExternalLink, FileText, Link2, Loader2, MessageCircle, Send, X } from 'lucide-react';
 
 import { Sale } from '../../sales/types/sale.types';
-import { CreateReceiptLinkResponse, whatsappReceiptService } from '../services/whatsapp-receipt.service';
+import { SendReceiptResponse, whatsappReceiptService } from '../services/whatsapp-receipt.service';
 
 interface WhatsappReceiptModalProps {
   sale: Sale;
@@ -56,12 +56,23 @@ function toUserError(error?: string) {
   return 'No se pudo generar el enlace del comprobante.';
 }
 
+interface ReceiptShareState {
+  receiptUrl: string;
+  whatsappUrl?: string;
+  message: string;
+  mode?: string;
+  status?: string;
+  deliveryConfirmed?: boolean;
+  manualSendRequired?: boolean;
+  providerMessageId?: string;
+}
+
 export function WhatsappReceiptModal({ sale, defaultPhone, onClose }: WhatsappReceiptModalProps) {
   const [phone, setPhone] = useState(defaultPhone ?? '');
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState('');
   const [statusMessage, setStatusMessage] = useState('');
-  const [receiptLink, setReceiptLink] = useState<CreateReceiptLinkResponse | null>(null);
+  const [receiptLink, setReceiptLink] = useState<ReceiptShareState | null>(null);
 
   const saleDate = useMemo(() => formatSaleDate(sale.createdAt), [sale.createdAt]);
   const normalizedPhone = normalizeWhatsappPhone(phone);
@@ -94,9 +105,21 @@ export function WhatsappReceiptModal({ sale, defaultPhone, onClose }: WhatsappRe
         id: sale.id,
         phone: canUsePhone ? phone : undefined,
       });
-      setReceiptLink(response);
+      setReceiptLink({
+        receiptUrl: response.receiptUrl,
+        whatsappUrl: response.whatsappUrl,
+        message: response.message,
+        mode: 'link',
+        status: 'READY_TO_SEND',
+        deliveryConfirmed: false,
+        manualSendRequired: true,
+      });
       setStatusMessage('Comprobante generado correctamente.');
-      return response;
+      return {
+        receiptUrl: response.receiptUrl,
+        whatsappUrl: response.whatsappUrl,
+        message: response.message,
+      };
     } catch (requestError) {
       const message = requestError instanceof Error ? requestError.message : undefined;
       setError(toUserError(message));
@@ -113,16 +136,53 @@ export function WhatsappReceiptModal({ sale, defaultPhone, onClose }: WhatsappRe
       setError('Numero de WhatsApp invalido.');
       return;
     }
-    const response = receiptLink ?? (await generateReceiptLink(true));
-    if (!response) return;
+    setIsGenerating(true);
+    setError('');
+    setStatusMessage('Enviando comprobante...');
 
-    setStatusMessage('Abriendo WhatsApp...');
-    const opened = window.open(response.whatsappUrl, '_blank', 'noopener,noreferrer');
-    if (!opened) {
-      setStatusMessage('Si WhatsApp no se abre, copia el mensaje manualmente.');
+    try {
+      const response = await whatsappReceiptService.sendReceipt({
+        type: 'SALE',
+        id: sale.id,
+        phone,
+      });
+      handleSendReceiptResponse(response);
+    } catch (requestError) {
+      const message = requestError instanceof Error ? requestError.message : undefined;
+      setError(toUserError(message));
+      setStatusMessage('');
+    } finally {
+      setIsGenerating(false);
+    }
+  }
+
+  function handleSendReceiptResponse(response: SendReceiptResponse) {
+    if (!response.success && response.status === 'ERROR') {
+      setError(response.details ?? response.message ?? 'No se pudo enviar el comprobante.');
       return;
     }
-    setStatusMessage('WhatsApp abierto. Confirma el envio en la aplicacion.');
+
+    setReceiptLink({
+      receiptUrl: response.receiptUrl ?? '',
+      whatsappUrl: response.whatsappUrl,
+      message: response.message,
+      mode: response.mode,
+      status: response.status,
+      deliveryConfirmed: response.deliveryConfirmed,
+      manualSendRequired: response.manualSendRequired,
+      providerMessageId: response.providerMessageId,
+    });
+
+    if (response.deliveryConfirmed) {
+      setStatusMessage('Comprobante enviado. WhatsApp acepto el envio del documento.');
+      return;
+    }
+
+    setStatusMessage('Comprobante listo. Abre WhatsApp para enviarlo manualmente.');
+    if (response.whatsappUrl) {
+      const opened = window.open(response.whatsappUrl, '_blank', 'noopener,noreferrer');
+      if (!opened) setStatusMessage('Comprobante listo. Si WhatsApp no se abre, copia el mensaje manualmente.');
+    }
   }
 
   async function copyText(value: string, success: string) {
@@ -146,6 +206,11 @@ export function WhatsappReceiptModal({ sale, defaultPhone, onClose }: WhatsappRe
   }
 
   async function handleFallbackOpen() {
+    if (receiptLink?.deliveryConfirmed && receiptLink.receiptUrl) {
+      window.open(receiptLink.receiptUrl, '_blank', 'noopener,noreferrer');
+      return;
+    }
+
     if (!canUsePhone) {
       setError('Numero de WhatsApp invalido.');
       return;
@@ -225,9 +290,9 @@ export function WhatsappReceiptModal({ sale, defaultPhone, onClose }: WhatsappRe
                 <FileText size={21} />
               </div>
               <div>
-                <p className="text-sm font-black text-slate-900">Comprobante con enlace publico</p>
+                <p className="text-sm font-black text-slate-900">Comprobante PDF por WhatsApp</p>
                 <p className="mt-1 text-sm font-semibold leading-5 text-slate-600">
-                  Se enviara un mensaje con un link seguro que abre sin iniciar sesion.
+                  El sistema intentara enviar el PDF por WhatsApp Cloud API. Si Meta rechaza el envio, se generara enlace manual.
                 </p>
               </div>
             </div>
@@ -236,7 +301,9 @@ export function WhatsappReceiptModal({ sale, defaultPhone, onClose }: WhatsappRe
           <section className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
             <div className="flex items-center justify-between gap-3">
               <p className="text-xs font-black uppercase tracking-wide text-slate-500">Resumen</p>
-              <span className="rounded-full bg-white px-3 py-1 text-[11px] font-black text-emerald-700 ring-1 ring-emerald-100">wa.me</span>
+              <span className="rounded-full bg-white px-3 py-1 text-[11px] font-black text-emerald-700 ring-1 ring-emerald-100">
+                {receiptLink?.deliveryConfirmed ? 'Cloud API' : 'Fallback link'}
+              </span>
             </div>
             <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
               <div>
@@ -262,6 +329,9 @@ export function WhatsappReceiptModal({ sale, defaultPhone, onClose }: WhatsappRe
             <section className="rounded-2xl border border-cyan-100 bg-cyan-50 p-4">
               <p className="text-xs font-black uppercase tracking-wide text-cyan-700">Enlace del comprobante</p>
               <p className="mt-2 break-all text-sm font-bold leading-6 text-cyan-900">{receiptLink.receiptUrl}</p>
+              {receiptLink.providerMessageId ? (
+                <p className="mt-2 text-xs font-black text-cyan-700">Meta message id: {receiptLink.providerMessageId}</p>
+              ) : null}
             </section>
           ) : null}
 
@@ -285,7 +355,7 @@ export function WhatsappReceiptModal({ sale, defaultPhone, onClose }: WhatsappRe
               className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 text-sm font-black text-white shadow-lg shadow-emerald-100 transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500"
             >
               {isGenerating ? <Loader2 className="animate-spin" size={18} /> : <Send size={18} />}
-              {isGenerating ? 'Generando enlace...' : 'Abrir WhatsApp'}
+              {isGenerating ? 'Enviando...' : 'Enviar comprobante'}
             </button>
             <button
               type="button"
@@ -293,7 +363,7 @@ export function WhatsappReceiptModal({ sale, defaultPhone, onClose }: WhatsappRe
               className="inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-black text-slate-700 transition hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700"
             >
               <ExternalLink size={18} />
-              Fallback
+              {receiptLink?.deliveryConfirmed ? 'Ver comprobante' : 'Abrir WhatsApp'}
             </button>
           </div>
 
@@ -317,7 +387,7 @@ export function WhatsappReceiptModal({ sale, defaultPhone, onClose }: WhatsappRe
           </div>
 
           <p className="text-xs font-semibold leading-5 text-slate-500">
-            Si WhatsApp no se abre, copia el mensaje manualmente. El link del comprobante no requiere iniciar sesion.
+            Si WhatsApp Cloud API no confirma el envio, usa el fallback manual. El link del comprobante no requiere iniciar sesion.
           </p>
 
           <button

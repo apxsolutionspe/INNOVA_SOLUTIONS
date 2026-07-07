@@ -47,6 +47,29 @@ export interface CreateReceiptLinkResponse {
   };
 }
 
+export interface SendReceiptPayload {
+  type: 'SALE' | 'SERVICE_ORDER' | 'QUICK_SERVICE';
+  id: string;
+  phone: string;
+}
+
+export interface SendReceiptResponse {
+  success: boolean;
+  mode: 'cloud_api' | 'link' | string;
+  status: 'SENT' | 'READY_TO_SEND' | 'ERROR' | string;
+  deliveryConfirmed: boolean;
+  manualSendRequired: boolean;
+  to?: string;
+  receiptUrl?: string;
+  whatsappUrl?: string;
+  filename?: string;
+  providerMessageId?: string;
+  message: string;
+  warning?: string;
+  details?: string;
+  durationMs?: number;
+}
+
 export const whatsappReceiptService = {
   async sendSaleReceipt(payload: SendSaleReceiptPayload) {
     const { data } = await httpClient.post<SendSaleReceiptResponse>('/whatsapp/send-sale-receipt', payload);
@@ -54,6 +77,10 @@ export const whatsappReceiptService = {
   },
   async createReceiptLink(payload: CreateReceiptLinkPayload) {
     const { data } = await httpClient.post<CreateReceiptLinkResponse>('/whatsapp/receipt-link', payload);
+    return data;
+  },
+  async sendReceipt(payload: SendReceiptPayload) {
+    const { data } = await httpClient.post<SendReceiptResponse>('/whatsapp/send-receipt', payload);
     return data;
   },
 };

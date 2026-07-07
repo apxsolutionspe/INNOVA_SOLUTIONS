@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import PDFDocument from 'pdfkit';
 
 import { PrismaService } from '../../database/prisma.service';
 
@@ -7,6 +8,45 @@ export class PublicReceiptsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async saleReceipt(idOrCode: string) {
+    const data = await this.saleData(idOrCode);
+    return this.buildHtml(data);
+  }
+
+  async saleReceiptPdf(idOrCode: string) {
+    const data = await this.saleData(idOrCode);
+    return {
+      filename: `comprobante-${data.code}.pdf`,
+      buffer: await this.buildPdf(data),
+    };
+  }
+
+  async quickServiceReceipt(idOrCode: string) {
+    const data = await this.quickServiceData(idOrCode);
+    return this.buildHtml(data);
+  }
+
+  async quickServiceReceiptPdf(idOrCode: string) {
+    const data = await this.quickServiceData(idOrCode);
+    return {
+      filename: `comprobante-${data.code}.pdf`,
+      buffer: await this.buildPdf(data),
+    };
+  }
+
+  async serviceOrderReceipt(idOrCode: string) {
+    const data = await this.serviceOrderData(idOrCode);
+    return this.buildHtml(data);
+  }
+
+  async serviceOrderReceiptPdf(idOrCode: string) {
+    const data = await this.serviceOrderData(idOrCode);
+    return {
+      filename: `comprobante-${data.code}.pdf`,
+      buffer: await this.buildPdf(data),
+    };
+  }
+
+  private async saleData(idOrCode: string): Promise<ReceiptData> {
     const sale = await this.prisma.sale.findFirst({
       where: { OR: [{ id: idOrCode }, { code: idOrCode }] },
       include: {
@@ -18,7 +58,7 @@ export class PublicReceiptsService {
 
     if (!sale) throw new NotFoundException('Comprobante no encontrado');
 
-    return this.buildHtml({
+    return {
       title: 'Comprobante de venta',
       code: sale.code,
       date: sale.createdAt,
@@ -35,10 +75,10 @@ export class PublicReceiptsService {
       total: Number(sale.total),
       paymentMethod: sale.payments.map((payment) => payment.method).join(', ') || sale.paymentStatus,
       status: sale.status,
-    });
+    };
   }
 
-  async quickServiceReceipt(idOrCode: string) {
+  private async quickServiceData(idOrCode: string): Promise<ReceiptData> {
     const sale = await this.prisma.quickServiceSale.findFirst({
       where: { OR: [{ id: idOrCode }, { code: idOrCode }] },
       include: {
@@ -49,7 +89,7 @@ export class PublicReceiptsService {
 
     if (!sale) throw new NotFoundException('Comprobante no encontrado');
 
-    return this.buildHtml({
+    return {
       title: 'Comprobante de servicio rapido',
       code: sale.code,
       date: sale.createdAt,
@@ -66,10 +106,10 @@ export class PublicReceiptsService {
       total: Number(sale.total),
       paymentMethod: sale.paymentMethod,
       status: sale.status,
-    });
+    };
   }
 
-  async serviceOrderReceipt(idOrCode: string) {
+  private async serviceOrderData(idOrCode: string): Promise<ReceiptData> {
     const order = await this.prisma.serviceOrder.findFirst({
       where: { OR: [{ id: idOrCode }, { code: idOrCode }] },
       include: {
@@ -89,7 +129,7 @@ export class PublicReceiptsService {
         }))
       : [{ description: order.reportedIssue, quantity: 1, unitPrice: Number(order.total), subtotal: Number(order.total) }];
 
-    return this.buildHtml({
+    return {
       title: 'Orden tecnica',
       code: order.code,
       date: order.createdAt,
@@ -109,23 +149,10 @@ export class PublicReceiptsService {
         ['Falla reportada', order.reportedIssue],
         ['Diagnostico', order.technicalDiagnosis],
       ],
-    });
+    };
   }
 
-  private buildHtml(data: {
-    title: string;
-    code: string;
-    date: Date;
-    customerName: string;
-    rows: Array<{ description: string; quantity: number; unitPrice: number; subtotal: number }>;
-    subtotal: number;
-    discount: number;
-    taxTotal: number;
-    total: number;
-    paymentMethod: string;
-    status: string;
-    extra?: Array<[string, string | null]>;
-  }) {
+  private buildHtml(data: ReceiptData) {
     const rows = data.rows
       .map(
         (item) => `
@@ -218,4 +245,78 @@ export class PublicReceiptsService {
       minute: '2-digit',
     }).format(date);
   }
+
+  private buildPdf(data: ReceiptData): Promise<Buffer> {
+    return new Promise((resolve, reject) => {
+      const document = new PDFDocument({ size: 'A4', margin: 48 });
+      const chunks: Buffer[] = [];
+
+      document.on('data', (chunk) => chunks.push(Buffer.from(chunk)));
+      document.on('end', () => resolve(Buffer.concat(chunks)));
+      document.on('error', reject);
+
+      document
+        .fillColor('#0f172a')
+        .font('Helvetica-Bold')
+        .fontSize(22)
+        .text('Innova Solutions');
+      document
+        .moveDown(0.35)
+        .fillColor('#2563eb')
+        .fontSize(14)
+        .text(`${data.title} ${data.code}`);
+      document
+        .moveDown()
+        .fillColor('#334155')
+        .font('Helvetica')
+        .fontSize(10)
+        .text(`Cliente: ${data.customerName}`)
+        .text(`Fecha: ${this.formatDate(data.date)}`)
+        .text(`Codigo: ${data.code}`)
+        .text(`Estado: ${data.status}`)
+        .text(`Metodo de pago: ${data.paymentMethod}`);
+
+      for (const [label, value] of data.extra ?? []) {
+        if (value) document.text(`${label}: ${value}`);
+      }
+
+      document.moveDown().font('Helvetica-Bold').fontSize(11).text('Detalle');
+      document.moveDown(0.4).font('Helvetica').fontSize(9);
+
+      data.rows.forEach((item) => {
+        document.text(`${item.quantity} x ${item.description} - S/ ${item.subtotal.toFixed(2)}`);
+      });
+
+      document
+        .moveDown()
+        .font('Helvetica-Bold')
+        .fontSize(16)
+        .fillColor('#047857')
+        .text(`Total: S/ ${data.total.toFixed(2)}`);
+
+      document
+        .moveDown(2)
+        .font('Helvetica')
+        .fontSize(9)
+        .fillColor('#64748b')
+        .text('Gracias por confiar en Innova Solutions. Este comprobante es una constancia operativa del sistema.');
+
+      document.end();
+    });
+  }
+}
+
+interface ReceiptData {
+  title: string;
+  code: string;
+  date: Date;
+  customerName: string;
+  rows: Array<{ description: string; quantity: number; unitPrice: number; subtotal: number }>;
+  subtotal: number;
+  discount: number;
+  taxTotal: number;
+  total: number;
+  paymentMethod: string;
+  status: string;
+  extra?: Array<[string, string | null]>;
 }

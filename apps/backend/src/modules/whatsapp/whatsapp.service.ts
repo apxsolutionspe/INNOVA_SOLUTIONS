@@ -5,6 +5,7 @@ import { PrismaService } from '../../database/prisma.service';
 import { AuthenticatedUser } from '../auth/types/authenticated-user.type';
 import { CreateReceiptLinkDto } from './dto/create-receipt-link.dto';
 import { SendMessageDto } from './dto/send-message.dto';
+import { SendReceiptDto } from './dto/send-receipt.dto';
 import { SendSaleReceiptDto } from './dto/send-sale-receipt.dto';
 import { SendServiceOrderDto } from './dto/send-service-order.dto';
 import { notificationTemplate } from './templates/notification.template';
@@ -140,6 +141,81 @@ export class WhatsappService {
         customerName: receipt.customerName,
         total: receipt.total,
       },
+    };
+  }
+
+  async sendReceipt(dto: SendReceiptDto, user: AuthenticatedUser) {
+    const startedAt = Date.now();
+    const receipt = await this.resolveReceiptSummary(dto.type, dto.id);
+    const phone = this.normalizeWhatsappPhone(dto.phone);
+    const receiptUrl = this.buildPublicReceiptUrl(dto.type, receipt.id, true);
+    const htmlReceiptUrl = this.buildPublicReceiptUrl(dto.type, receipt.id);
+    const filename = `comprobante-${receipt.code}.pdf`;
+    const mode = this.mode();
+    const enabled = this.config.get<string>('WHATSAPP_ENABLED') === 'true';
+    const fallbackEnabled = this.config.get<string>('WHATSAPP_FALLBACK_TO_LINK') !== 'false';
+
+    if (mode !== 'cloud_api' || !enabled) {
+      return this.createManualReceiptResponse(dto.type, receipt, phone, htmlReceiptUrl, 'Modo link activo. Se genero enlace manual.', startedAt, user.id);
+    }
+
+    this.logger.log(
+      `WhatsApp receipt send | mode=cloud_api | tokenConfigured=${Boolean(this.config.get<string>('WHATSAPP_CLOUD_TOKEN') || this.config.get<string>('WHATSAPP_ACCESS_TOKEN'))} | phoneNumberIdConfigured=${Boolean(this.config.get<string>('WHATSAPP_PHONE_NUMBER_ID'))} | to=${this.maskPhone(phone)} | receiptType=${dto.type} | receiptId=${receipt.id}`,
+    );
+
+    const result = await this.cloud.sendDocumentLink(
+      phone,
+      receiptUrl,
+      filename,
+      `Comprobante ${receipt.code} - Innova Solutions`,
+    );
+
+    const deliveryConfirmed = result.status === 'SENT' && Boolean(result.providerMessageId);
+    if (deliveryConfirmed) {
+      await this.auditReceiptSend(user.id, dto.type, receipt.id, receipt.code, 'SEND_RECEIPT_CLOUD_API', result.providerMessageId, false);
+      return {
+        success: true,
+        mode: 'cloud_api',
+        status: 'SENT',
+        deliveryConfirmed: true,
+        manualSendRequired: false,
+        to: phone,
+        receiptUrl,
+        filename,
+        providerMessageId: result.providerMessageId,
+        message: 'Comprobante PDF enviado por WhatsApp.',
+        durationMs: Date.now() - startedAt,
+      };
+    }
+
+    if (fallbackEnabled) {
+      const manual = await this.createManualReceiptResponse(
+        dto.type,
+        receipt,
+        phone,
+        htmlReceiptUrl,
+        'No se pudo enviar automaticamente. Se genero enlace manual.',
+        startedAt,
+        user.id,
+        result.errorMessage ?? 'Meta rechazo el envio.',
+      );
+      await this.auditReceiptSend(user.id, dto.type, receipt.id, receipt.code, 'SEND_RECEIPT_FALLBACK_LINK', result.providerMessageId, true);
+      return manual;
+    }
+
+    await this.auditReceiptSend(user.id, dto.type, receipt.id, receipt.code, 'SEND_RECEIPT_FAILED', result.providerMessageId, false);
+    return {
+      success: false,
+      mode: 'cloud_api',
+      status: 'ERROR',
+      deliveryConfirmed: false,
+      manualSendRequired: false,
+      to: phone,
+      receiptUrl,
+      filename,
+      message: 'No se pudo enviar el comprobante.',
+      details: result.errorMessage ?? 'Meta rechazo el envio.',
+      durationMs: Date.now() - startedAt,
     };
   }
 
@@ -607,7 +683,7 @@ export class WhatsappService {
     };
   }
 
-  private buildPublicReceiptUrl(type: CreateReceiptLinkDto['type'], id: string) {
+  private buildPublicReceiptUrl(type: CreateReceiptLinkDto['type'], id: string, pdf = false) {
     const baseUrl = this.resolvePublicAppUrl();
     const path = type === 'SALE'
       ? `/api/public/receipts/sales/${encodeURIComponent(id)}`
@@ -615,7 +691,7 @@ export class WhatsappService {
         ? `/api/public/receipts/quick-services/${encodeURIComponent(id)}`
         : `/api/public/receipts/service-orders/${encodeURIComponent(id)}`;
 
-    return `${baseUrl}${path}`;
+    return `${baseUrl}${path}${pdf ? '/pdf' : ''}`;
   }
 
   private resolvePublicAppUrl() {
@@ -649,6 +725,61 @@ export class WhatsappService {
       '',
       'Gracias por confiar en nosotros.',
     ].join('\n');
+  }
+
+  private createManualReceiptResponse(
+    type: CreateReceiptLinkDto['type'],
+    receipt: { id: string; code: string; customerName: string; total: number; createdAt: Date },
+    phone: string,
+    receiptUrl: string,
+    message: string,
+    startedAt: number,
+    userId: string,
+    warning?: string,
+  ) {
+    const text = this.buildReceiptLinkMessage(receipt, receiptUrl);
+    const whatsappUrl = buildWhatsAppReceiptUrl(phone, text);
+
+    return this.prisma.auditLog.create({
+      data: {
+        userId,
+        module: 'WHATSAPP',
+        action: warning ? 'SEND_RECEIPT_MANUAL_FALLBACK' : 'CREATE_RECEIPT_LINK',
+        description: `${type} ${receipt.code}: ${message}${warning ? ` ${warning}` : ''}`,
+        entityId: receipt.id,
+        entityType: type,
+      },
+    }).then(() => ({
+      success: true,
+      mode: 'link',
+      status: 'READY_TO_SEND',
+      deliveryConfirmed: false,
+      manualSendRequired: true,
+      to: phone,
+      receiptUrl,
+      whatsappUrl,
+      message,
+      warning,
+      durationMs: Date.now() - startedAt,
+    }));
+  }
+
+  private auditReceiptSend(userId: string, type: string, id: string, code: string, action: string, providerMessageId?: string, fallbackUsed = false) {
+    return this.prisma.auditLog.create({
+      data: {
+        userId,
+        module: 'WHATSAPP',
+        action,
+        description: `${type} ${code}: providerMessageId=${providerMessageId ?? 'none'} fallbackUsed=${fallbackUsed}`,
+        entityId: id,
+        entityType: type,
+      },
+    });
+  }
+
+  private maskPhone(phone: string) {
+    if (phone.length < 7) return '***';
+    return `${phone.slice(0, 3)}***${phone.slice(-4)}`;
   }
 
   private buildApprovedTemplateTestPdf(): Promise<Buffer> {

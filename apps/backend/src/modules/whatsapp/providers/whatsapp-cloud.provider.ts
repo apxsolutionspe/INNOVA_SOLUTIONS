@@ -13,6 +13,40 @@ export class WhatsappCloudProvider {
     return Boolean(credentials.token && credentials.token.length >= 20 && credentials.phoneNumberId);
   }
 
+  async sendDocumentLink(phone: string, documentUrl: string, filename: string, caption: string): Promise<WhatsappResponse> {
+    const credentials = this.credentials();
+    if (!this.isConfigured()) return this.credentialsError();
+    const { baseUrl, version, phoneNumberId, token } = credentials;
+    const endpoint = `${baseUrl}/${version}/${phoneNumberId}/messages`;
+    this.logRequest('document_link', phone, endpoint, { document: true });
+
+    try {
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messaging_product: 'whatsapp',
+          to: phone,
+          type: 'document',
+          document: {
+            link: documentUrl,
+            filename,
+            caption,
+          },
+        }),
+      });
+      const data = await response.json().catch(() => ({}));
+      this.logResponse('document_link', response.status, data);
+      if (!response.ok) return this.metaErrorResponse(data, response.status, endpoint, 'Meta rechazo el envio del PDF por enlace publico.');
+      const providerMessageId = data?.messages?.[0]?.id;
+      if (!providerMessageId) return { status: 'ERROR', mode: 'real', errorMessage: 'Meta no devolvio messages[0].id para el documento PDF.', httpStatus: response.status, metaResponse: data, endpoint };
+      return { status: 'SENT', mode: 'real', providerMessageId, httpStatus: response.status, metaResponse: data, endpoint };
+    } catch {
+      this.logger.error(`WhatsApp Cloud document link request failed | phone=${this.maskPhone(phone)} | endpoint=${endpoint}`);
+      return { status: 'ERROR', mode: 'real', errorMessage: 'El servicio de WhatsApp no respondio a tiempo.', endpoint };
+    }
+  }
+
   async sendText(phone: string, message: string): Promise<WhatsappResponse> {
     const credentials = this.credentials();
     if (!this.isConfigured()) return this.credentialsError();
@@ -289,7 +323,7 @@ export class WhatsappCloudProvider {
       baseUrl: this.config.get<string>('WHATSAPP_API_URL')?.trim() || 'https://graph.facebook.com',
       version: this.config.get<string>('WHATSAPP_API_VERSION')?.trim() || 'v25.0',
       phoneNumberId: this.config.get<string>('WHATSAPP_PHONE_NUMBER_ID')?.trim(),
-      token: this.config.get<string>('WHATSAPP_ACCESS_TOKEN')?.trim(),
+      token: this.config.get<string>('WHATSAPP_CLOUD_TOKEN')?.trim() || this.config.get<string>('WHATSAPP_ACCESS_TOKEN')?.trim(),
     };
   }
 
@@ -297,8 +331,8 @@ export class WhatsappCloudProvider {
     const credentials = this.credentials();
     const missing = [
       !credentials.phoneNumberId ? 'WHATSAPP_PHONE_NUMBER_ID' : undefined,
-      !credentials.token ? 'WHATSAPP_ACCESS_TOKEN' : undefined,
-      credentials.token && credentials.token.length < 20 ? 'WHATSAPP_ACCESS_TOKEN_INVALIDO' : undefined,
+      !credentials.token ? 'WHATSAPP_CLOUD_TOKEN' : undefined,
+      credentials.token && credentials.token.length < 20 ? 'WHATSAPP_CLOUD_TOKEN_INVALIDO' : undefined,
     ].filter(Boolean).join(', ');
 
     return {
@@ -323,6 +357,7 @@ export class WhatsappCloudProvider {
   private mapMetaError(data: any, fallback: string) {
     const error = data?.error;
     const code = error?.code;
+    const httpStatus = data?.error?.error_subcode;
     const type = String(error?.type ?? '');
     const message = String(error?.message ?? '');
     const details = String(error?.error_data?.details ?? '');
@@ -344,7 +379,15 @@ export class WhatsappCloudProvider {
     }
 
     if (combined.includes('recipient') || combined.includes('phone') || combined.includes('number') || combined.includes('not a valid')) {
-      return 'Numero de WhatsApp invalido o no autorizado para pruebas.';
+      return 'El numero no es valido o no esta habilitado para pruebas en Meta.';
+    }
+
+    if (combined.includes('unsupported get request') || combined.includes('could not be downloaded') || combined.includes('media')) {
+      return 'El PDF no esta disponible publicamente.';
+    }
+
+    if (code === 4 || code === 17 || httpStatus === 4 || combined.includes('rate')) {
+      return 'Meta limito temporalmente el envio. Intenta nuevamente en unos minutos.';
     }
 
     return fallback || 'Meta WhatsApp rechazo la solicitud.';
@@ -356,8 +399,13 @@ export class WhatsappCloudProvider {
 
   private logRequest(type: string, phone: string, endpoint: string, extra?: { templateName?: string; languageCode?: string; document?: boolean }) {
     this.logger.log(
-      `[WhatsApp] mode=real strategy=${type} phone=${phone} endpoint=${endpoint} template=${extra?.templateName ?? 'none'} language=${extra?.languageCode ?? 'none'} document=${extra?.document ?? false}`,
+      `[WhatsApp] mode=real strategy=${type} phone=${this.maskPhone(phone)} endpoint=${endpoint} template=${extra?.templateName ?? 'none'} language=${extra?.languageCode ?? 'none'} document=${extra?.document ?? false}`,
     );
+  }
+
+  private maskPhone(phone: string) {
+    if (phone.length < 7) return '***';
+    return `${phone.slice(0, 3)}***${phone.slice(-4)}`;
   }
 
   private logResponse(type: string, httpStatus: number, data: any) {

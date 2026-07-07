@@ -7,6 +7,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AuthenticatedUser } from '../auth/types/authenticated-user.type';
 import { CreateReceiptLinkDto } from './dto/create-receipt-link.dto';
 import { SendMessageDto } from './dto/send-message.dto';
+import { SendReceiptDto } from './dto/send-receipt.dto';
 import { SendSaleReceiptDto } from './dto/send-sale-receipt.dto';
 import { SendServiceOrderDto } from './dto/send-service-order.dto';
 import { SendTemplateMessageDto } from './dto/send-template-message.dto';
@@ -25,6 +26,8 @@ export class WhatsappController {
   @Post('test-text') testText(@Body() dto: SendMessageDto, @CurrentUser() user: AuthenticatedUser) { return this.service.testText(dto, user); }
   @Post('test-template') testTemplate(@Body() dto: TestTemplateDto, @CurrentUser() user: AuthenticatedUser) { return this.service.testTemplate(dto, user); }
   @Post('test-approved-template') testApprovedTemplate(@Body() dto: TestApprovedTemplateDto, @CurrentUser() user: AuthenticatedUser) { return this.service.testApprovedTemplate(dto, user); }
+  @Roles('ADMIN', 'WORKER', 'TECHNICIAN')
+  @Post('send-receipt') sendReceipt(@Body() dto: SendReceiptDto, @CurrentUser() user: AuthenticatedUser) { return this.service.sendReceipt(dto, user); }
   @Roles('ADMIN', 'WORKER', 'TECHNICIAN')
   @Post('receipt-link') receiptLink(@Body() dto: CreateReceiptLinkDto, @CurrentUser() user: AuthenticatedUser) { return this.service.createReceiptLink(dto, user); }
   @Roles('ADMIN', 'WORKER', 'TECHNICIAN')
