@@ -1,4 +1,4 @@
-import { Download, FileSpreadsheet, RefreshCw } from 'lucide-react';
+import { Download, FileSpreadsheet, Printer, RefreshCw } from 'lucide-react';
 
 import { Button } from '../../../components/ui';
 
@@ -9,6 +9,7 @@ interface ReportsHeaderProps {
   onRefresh: () => void;
   onExportSalesPdf: () => void;
   onExportCashExcel: () => void;
+  onPrint: () => void;
 }
 
 export function ReportsHeader({
@@ -18,6 +19,7 @@ export function ReportsHeader({
   onRefresh,
   onExportSalesPdf,
   onExportCashExcel,
+  onPrint,
 }: ReportsHeaderProps) {
   return (
     <header className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -41,6 +43,10 @@ export function ReportsHeader({
           <Button type="button" variant="secondary" onClick={onExportSalesPdf} disabled={isExporting}>
             <Download size={17} />
             PDF ventas
+          </Button>
+          <Button type="button" variant="secondary" onClick={onPrint} disabled={isLoading}>
+            <Printer size={17} />
+            Imprimir reporte
           </Button>
           <Button type="button" onClick={onExportCashExcel} disabled={isExporting}>
             <FileSpreadsheet size={17} />

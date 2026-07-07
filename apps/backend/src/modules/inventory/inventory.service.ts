@@ -9,6 +9,7 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { ProductQueryDto } from './dto/product-query.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { InventoryRepository } from './inventory.repository';
+import { normalizeCategoryName } from './utils/category-normalization.util';
 
 @Injectable()
 export class InventoryService {
@@ -107,8 +108,9 @@ export class InventoryService {
   }
 
   async createCategory(dto: CreateCategoryDto) {
-    await this.ensureUniqueCategory(dto.name);
-    return this.inventoryRepository.createCategory(dto);
+    const data = { ...dto, name: normalizeCategoryName(dto.name) };
+    await this.ensureUniqueCategory(data.name);
+    return this.inventoryRepository.createCategory(data);
   }
 
   async updateCategory(id: string, dto: CreateCategoryDto) {
@@ -118,11 +120,13 @@ export class InventoryService {
       throw new NotFoundException('Categoria no encontrada');
     }
 
-    if (dto.name !== current.name) {
-      await this.ensureUniqueCategory(dto.name);
+    const data = { ...dto, name: normalizeCategoryName(dto.name) };
+
+    if (data.name !== current.name) {
+      await this.ensureUniqueCategory(data.name);
     }
 
-    return this.inventoryRepository.updateCategory(id, dto);
+    return this.inventoryRepository.updateCategory(id, data);
   }
 
   async deactivateCategory(id: string) {

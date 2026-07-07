@@ -173,7 +173,7 @@ async function seedCustomers() {
 }
 
 async function seedProductCatalog() {
-  const categoryNames = ['Laptops', 'Computadoras', 'Perifericos', 'Componentes', 'Accesorios', 'Software', 'Impresion', 'Redes', 'Seguridad', 'Repuestos'];
+  const categoryNames = ['Accesorios', 'Componentes', 'Impresión', 'Laptops', 'Periféricos', 'Redes', 'Software'];
   const categoryMap = new Map<string, string>();
 
   for (const name of categoryNames) {
@@ -187,23 +187,23 @@ async function seedProductCatalog() {
 
   const productsData = [
     ['Laptop Lenovo IdeaPad', 'SKU-LEN-IDEA-001', '775000100001', 'Laptops', 1850, 2399, 8, 3, 'unidad', null],
-    ['Mouse Logitech', 'SKU-MOU-LOG-002', '775000100002', 'Perifericos', 35, 65, 25, 8, 'unidad', null],
-    ['Teclado Redragon', 'SKU-TEC-RED-003', '775000100003', 'Perifericos', 90, 145, 14, 5, 'unidad', null],
+    ['Mouse Logitech', 'SKU-MOU-LOG-002', '775000100002', 'Periféricos', 35, 65, 25, 8, 'unidad', null],
+    ['Teclado Redragon', 'SKU-TEC-RED-003', '775000100003', 'Periféricos', 90, 145, 14, 5, 'unidad', null],
     ['Audifonos Gamer', 'SKU-AUD-GAM-004', '775000100004', 'Accesorios', 70, 129, 3, 4, 'unidad', null],
     ['Memoria RAM 8GB', 'SKU-RAM-8GB-005', '775000100005', 'Componentes', 75, 120, 10, 4, 'unidad', '/images/products/memoria-ram-8gb.jpg'],
     ['SSD Kingston 480GB', 'SKU-SSD-KIN-006', '775000100006', 'Componentes', 130, 210, 2, 4, 'unidad', '/images/products/ssd-kingston-480gb.jpg'],
     ['Cable HDMI', 'SKU-CAB-HDMI-007', '775000100007', 'Accesorios', 10, 25, 40, 10, 'unidad', '/images/products/cable-hdmi.jpg'],
-    ['Tinta Epson', 'SKU-TIN-EPS-008', '775000100008', 'Impresion', 28, 55, 5, 6, 'unidad', '/images/products/tinta-epson.jpg'],
+    ['Tinta Epson', 'SKU-TIN-EPS-008', '775000100008', 'Impresión', 28, 55, 5, 6, 'unidad', '/images/products/tinta-epson.jpg'],
     ['Licencia Microsoft Office', 'SKU-SOF-OFF-009', '775000100009', 'Software', 65, 120, 12, 3, 'licencia', '/images/products/licencia-microsoft-office.jpg'],
     ['Router TP-Link', 'SKU-ROU-TPL-010', '775000100010', 'Redes', 85, 155, 6, 3, 'unidad', '/images/products/router-tplink.jpg'],
     ['Laptop HP 15 Ryzen 5', 'SKU-LAP-HP15-011', '775000100011', 'Laptops', 1950, 2599, 7, 3, 'unidad', null],
     ['Laptop Asus Vivobook i5', 'SKU-LAP-ASU-012', '775000100012', 'Laptops', 2100, 2799, 6, 3, 'unidad', null],
     ['Laptop Acer Aspire 5', 'SKU-LAP-ACE-013', '775000100013', 'Laptops', 1980, 2650, 4, 3, 'unidad', null],
     ['Laptop Dell Inspiron 3520', 'SKU-LAP-DEL-014', '775000100014', 'Laptops', 2200, 2990, 5, 2, 'unidad', null],
-    ['Monitor LG 24 pulgadas', 'SKU-PER-MON-015', '775000100015', 'Perifericos', 330, 520, 9, 3, 'unidad', null],
-    ['Webcam Logitech C270', 'SKU-PER-WEB-016', '775000100016', 'Perifericos', 75, 135, 11, 4, 'unidad', null],
-    ['Mousepad Gamer XL', 'SKU-PER-MPD-017', '775000100017', 'Perifericos', 18, 39, 18, 6, 'unidad', null],
-    ['Parlantes USB Genius', 'SKU-PER-SPK-018', '775000100018', 'Perifericos', 32, 69, 10, 4, 'unidad', null],
+    ['Monitor LG 24 pulgadas', 'SKU-PER-MON-015', '775000100015', 'Periféricos', 330, 520, 9, 3, 'unidad', null],
+    ['Webcam Logitech C270', 'SKU-PER-WEB-016', '775000100016', 'Periféricos', 75, 135, 11, 4, 'unidad', null],
+    ['Mousepad Gamer XL', 'SKU-PER-MPD-017', '775000100017', 'Periféricos', 18, 39, 18, 6, 'unidad', null],
+    ['Parlantes USB Genius', 'SKU-PER-SPK-018', '775000100018', 'Periféricos', 32, 69, 10, 4, 'unidad', null],
     ['Memoria RAM 16GB DDR4', 'SKU-COM-R16-019', '775000100019', 'Componentes', 145, 235, 8, 3, 'unidad', null],
     ['SSD NVMe Kingston 1TB', 'SKU-COM-NV1-020', '775000100020', 'Componentes', 260, 389, 5, 2, 'unidad', null],
     ['Fuente EVGA 600W', 'SKU-COM-PSU-021', '775000100021', 'Componentes', 180, 295, 6, 2, 'unidad', null],
@@ -212,10 +212,10 @@ async function seedProductCatalog() {
     ['Cargador Universal Laptop', 'SKU-ACC-CHG-024', '775000100024', 'Accesorios', 55, 99, 8, 3, 'unidad', null],
     ['Hub USB 4 Puertos', 'SKU-ACC-HUB-025', '775000100025', 'Accesorios', 28, 59, 14, 5, 'unidad', null],
     ['Memoria USB 64GB', 'SKU-ACC-USB-026', '775000100026', 'Accesorios', 18, 39, 22, 8, 'unidad', null],
-    ['Papel Bond A4 500 hojas', 'SKU-IMP-PAP-027', '775000100027', 'Impresion', 12, 25, 20, 8, 'paquete', null],
-    ['Toner HP 85A Compatible', 'SKU-IMP-TON-028', '775000100028', 'Impresion', 58, 115, 6, 3, 'unidad', null],
-    ['Cartucho Canon Color', 'SKU-IMP-CAN-029', '775000100029', 'Impresion', 42, 85, 7, 3, 'unidad', null],
-    ['Kit Limpieza Impresora', 'SKU-IMP-KIT-030', '775000100030', 'Impresion', 15, 35, 12, 4, 'unidad', null],
+    ['Papel Bond A4 500 hojas', 'SKU-IMP-PAP-027', '775000100027', 'Impresión', 12, 25, 20, 8, 'paquete', null],
+    ['Toner HP 85A Compatible', 'SKU-IMP-TON-028', '775000100028', 'Impresión', 58, 115, 6, 3, 'unidad', null],
+    ['Cartucho Canon Color', 'SKU-IMP-CAN-029', '775000100029', 'Impresión', 42, 85, 7, 3, 'unidad', null],
+    ['Kit Limpieza Impresora', 'SKU-IMP-KIT-030', '775000100030', 'Impresión', 15, 35, 12, 4, 'unidad', null],
     ['Antivirus ESET 1 Usuario', 'SKU-SOF-ESET-031', '775000100031', 'Software', 38, 79, 15, 4, 'licencia', null],
     ['Licencia Windows 11 Pro', 'SKU-SOF-W11P-032', '775000100032', 'Software', 85, 169, 10, 3, 'licencia', null],
     ['Canva Pro Configuracion', 'SKU-SOF-CAN-033', '775000100033', 'Software', 20, 49, 9, 3, 'servicio', null],

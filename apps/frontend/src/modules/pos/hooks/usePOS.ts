@@ -4,7 +4,11 @@ import { customersService } from '../../customers/services/customers.service';
 import { cashService } from '../../cash/services/cash.service';
 import { CashSession } from '../../cash/types/cash.types';
 import { Customer } from '../../customers/types/customer.types';
-import { Product } from '../../inventory/types/inventory.types';
+import { Product, ProductCategory } from '../../inventory/types/inventory.types';
+import {
+  buildProductCategoryOptions,
+  matchesProductCategory,
+} from '../../inventory/utils/category-normalization';
 import { calculateSalePreview } from '../utils/sale-calculations';
 import { posService } from '../services/pos.service';
 import { CartItem, PaymentInput, SaleReceipt } from '../types/pos.types';
@@ -70,17 +74,27 @@ export function usePOS() {
   }, [loadInitialData]);
 
   const categories = useMemo(() => {
-    const byId = new Map<string, Product['category']>();
-    products.forEach((product) => {
-      if (product.category?.id) byId.set(product.category.id, product.category);
-    });
-    return Array.from(byId.values()).sort((first, second) => first.name.localeCompare(second.name));
+    const productCategories = products
+      .map((product) => product.category)
+      .filter((category): category is ProductCategory => Boolean(category?.id));
+
+    return buildProductCategoryOptions(productCategories, products);
   }, [products]);
 
+  const selectedCategory = useMemo(
+    () => categories.find((category) => category.id === selectedCategoryId) ?? null,
+    [categories, selectedCategoryId],
+  );
+
+  useEffect(() => {
+    if (selectedCategoryId && !selectedCategory) {
+      setSelectedCategoryId('');
+    }
+  }, [selectedCategory, selectedCategoryId]);
+
   const visibleProducts = useMemo(() => {
-    if (!selectedCategoryId) return products;
-    return products.filter((product) => product.categoryId === selectedCategoryId);
-  }, [products, selectedCategoryId]);
+    return products.filter((product) => matchesProductCategory(product, selectedCategory));
+  }, [products, selectedCategory]);
 
   const cartQuantities = useMemo(() => {
     return cart.reduce<Record<string, number>>((accumulator, item) => {

@@ -16,6 +16,7 @@ export interface NameValue {
   quantity?: number;
   count?: number;
   method?: string;
+  estimatedProfit?: number;
 }
 
 export interface ReportsSummary {
@@ -43,6 +44,7 @@ export interface SalesReport {
   salesByPaymentMethod: NameValue[];
   salesByUser: NameValue[];
   averageTicket: number;
+  rows?: Array<{ code: string; date: string; customer: string; user: string; total: number; status: string }>;
 }
 
 export interface InventoryReport {
@@ -53,6 +55,7 @@ export interface InventoryReport {
   inventoryValue: number;
   movements: Array<{ id: string; product: string; type: string; quantity: number; reason: string; createdAt: string }>;
   topRotationProducts: NameValue[];
+  rows?: Array<{ name: string; sku: string; category: string; stock: number; minStock: number; purchasePrice: number; salePrice: number }>;
 }
 
 export interface ServiceOrdersReport {
@@ -96,7 +99,8 @@ export interface CashReport {
   expenses: number;
   cashDifference: number;
   movementsByUser: NameValue[];
-  dailyClosing: Array<{ code: string; user: string; status: string; difference: number }>;
+  dailyClosing: Array<{ code: string; user: string; status: string; openedAt?: string; closedAt?: string | null; difference: number }>;
+  rows?: Array<{ date: string; type: string; concept: string; method: string; amount: number; user: string }>;
 }
 
 export interface ProfitabilityReport {

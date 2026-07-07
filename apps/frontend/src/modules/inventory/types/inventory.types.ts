@@ -32,7 +32,7 @@ export interface ProductPayload {
   description?: string;
   sku: string;
   barcode?: string;
-  imageUrl?: string;
+  imageUrl?: string | null;
   categoryId: string;
   purchasePrice: number;
   salePrice: number;

@@ -63,6 +63,7 @@ export function InventoryPage() {
         search={inventory.search}
         categoryId={inventory.categoryId}
         categories={inventory.categories}
+        resultCount={inventory.products.length}
         onSearchChange={inventory.setSearch}
         onCategoryChange={inventory.setCategoryId}
         onCreate={() => setIsProductFormOpen(true)}

@@ -13,6 +13,7 @@ export function resolveProductImage(input?: string | null): string {
   const clean = input.trim();
   if (!clean) return DEFAULT_PRODUCT_IMAGE;
 
+  if (/^data:image\/(jpeg|png|webp);base64,/i.test(clean)) return clean;
   if (/^https?:\/\//i.test(clean)) return clean;
   if (clean.startsWith('/images/')) return clean;
   if (clean.startsWith('images/')) return `/${clean}`;

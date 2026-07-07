@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsInt, IsNumber, IsOptional, IsString, MaxLength, Min } from 'class-validator';
+import { IsInt, IsNumber, IsOptional, IsString, Matches, MaxLength, Min } from 'class-validator';
 
 export class CreateProductDto {
   @ApiProperty({ example: 'Memoria RAM DDR4 8GB' })
@@ -28,8 +28,11 @@ export class CreateProductDto {
   @ApiPropertyOptional({ example: '/images/products/memoria-ram-8gb.jpg' })
   @IsOptional()
   @IsString()
-  @MaxLength(300)
-  imageUrl?: string;
+  @MaxLength(3000000)
+  @Matches(/^(data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/=]+|\/images\/[^\s"'<>]+|https:\/\/[^\s"'<>]+)$/i, {
+    message: 'La imagen debe ser JPG, PNG, WEBP, una ruta /images/ o una URL HTTPS valida.',
+  })
+  imageUrl?: string | null;
 
   @ApiProperty()
   @IsString()

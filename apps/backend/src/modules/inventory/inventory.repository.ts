@@ -6,6 +6,7 @@ import { CreateCategoryDto } from './dto/create-category.dto';
 import { CreateProductDto } from './dto/create-product.dto';
 import { ProductQueryDto } from './dto/product-query.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { buildCategorySearchTerms } from './utils/category-normalization.util';
 
 @Injectable()
 export class InventoryRepository {
@@ -198,11 +199,16 @@ export class InventoryRepository {
       where.categoryId = query.categoryId;
     }
 
-    if (query.search) {
+    if (query.search?.trim()) {
+      const search = query.search.trim();
+      const categoryFilters: Prisma.ProductWhereInput[] = buildCategorySearchTerms(search).map((term) => ({
+        category: { is: { name: { contains: term, mode: Prisma.QueryMode.insensitive } } },
+      }));
+
       where.OR = [
-        { name: { contains: query.search, mode: 'insensitive' } },
-        { sku: { contains: query.search, mode: 'insensitive' } },
-        { category: { name: { contains: query.search, mode: 'insensitive' } } },
+        { name: { contains: search, mode: Prisma.QueryMode.insensitive } },
+        { sku: { contains: search, mode: Prisma.QueryMode.insensitive } },
+        ...categoryFilters,
       ];
     }
 

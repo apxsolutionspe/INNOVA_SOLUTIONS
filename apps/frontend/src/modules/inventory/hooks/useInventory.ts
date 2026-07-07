@@ -2,9 +2,14 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { inventoryService } from '../services/inventory.service';
 import { AdjustStockPayload, Product, ProductCategory, ProductPayload } from '../types/inventory.types';
+import {
+  buildProductCategoryOptions,
+  matchesProductCategory,
+  matchesProductSearch,
+} from '../utils/category-normalization';
 
 export function useInventory() {
-  const [products, setProducts] = useState<Product[]>([]);
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<ProductCategory[]>([]);
   const [lowStockProducts, setLowStockProducts] = useState<Product[]>([]);
   const [search, setSearch] = useState('');
@@ -19,11 +24,11 @@ export function useInventory() {
 
     try {
       const [productsResponse, categoriesResponse, lowStockResponse] = await Promise.all([
-        inventoryService.findProducts({ search, categoryId: categoryId || undefined, page: 1, limit: 50 }),
+        inventoryService.findProducts({ page: 1, limit: 100 }),
         inventoryService.findCategories(),
         inventoryService.findLowStock(),
       ]);
-      setProducts(productsResponse.items);
+      setAllProducts(productsResponse.items);
       setCategories(categoriesResponse);
       setLowStockProducts(lowStockResponse);
     } catch (loadError) {
@@ -31,25 +36,51 @@ export function useInventory() {
     } finally {
       setIsLoading(false);
     }
-  }, [categoryId, search]);
+  }, []);
 
   useEffect(() => {
     void loadInventory();
   }, [loadInventory]);
 
+  const categoryOptions = useMemo(
+    () => buildProductCategoryOptions(categories, allProducts),
+    [allProducts, categories],
+  );
+
+  const selectedCategory = useMemo(
+    () => categoryOptions.find((category) => category.id === categoryId) ?? null,
+    [categoryId, categoryOptions],
+  );
+
+  useEffect(() => {
+    if (categoryId && !selectedCategory) {
+      setCategoryId('');
+    }
+  }, [categoryId, selectedCategory]);
+
+  const products = useMemo(
+    () =>
+      allProducts.filter(
+        (product) =>
+          matchesProductCategory(product, selectedCategory) &&
+          matchesProductSearch(product, search),
+      ),
+    [allProducts, search, selectedCategory],
+  );
+
   const summary = useMemo(() => {
-    const inventoryValue = products.reduce(
+    const inventoryValue = allProducts.reduce(
       (total, product) => total + product.purchasePrice * product.stock,
       0,
     );
 
     return {
-      productsCount: products.length,
-      categoriesCount: categories.length,
+      productsCount: allProducts.length,
+      categoriesCount: categoryOptions.length,
       lowStockCount: lowStockProducts.length,
       inventoryValue,
     };
-  }, [categories.length, lowStockProducts.length, products]);
+  }, [allProducts, categoryOptions.length, lowStockProducts.length]);
 
   const saveProduct = async (payload: ProductPayload, id?: string) => {
     id
@@ -79,7 +110,7 @@ export function useInventory() {
 
   return {
     products,
-    categories,
+    categories: categoryOptions,
     lowStockProducts,
     search,
     categoryId,
