@@ -16,6 +16,7 @@ import {
   ServiceOrderStatus,
 } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
+import { findProductImagePath } from './product-images';
 
 const prisma = new PrismaClient();
 const TAX_RATE = 0.18;
@@ -228,6 +229,8 @@ async function seedProductCatalog() {
 
   const products = [];
   for (const [name, sku, barcode, categoryName, purchasePrice, salePrice, stock, minStock, unit, imageUrl] of productsData) {
+    const resolvedImageUrl = findProductImagePath(name) ?? imageUrl;
+
     products.push(
       await prisma.product.upsert({
         where: { sku },
@@ -240,7 +243,7 @@ async function seedProductCatalog() {
           stock,
           minStock,
           unit,
-          imageUrl,
+          imageUrl: resolvedImageUrl,
           isActive: true,
           description: `${name} demo para pruebas de inventario`,
         },
@@ -254,7 +257,7 @@ async function seedProductCatalog() {
           stock,
           minStock,
           unit,
-          imageUrl,
+          imageUrl: resolvedImageUrl,
           isActive: true,
           description: `${name} demo para pruebas de inventario`,
         },

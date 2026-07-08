@@ -43,7 +43,10 @@ export function ReportDataTable({
             ) : (
               <tr>
                 <td colSpan={columns.length} className="px-4 py-8 text-center text-sm font-semibold text-slate-500">
-                  {emptyMessage}
+                  <div className="space-y-1">
+                    <p>{emptyMessage}</p>
+                    <p className="text-xs font-medium text-slate-400">Ajusta los filtros o registra operaciones para generar este reporte.</p>
+                  </div>
                 </td>
               </tr>
             )}

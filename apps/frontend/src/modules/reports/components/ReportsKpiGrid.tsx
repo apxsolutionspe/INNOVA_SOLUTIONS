@@ -15,7 +15,7 @@ export function ReportsKpiGrid({ summary }: { summary: ReportsSummary | null }) 
     {
       title: 'Ingresos totales',
       value: formatCurrency(totalIncome),
-      description: 'Ventas, servicios rapidos y ordenes',
+      description: 'Ventas, servicios rápidos y órdenes',
       icon: TrendingUp,
       tone: 'green' as const,
     },
@@ -29,12 +29,12 @@ export function ReportsKpiGrid({ summary }: { summary: ReportsSummary | null }) 
     {
       title: 'Servicios',
       value: formatCurrency(summary?.totalQuickServicesAmount ?? 0),
-      description: 'Ingresos por servicios rapidos',
+      description: 'Ingresos por servicios rápidos',
       icon: Zap,
       tone: 'cyan' as const,
     },
     {
-      title: 'Ordenes tecnicas',
+      title: 'Órdenes técnicas',
       value: formatCurrency(summary?.totalServiceOrdersAmount ?? 0),
       description: `${summary?.pendingServiceOrders ?? 0} pendientes`,
       icon: ClipboardList,

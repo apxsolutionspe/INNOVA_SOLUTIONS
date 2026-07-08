@@ -29,6 +29,11 @@ export function ProductTable({ products, isLoading, onEdit, onDeactivate, onAdju
               <div className="min-w-0">
                 <p className="truncate font-black text-slate-900">{product.name}</p>
                 <p className="truncate text-xs text-slate-500">{product.sku}</p>
+                {(product.brand || product.model || Object.keys(product.technicalSpecs ?? {}).length > 0) ? (
+                  <p className="mt-1 truncate text-[11px] font-bold text-brand-blue">
+                    Ficha técnica {product.brand || product.model ? `- ${[product.brand, product.model].filter(Boolean).join(' ')}` : 'registrada'}
+                  </p>
+                ) : null}
               </div>
             </div>
           ),

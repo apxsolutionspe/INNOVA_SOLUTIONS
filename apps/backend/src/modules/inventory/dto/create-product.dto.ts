@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsInt, IsNumber, IsOptional, IsString, Matches, MaxLength, Min } from 'class-validator';
+import { IsInt, IsNumber, IsObject, IsOptional, IsString, Matches, MaxLength, Min } from 'class-validator';
 
 export class CreateProductDto {
   @ApiProperty({ example: 'Memoria RAM DDR4 8GB' })
@@ -30,9 +30,44 @@ export class CreateProductDto {
   @IsString()
   @MaxLength(3000000)
   @Matches(/^(data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/=]+|\/images\/[^\s"'<>]+|https:\/\/[^\s"'<>]+)$/i, {
-    message: 'La imagen debe ser JPG, PNG, WEBP, una ruta /images/ o una URL HTTPS valida.',
+    message: 'La imagen debe ser JPG, PNG, WEBP, una ruta /images/ o una URL HTTPS válida.',
   })
   imageUrl?: string | null;
+
+  @ApiPropertyOptional({ example: 'Lenovo' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  brand?: string;
+
+  @ApiPropertyOptional({ example: 'IdeaPad' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  model?: string;
+
+  @ApiPropertyOptional({ example: '12 meses, validar con proveedor' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(160)
+  warranty?: string;
+
+  @ApiPropertyOptional({ example: 'Oficina, estudios y gestion empresarial' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(240)
+  recommendedUse?: string;
+
+  @ApiPropertyOptional({ example: 'Buen equilibrio entre rendimiento y precio.' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(700)
+  salesNotes?: string;
+
+  @ApiPropertyOptional({ example: { Procesador: 'Intel Core i5', 'Memoria RAM': '8 GB' } })
+  @IsOptional()
+  @IsObject()
+  technicalSpecs?: Record<string, unknown>;
 
   @ApiProperty()
   @IsString()

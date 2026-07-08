@@ -1,6 +1,6 @@
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
-import { CashReport } from '../types/report.types';
+import { CashReport, ExportReportModule } from '../types/report.types';
 import { formatCurrency } from '../utils/report-formatters';
 import { formatStatusLabel } from '../../../utils/display-formatters';
 import { ExportButtons } from './ExportButtons';
@@ -8,7 +8,7 @@ import { ReportDataTable } from './ReportDataTable';
 import { ReportChartCard } from './ReportChartCard';
 import { ReportMetricCard } from './ReportMetricCard';
 
-export function CashReportSection({ report, isExporting, onExport }: { report: CashReport | null; isExporting: boolean; onExport: (module: 'cash', type: 'pdf' | 'excel') => void }) {
+export function CashReportSection({ report, isExporting, onExport }: { report: CashReport | null; isExporting: boolean; onExport: (module: ExportReportModule, type: 'pdf' | 'excel') => void }) {
   const methods = [
     { name: 'Efectivo', total: report?.totalCash ?? 0 },
     { name: 'Yape', total: report?.totalYape ?? 0 },

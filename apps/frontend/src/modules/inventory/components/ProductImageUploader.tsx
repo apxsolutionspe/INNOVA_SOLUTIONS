@@ -1,7 +1,7 @@
-import { ChangeEvent, DragEvent, useRef, useState } from 'react';
+import { ChangeEvent, DragEvent, useEffect, useRef, useState } from 'react';
 import { ImagePlus, RefreshCw, Trash2, UploadCloud } from 'lucide-react';
 
-import { resolveProductImage } from '../utils/product-image';
+import { findProductImageByName, getSafeImageSrc, resolveProductImage } from '../utils/product-image';
 
 const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const MAX_IMAGE_SIZE = 2 * 1024 * 1024;
@@ -35,7 +35,13 @@ export function ProductImageUploader({ value, productName, onChange, onErrorChan
   const [fileName, setFileName] = useState('');
   const [fileSize, setFileSize] = useState('');
   const [error, setError] = useState('');
-  const previewSrc = resolveProductImage(value);
+  const [previewFailed, setPreviewFailed] = useState(false);
+  const previewSrc = resolveProductImage(value) || getSafeImageSrc(findProductImageByName(productName));
+  const showPreview = Boolean(previewSrc) && !previewFailed;
+
+  useEffect(() => {
+    setPreviewFailed(false);
+  }, [previewSrc]);
 
   const publishError = (message: string) => {
     setError(message);
@@ -127,11 +133,12 @@ export function ProductImageUploader({ value, productName, onChange, onErrorChan
         }`}
         aria-label={previewSrc ? 'Cambiar imagen del producto' : 'Agregar imagen del producto'}
       >
-        {previewSrc ? (
+        {showPreview ? (
           <>
             <img
               src={previewSrc}
               alt={productName ? `Imagen de ${productName}` : 'Vista previa del producto'}
+              onError={() => setPreviewFailed(true)}
               className="h-44 max-h-44 w-full object-contain p-2"
             />
             <span className="mt-3 inline-flex items-center gap-2 rounded-full bg-white/90 px-3 py-1.5 text-xs font-black text-brand-blue shadow-sm ring-1 ring-cyan-100">
@@ -168,7 +175,7 @@ export function ProductImageUploader({ value, productName, onChange, onErrorChan
           )}
         </div>
 
-        {previewSrc ? (
+        {showPreview ? (
           <button
             type="button"
             onClick={removeImage}

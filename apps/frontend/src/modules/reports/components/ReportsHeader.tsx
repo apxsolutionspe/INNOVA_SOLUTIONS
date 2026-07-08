@@ -1,24 +1,18 @@
-import { Download, FileSpreadsheet, Printer, RefreshCw } from 'lucide-react';
+import { Printer, RefreshCw } from 'lucide-react';
 
 import { Button } from '../../../components/ui';
 
 interface ReportsHeaderProps {
   updatedAt: Date;
   isLoading: boolean;
-  isExporting: boolean;
   onRefresh: () => void;
-  onExportSalesPdf: () => void;
-  onExportCashExcel: () => void;
   onPrint: () => void;
 }
 
 export function ReportsHeader({
   updatedAt,
   isLoading,
-  isExporting,
   onRefresh,
-  onExportSalesPdf,
-  onExportCashExcel,
   onPrint,
 }: ReportsHeaderProps) {
   return (
@@ -40,17 +34,9 @@ export function ReportsHeader({
             <RefreshCw size={17} className={isLoading ? 'animate-spin' : ''} />
             Actualizar
           </Button>
-          <Button type="button" variant="secondary" onClick={onExportSalesPdf} disabled={isExporting}>
-            <Download size={17} />
-            PDF ventas
-          </Button>
           <Button type="button" variant="secondary" onClick={onPrint} disabled={isLoading}>
             <Printer size={17} />
             Imprimir reporte
-          </Button>
-          <Button type="button" onClick={onExportCashExcel} disabled={isExporting}>
-            <FileSpreadsheet size={17} />
-            Excel caja
           </Button>
         </div>
       </div>

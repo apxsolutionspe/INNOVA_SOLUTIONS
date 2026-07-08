@@ -74,13 +74,35 @@ export class ReportsService {
       salesByPaymentMethod: this.paymentSummary(sales.flatMap((sale) => sale.payments)),
       salesByUser: this.countAmountBy(completed, (sale) => sale.user.fullName, 'total'),
       averageTicket: completed.length ? totalSold / completed.length : 0,
-      rows: completed.map((sale) => ({ code: sale.code, date: sale.createdAt, customer: sale.customer?.fullName ?? 'Cliente general', user: sale.user.fullName, total: Number(sale.total), status: sale.status })),
+      rows: sales.map((sale) => ({
+        code: sale.code,
+        date: sale.createdAt,
+        customer: sale.customer?.fullName ?? 'Cliente general',
+        user: sale.user.fullName,
+        paymentMethod: sale.payments.map((payment) => payment.method).join(', ') || 'Sin pago',
+        subtotal: Number(sale.subtotal),
+        discount: Number(sale.discountTotal),
+        tax: Number(sale.taxTotal),
+        total: Number(sale.total),
+        status: sale.status,
+      })),
     };
   }
 
   async inventory(query: InventoryReportQueryDto, user: AuthenticatedUser) {
     this.ensureOperationalReport(user);
-    const products = await this.repository.products({ categoryId: query.categoryId, id: query.productId, isActive: true });
+    const products = await this.repository.products({
+      categoryId: query.categoryId,
+      id: query.productId,
+      isActive: true,
+      OR: query.search
+        ? [
+            { name: { contains: query.search, mode: 'insensitive' } },
+            { sku: { contains: query.search, mode: 'insensitive' } },
+            { category: { name: { contains: query.search, mode: 'insensitive' } } },
+          ]
+        : undefined,
+    });
     const movements = await this.repository.inventoryMovements({
       productId: query.productId,
       product: { categoryId: query.categoryId },
@@ -93,7 +115,16 @@ export class ReportsService {
       inventoryValue: products.reduce((sum, product) => sum + Number(product.purchasePrice) * product.stock, 0),
       movements: movements.map((movement) => ({ id: movement.id, product: movement.product.name, type: movement.type, quantity: movement.quantity, reason: movement.reason, createdAt: movement.createdAt })),
       topRotationProducts: this.topInventoryMovements(movements),
-      rows: products.map((product) => ({ name: product.name, sku: product.sku, category: product.category.name, stock: product.stock, minStock: product.minStock, purchasePrice: Number(product.purchasePrice), salePrice: Number(product.salePrice) })),
+      rows: products.map((product) => ({
+        name: product.name,
+        sku: product.sku,
+        category: product.category.name,
+        stock: product.stock,
+        minStock: product.minStock,
+        purchasePrice: Number(product.purchasePrice),
+        salePrice: Number(product.salePrice),
+        status: product.stock <= 0 ? 'Sin stock' : product.stock <= product.minStock ? 'Stock bajo' : 'Disponible',
+      })),
     };
   }
 
@@ -102,15 +133,37 @@ export class ReportsService {
     const orders = await this.repository.serviceOrders(this.serviceOrdersWhere(query, start, end));
     const delivered = orders.filter((order) => order.status === ServiceOrderStatus.DELIVERED);
     const attentionTimes = delivered.filter((order) => order.deliveredAt).map((order) => Number(order.deliveredAt) - Number(order.receivedAt));
+    const pendingStatuses: ServiceOrderStatus[] = [ServiceOrderStatus.RECEIVED, ServiceOrderStatus.DIAGNOSIS, ServiceOrderStatus.IN_PROGRESS, ServiceOrderStatus.READY];
     return {
       ordersByStatus: this.countBy(orders, (order) => order.status),
+      totalOrders: orders.length,
       receivedOrders: orders.filter((order) => order.status === ServiceOrderStatus.RECEIVED).length,
+      diagnosisOrders: orders.filter((order) => order.status === ServiceOrderStatus.DIAGNOSIS).length,
       inProgressOrders: orders.filter((order) => order.status === ServiceOrderStatus.IN_PROGRESS).length,
       readyOrders: orders.filter((order) => order.status === ServiceOrderStatus.READY).length,
       deliveredOrders: delivered.length,
+      cancelledOrders: orders.filter((order) => order.status === ServiceOrderStatus.CANCELLED).length,
       serviceOrderIncome: this.sum(delivered, 'total'),
+      laborTotal: orders.filter((order) => order.status !== ServiceOrderStatus.CANCELLED).reduce((sum, order) => sum + Number(order.laborCost), 0),
+      partsTotal: orders.filter((order) => order.status !== ServiceOrderStatus.CANCELLED).reduce((sum, order) => sum + Number(order.partsCost), 0),
+      discountTotal: orders.filter((order) => order.status !== ServiceOrderStatus.CANCELLED).reduce((sum, order) => sum + Number(order.discount), 0),
+      pendingOrders: orders.filter((order) => pendingStatuses.includes(order.status)).length,
+      attendedCustomers: new Set(orders.map((order) => order.customerId)).size,
       averageAttentionHours: attentionTimes.length ? attentionTimes.reduce((a, b) => a + b, 0) / attentionTimes.length / 36e5 : 0,
       responsibleUsers: this.countBy(orders, (order) => order.user.fullName),
+      rows: orders.map((order) => ({
+        code: order.code,
+        receivedAt: order.receivedAt,
+        customer: order.customer.fullName,
+        equipment: [order.equipmentType, order.brand, order.model].filter(Boolean).join(' '),
+        reportedIssue: order.reportedIssue,
+        diagnosis: order.technicalDiagnosis ?? order.initialDiagnosis ?? 'Sin diagnóstico',
+        status: order.status,
+        laborCost: Number(order.laborCost),
+        partsCost: Number(order.partsCost),
+        discount: Number(order.discount),
+        total: Number(order.total),
+      })),
     };
   }
 
@@ -125,6 +178,20 @@ export class ReportsService {
       incomeByCategory: this.incomeByQuickCategory(completed),
       paymentMethods: this.paymentSummary(completed.map((sale) => ({ method: sale.paymentMethod, amount: sale.total }))),
       cancelledOperations: sales.filter((sale) => sale.status === QuickServiceSaleStatus.CANCELLED).length,
+      averageTicket: completed.length ? this.sum(completed, 'total') / completed.length : 0,
+      attendedCustomers: new Set(sales.filter((sale) => sale.customerId).map((sale) => sale.customerId)).size,
+      rows: sales.flatMap((sale) =>
+        sale.items.map((item) => ({
+          date: sale.createdAt,
+          code: sale.code,
+          service: item.description,
+          customer: sale.customer?.fullName ?? 'Cliente general',
+          quantity: item.quantity,
+          unitPrice: Number(item.unitPrice),
+          total: Number(item.subtotal),
+          status: sale.status,
+        })),
+      ),
     };
   }
 
@@ -134,12 +201,25 @@ export class ReportsService {
     const active = purchases.filter((purchase) => purchase.status !== PurchaseOrderStatus.CANCELLED);
     return {
       purchasesByPeriod: this.sumByDate(active, 'total'),
+      totalPurchases: purchases.length,
       totalPurchasedAmount: this.sum(active, 'total'),
       pendingPurchases: purchases.filter((purchase) => purchase.status === PurchaseOrderStatus.PENDING || purchase.status === PurchaseOrderStatus.PARTIALLY_RECEIVED).length,
       receivedPurchases: purchases.filter((purchase) => purchase.status === PurchaseOrderStatus.RECEIVED).length,
+      paidPurchases: purchases.filter((purchase) => purchase.paymentStatus === 'PAID').length,
+      suppliersCount: new Set(purchases.map((purchase) => purchase.supplierId)).size,
+      productsPurchased: active.flatMap((purchase) => purchase.items).reduce((sum, item) => sum + item.quantity, 0),
       topSuppliers: this.countAmountBy(active, (purchase) => purchase.supplier.name, 'total'),
       topPurchasedProducts: this.topPurchasedProducts(active),
       purchasesByPaymentStatus: this.countBy(purchases, (purchase) => purchase.paymentStatus),
+      rows: purchases.map((purchase) => ({
+        date: purchase.createdAt,
+        supplier: purchase.supplier.name,
+        code: purchase.code,
+        products: purchase.items.map((item) => item.product.name).join(', '),
+        status: purchase.status,
+        paymentStatus: purchase.paymentStatus,
+        total: Number(purchase.total),
+      })),
     };
   }
 
@@ -184,6 +264,11 @@ export class ReportsService {
       estimatedMargin: income ? (grossProfit / income) * 100 : 0,
       mostProfitableProducts: this.profitableProducts(sales),
       mostProfitableQuickServices: this.profitableQuickServices(quickSales),
+      rows: [
+        { concept: 'Ingresos por ventas', income: productIncome, costs: productCost, expenses: 0, profit: productIncome - productCost },
+        { concept: 'Ingresos por servicios rápidos', income: quickIncome, costs: quickCost, expenses: 0, profit: quickIncome - quickCost },
+        { concept: 'Gastos registrados en caja', income: 0, costs: 0, expenses: cash.expenses, profit: -cash.expenses },
+      ],
     };
   }
 
@@ -193,8 +278,18 @@ export class ReportsService {
     const table: ExportTable = {
       title: 'Reporte de ventas',
       dateRange: formatDateRange(start, end),
-      columns: ['Codigo', 'Fecha', 'Cliente', 'Usuario', 'Estado', 'Total'],
-      rows: report.rows.map((row: any) => [row.code, new Date(row.date).toLocaleDateString('es-PE'), row.customer, row.user, row.status, row.total.toFixed(2)]),
+      columns: ['Fecha', 'Comprobante', 'Cliente', 'Método de pago', 'Subtotal', 'Descuento', 'IGV', 'Total', 'Estado'],
+      rows: report.rows.map((row: any) => [
+        new Date(row.date).toLocaleDateString('es-PE'),
+        row.code,
+        row.customer,
+        row.paymentMethod,
+        row.subtotal.toFixed(2),
+        row.discount.toFixed(2),
+        row.tax.toFixed(2),
+        row.total.toFixed(2),
+        row.status,
+      ]),
       totals: [['Total vendido', report.totalSold.toFixed(2)], ['Ventas', report.salesCount]],
     };
     await this.auditExport(user.id, 'EXPORT_SALES_REPORT', type);
@@ -206,8 +301,8 @@ export class ReportsService {
     const table: ExportTable = {
       title: 'Reporte de inventario',
       dateRange: 'Inventario actual',
-      columns: ['Producto', 'SKU', 'Categoria', 'Stock', 'Minimo', 'Costo', 'Venta'],
-      rows: report.rows.map((row: any) => [row.name, row.sku, row.category, row.stock, row.minStock, row.purchasePrice.toFixed(2), row.salePrice.toFixed(2)]),
+      columns: ['Producto', 'SKU', 'Categoría', 'Stock', 'Mínimo', 'Costo', 'Venta', 'Estado'],
+      rows: report.rows.map((row: any) => [row.name, row.sku, row.category, row.stock, row.minStock, row.purchasePrice.toFixed(2), row.salePrice.toFixed(2), row.status]),
       totals: [['Valor inventario', report.inventoryValue.toFixed(2)], ['Stock bajo', report.lowStockProducts]],
     };
     await this.auditExport(user.id, 'EXPORT_INVENTORY_REPORT', type);
@@ -220,11 +315,119 @@ export class ReportsService {
     const table: ExportTable = {
       title: 'Reporte de caja',
       dateRange: formatDateRange(start, end),
-      columns: ['Fecha', 'Tipo', 'Concepto', 'Metodo', 'Usuario', 'Monto'],
+      columns: ['Fecha', 'Tipo', 'Concepto', 'Método', 'Usuario', 'Monto'],
       rows: report.rows.map((row: any) => [new Date(row.date).toLocaleDateString('es-PE'), row.type, row.concept, row.method, row.user, row.amount.toFixed(2)]),
       totals: [['Ingresos', report.income.toFixed(2)], ['Gastos', report.expenses.toFixed(2)], ['Diferencia', report.cashDifference.toFixed(2)]],
     };
     await this.auditExport(user.id, 'EXPORT_CASH_REPORT', type);
+    return this.export(table, type);
+  }
+
+  async exportServiceOrders(query: ExportReportQueryDto, user: AuthenticatedUser, type: 'pdf' | 'excel') {
+    const { start, end } = this.resolveRange(query, user);
+    const report = await this.serviceOrders(query, user);
+    const table: ExportTable = {
+      title: 'Reporte de servicios técnicos',
+      dateRange: formatDateRange(start, end),
+      columns: ['Código OT', 'Fecha', 'Cliente', 'Equipo', 'Estado', 'Mano de obra', 'Repuestos', 'Descuento', 'Total'],
+      rows: report.rows.map((row: any) => [
+        row.code,
+        new Date(row.receivedAt).toLocaleDateString('es-PE'),
+        row.customer,
+        row.equipment,
+        row.status,
+        row.laborCost.toFixed(2),
+        row.partsCost.toFixed(2),
+        row.discount.toFixed(2),
+        row.total.toFixed(2),
+      ]),
+      totals: [
+        ['Órdenes', report.totalOrders],
+        ['Ingresos', report.serviceOrderIncome.toFixed(2)],
+        ['Mano de obra', report.laborTotal.toFixed(2)],
+        ['Repuestos', report.partsTotal.toFixed(2)],
+      ],
+    };
+    await this.auditExport(user.id, 'EXPORT_SERVICE_ORDERS_REPORT', type);
+    return this.export(table, type);
+  }
+
+  async exportQuickServices(query: ExportReportQueryDto, user: AuthenticatedUser, type: 'pdf' | 'excel') {
+    const { start, end } = this.resolveRange(query, user);
+    const report = await this.quickServices(query, user);
+    const table: ExportTable = {
+      title: 'Reporte de servicios rápidos',
+      dateRange: formatDateRange(start, end),
+      columns: ['Fecha', 'Código', 'Servicio', 'Cliente', 'Cantidad', 'Precio unitario', 'Total', 'Estado'],
+      rows: report.rows.map((row: any) => [
+        new Date(row.date).toLocaleDateString('es-PE'),
+        row.code,
+        row.service,
+        row.customer,
+        row.quantity,
+        row.unitPrice.toFixed(2),
+        row.total.toFixed(2),
+        row.status,
+      ]),
+      totals: [
+        ['Operaciones', report.totalQuickServices],
+        ['Ingresos', report.quickServicesIncome.toFixed(2)],
+        ['Ticket promedio', report.averageTicket.toFixed(2)],
+      ],
+    };
+    await this.auditExport(user.id, 'EXPORT_QUICK_SERVICES_REPORT', type);
+    return this.export(table, type);
+  }
+
+  async exportPurchases(query: ExportReportQueryDto, user: AuthenticatedUser, type: 'pdf' | 'excel') {
+    const { start, end } = this.resolveRange(query, user);
+    const report = await this.purchases(query, user);
+    const table: ExportTable = {
+      title: 'Reporte de compras',
+      dateRange: formatDateRange(start, end),
+      columns: ['Fecha', 'Proveedor', 'Código', 'Productos', 'Estado', 'Estado de pago', 'Total'],
+      rows: report.rows.map((row: any) => [
+        new Date(row.date).toLocaleDateString('es-PE'),
+        row.supplier,
+        row.code,
+        row.products,
+        row.status,
+        row.paymentStatus,
+        row.total.toFixed(2),
+      ]),
+      totals: [
+        ['Compras', report.totalPurchases],
+        ['Monto comprado', report.totalPurchasedAmount.toFixed(2)],
+        ['Pendientes', report.pendingPurchases],
+      ],
+    };
+    await this.auditExport(user.id, 'EXPORT_PURCHASES_REPORT', type);
+    return this.export(table, type);
+  }
+
+  async exportProfitability(query: ExportReportQueryDto, user: AuthenticatedUser, type: 'pdf' | 'excel') {
+    const { start, end } = this.resolveRange(query, user);
+    const report = await this.profitabilityBasic(query, user);
+    const table: ExportTable = {
+      title: 'Reporte de rentabilidad',
+      dateRange: formatDateRange(start, end),
+      columns: ['Concepto', 'Ingresos', 'Costos', 'Gastos', 'Utilidad'],
+      rows: report.rows.map((row: any) => [
+        row.concept,
+        row.income.toFixed(2),
+        row.costs.toFixed(2),
+        row.expenses.toFixed(2),
+        row.profit.toFixed(2),
+      ]),
+      totals: [
+        ['Ingresos', report.totalIncome.toFixed(2)],
+        ['Costos', report.estimatedCosts.toFixed(2)],
+        ['Gastos', report.registeredExpenses.toFixed(2)],
+        ['Utilidad neta estimada', report.estimatedGrossProfit.toFixed(2)],
+        ['Margen', `${report.estimatedMargin.toFixed(2)}%`],
+      ],
+    };
+    await this.auditExport(user.id, 'EXPORT_PROFITABILITY_REPORT', type);
     return this.export(table, type);
   }
 
@@ -248,19 +451,74 @@ export class ReportsService {
   }
 
   private salesWhere(query: ReportQueryDto, start: Date, end: Date): Prisma.SaleWhereInput {
-    return { createdAt: { gte: start, lte: end }, userId: query.userId, customerId: query.customerId, status: query.status as SaleStatus | undefined, payments: query.paymentMethod ? { some: { method: query.paymentMethod } } : undefined };
+    return {
+      createdAt: { gte: start, lte: end },
+      userId: query.userId,
+      customerId: query.customerId,
+      status: query.status as SaleStatus | undefined,
+      payments: query.paymentMethod ? { some: { method: query.paymentMethod } } : undefined,
+      OR: query.search
+        ? [
+            { code: { contains: query.search, mode: 'insensitive' } },
+            { customer: { fullName: { contains: query.search, mode: 'insensitive' } } },
+            { items: { some: { description: { contains: query.search, mode: 'insensitive' } } } },
+          ]
+        : undefined,
+    };
   }
 
   private quickServicesWhere(query: ReportQueryDto, start: Date, end: Date): Prisma.QuickServiceSaleWhereInput {
-    return { createdAt: { gte: start, lte: end }, userId: query.userId, customerId: query.customerId, status: query.status as QuickServiceSaleStatus | undefined, paymentMethod: query.paymentMethod };
+    return {
+      createdAt: { gte: start, lte: end },
+      userId: query.userId,
+      customerId: query.customerId,
+      status: query.status as QuickServiceSaleStatus | undefined,
+      paymentMethod: query.paymentMethod,
+      OR: query.search
+        ? [
+            { code: { contains: query.search, mode: 'insensitive' } },
+            { customer: { fullName: { contains: query.search, mode: 'insensitive' } } },
+            { items: { some: { description: { contains: query.search, mode: 'insensitive' } } } },
+          ]
+        : undefined,
+    };
   }
 
   private serviceOrdersWhere(query: ReportQueryDto, start: Date, end: Date): Prisma.ServiceOrderWhereInput {
-    return { createdAt: { gte: start, lte: end }, userId: query.userId, customerId: query.customerId, status: query.status as ServiceOrderStatus | undefined };
+    return {
+      createdAt: { gte: start, lte: end },
+      userId: query.userId,
+      customerId: query.customerId,
+      status: query.status as ServiceOrderStatus | undefined,
+      OR: query.search
+        ? [
+            { code: { contains: query.search, mode: 'insensitive' } },
+            { customer: { fullName: { contains: query.search, mode: 'insensitive' } } },
+            { equipmentType: { contains: query.search, mode: 'insensitive' } },
+            { brand: { contains: query.search, mode: 'insensitive' } },
+            { serialNumber: { contains: query.search, mode: 'insensitive' } },
+            { reportedIssue: { contains: query.search, mode: 'insensitive' } },
+          ]
+        : undefined,
+    };
   }
 
   private purchasesWhere(query: ReportQueryDto, start: Date, end: Date): Prisma.PurchaseOrderWhereInput {
-    return { createdAt: { gte: start, lte: end }, userId: query.userId, supplierId: query.supplierId, status: query.status as PurchaseOrderStatus | undefined, paymentMethod: query.paymentMethod };
+    return {
+      createdAt: { gte: start, lte: end },
+      userId: query.userId,
+      supplierId: query.supplierId,
+      status: query.status as PurchaseOrderStatus | undefined,
+      paymentMethod: query.paymentMethod,
+      OR: query.search
+        ? [
+            { code: { contains: query.search, mode: 'insensitive' } },
+            { supplier: { name: { contains: query.search, mode: 'insensitive' } } },
+            { supplier: { ruc: { contains: query.search, mode: 'insensitive' } } },
+            { items: { some: { product: { name: { contains: query.search, mode: 'insensitive' } } } } },
+          ]
+        : undefined,
+    };
   }
 
   private sum(items: any[], field: string) {
@@ -355,6 +613,6 @@ export class ReportsService {
   }
 
   private auditExport(userId: string, action: string, type: string) {
-    return this.prisma.auditLog.create({ data: { userId, action, module: 'reports', description: `Exportacion ${type}` } });
+    return this.prisma.auditLog.create({ data: { userId, action, module: 'reports', description: `Exportación ${type}` } });
   }
 }

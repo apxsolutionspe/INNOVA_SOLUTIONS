@@ -14,6 +14,12 @@ export interface Product {
   sku: string;
   barcode?: string | null;
   imageUrl?: string | null;
+  brand?: string | null;
+  model?: string | null;
+  warranty?: string | null;
+  recommendedUse?: string | null;
+  salesNotes?: string | null;
+  technicalSpecs?: Record<string, string> | null;
   image?: string | null;
   imagePath?: string | null;
   thumbnail?: string | null;
@@ -33,6 +39,12 @@ export interface ProductPayload {
   sku: string;
   barcode?: string;
   imageUrl?: string | null;
+  brand?: string;
+  model?: string;
+  warranty?: string;
+  recommendedUse?: string;
+  salesNotes?: string;
+  technicalSpecs?: Record<string, string>;
   categoryId: string;
   purchasePrice: number;
   salePrice: number;

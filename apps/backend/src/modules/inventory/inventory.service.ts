@@ -1,5 +1,5 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { InventoryMovementType } from '@prisma/client';
+import { InventoryMovementType, Prisma } from '@prisma/client';
 
 import { PrismaService } from '../../database/prisma.service';
 import { AuthenticatedUser } from '../auth/types/authenticated-user.type';
@@ -37,10 +37,11 @@ export class InventoryService {
   }
 
   async createProduct(dto: CreateProductDto, user: AuthenticatedUser) {
-    await this.ensureCategoryExists(dto.categoryId);
-    await this.ensureUniqueProduct(dto.sku, dto.barcode);
+    const payload = this.normalizeProductPayload(dto);
+    await this.ensureCategoryExists(payload.categoryId);
+    await this.ensureUniqueProduct(payload.sku, payload.barcode);
 
-    const product = await this.inventoryRepository.createProduct(dto, user.id);
+    const product = await this.inventoryRepository.createProduct(payload as Prisma.ProductUncheckedCreateInput, user.id);
     await this.audit(user.id, 'CREATE_PRODUCT', `Producto creado: ${product.name}`);
     return this.mapProduct(product);
   }
@@ -52,15 +53,17 @@ export class InventoryService {
       throw new NotFoundException('Producto no encontrado');
     }
 
-    if (dto.categoryId) {
-      await this.ensureCategoryExists(dto.categoryId);
+    const payload = this.normalizeProductPayload(dto);
+
+    if (payload.categoryId) {
+      await this.ensureCategoryExists(payload.categoryId);
     }
 
-    if ((dto.sku && dto.sku !== current.sku) || (dto.barcode && dto.barcode !== current.barcode)) {
-      await this.ensureUniqueProduct(dto.sku, dto.barcode);
+    if ((payload.sku && payload.sku !== current.sku) || (payload.barcode && payload.barcode !== current.barcode)) {
+      await this.ensureUniqueProduct(payload.sku, payload.barcode);
     }
 
-    const product = await this.inventoryRepository.updateProduct(id, dto);
+    const product = await this.inventoryRepository.updateProduct(id, payload as Prisma.ProductUncheckedUpdateInput);
     await this.audit(user.id, 'UPDATE_PRODUCT', `Producto editado: ${product.name}`);
     return this.mapProduct(product);
   }
@@ -117,7 +120,7 @@ export class InventoryService {
     const current = await this.inventoryRepository.findCategoryById(id);
 
     if (!current) {
-      throw new NotFoundException('Categoria no encontrada');
+      throw new NotFoundException('Categoría no encontrada');
     }
 
     const data = { ...dto, name: normalizeCategoryName(dto.name) };
@@ -133,7 +136,7 @@ export class InventoryService {
     const current = await this.inventoryRepository.findCategoryById(id);
 
     if (!current) {
-      throw new NotFoundException('Categoria no encontrada');
+      throw new NotFoundException('Categoría no encontrada');
     }
 
     return this.inventoryRepository.deactivateCategory(id);
@@ -186,7 +189,7 @@ export class InventoryService {
     const category = await this.inventoryRepository.findCategoryById(categoryId);
 
     if (!category || !category.isActive) {
-      throw new NotFoundException('Categoria no encontrada');
+      throw new NotFoundException('Categoría no encontrada');
     }
   }
 
@@ -194,7 +197,7 @@ export class InventoryService {
     const category = await this.inventoryRepository.findCategoryByName(name);
 
     if (category) {
-      throw new ConflictException('Ya existe una categoria con ese nombre');
+      throw new ConflictException('Ya existe una categoría con ese nombre');
     }
   }
 
@@ -233,5 +236,55 @@ export class InventoryService {
       purchasePrice: Number(product.purchasePrice),
       salePrice: Number(product.salePrice),
     };
+  }
+
+  private normalizeProductPayload<T extends Partial<CreateProductDto>>(dto: T) {
+    const payload: any = { ...dto };
+    const textFields = ['name', 'description', 'sku', 'barcode', 'brand', 'model', 'warranty', 'recommendedUse', 'salesNotes', 'unit'] as const;
+
+    textFields.forEach((field) => {
+      if (typeof payload[field] === 'string') {
+        const clean = this.cleanText(payload[field]);
+        payload[field] = clean || undefined;
+      }
+    });
+
+    if ('technicalSpecs' in payload) {
+      payload.technicalSpecs = this.sanitizeTechnicalSpecs(payload.technicalSpecs);
+    }
+
+    payload.technicalSpecsSearch = this.buildTechnicalSpecsSearch(payload);
+    return payload as T & { technicalSpecsSearch?: string | null };
+  }
+
+  private sanitizeTechnicalSpecs(value: unknown) {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return undefined;
+    const entries = Object.entries(value as Record<string, unknown>)
+      .map(([key, rawValue]) => [this.cleanText(key), this.cleanText(String(rawValue ?? ''))])
+      .filter(([key, rawValue]) => key && rawValue)
+      .slice(0, 16);
+
+    return entries.length ? Object.fromEntries(entries) : undefined;
+  }
+
+  private cleanText(value: string) {
+    return value.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+  }
+
+  private buildTechnicalSpecsSearch(payload: Record<string, unknown>) {
+    const specs = payload.technicalSpecs && typeof payload.technicalSpecs === 'object'
+      ? Object.entries(payload.technicalSpecs as Record<string, unknown>).flatMap(([key, value]) => [key, String(value ?? '')])
+      : [];
+    return [
+      payload.brand,
+      payload.model,
+      payload.warranty,
+      payload.recommendedUse,
+      payload.salesNotes,
+      ...specs,
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase() || null;
   }
 }

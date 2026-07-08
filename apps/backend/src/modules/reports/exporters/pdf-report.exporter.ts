@@ -14,10 +14,13 @@ export class PdfReportExporter {
     const chunks: Buffer[] = [];
     doc.on('data', (chunk) => chunks.push(chunk));
 
-    doc.fontSize(18).text('Innova Solutions', { align: 'left' });
+    doc.fontSize(18).fillColor('#0f172a').text('Innova Solutions', { align: 'left' });
     doc.moveDown(0.3);
+    doc.fontSize(10).fillColor('#2563eb').text('Manager Suite / Sistema Integral de Gestión');
+    doc.moveDown(0.2);
     doc.fontSize(13).fillColor('#334155').text(table.title);
     doc.fontSize(9).fillColor('#64748b').text(`Rango: ${table.dateRange}`);
+    doc.fontSize(9).fillColor('#64748b').text(`Generado: ${new Date().toLocaleString('es-PE')}`);
     doc.moveDown();
 
     const columnWidth = 510 / Math.max(table.columns.length, 1);
@@ -39,6 +42,8 @@ export class PdfReportExporter {
       doc.fontSize(10).fillColor('#0f172a').text('Totales', { underline: true });
       table.totals.forEach(([label, value]) => doc.text(`${label}: ${value}`));
     }
+
+    doc.fontSize(8).fillColor('#94a3b8').text('Generado por Innova Solutions Manager Suite', 42, 790, { align: 'center', width: 510 });
 
     doc.end();
     return new Promise((resolve) => doc.on('end', () => resolve(Buffer.concat(chunks))));

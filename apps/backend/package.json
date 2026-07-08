@@ -10,7 +10,8 @@
     "lint": "npm run typecheck",
     "prisma:generate": "prisma generate --schema prisma/schema.prisma",
     "prisma:migrate": "prisma migrate dev --schema prisma/schema.prisma",
-    "prisma:seed": "prisma db seed --schema prisma/schema.prisma"
+    "prisma:seed": "prisma db seed --schema prisma/schema.prisma",
+    "products:backfill-images": "tsx scripts/backfill-product-images.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

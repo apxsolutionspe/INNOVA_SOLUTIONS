@@ -50,7 +50,7 @@ export function ReportsAlertsPanel({ summary }: { summary: ReportsSummary | null
       icon: Boxes,
     },
     {
-      label: 'Ordenes pendientes',
+      label: 'Órdenes pendientes',
       description: 'Atención técnica en curso',
       value: summary?.pendingServiceOrders ?? 0,
       path: '/service-orders',

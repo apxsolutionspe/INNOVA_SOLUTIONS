@@ -1,6 +1,7 @@
 import { httpClient } from '../../../services/http-client';
 import {
   CashReport,
+  ExportReportModule,
   InventoryReport,
   ProfitabilityReport,
   PurchasesReport,
@@ -44,13 +45,13 @@ export const reportsService = {
     const { data } = await httpClient.get<ProfitabilityReport>('/reports/profitability-basic', { params });
     return data;
   },
-  async export(module: 'sales' | 'inventory' | 'cash', type: 'pdf' | 'excel', params: ReportFilters) {
+  async export(module: ExportReportModule, type: 'pdf' | 'excel', params: ReportFilters) {
     const { data } = await httpClient.get<Blob>(`/reports/export/${module}/${type}`, { params, responseType: 'blob' });
     const extension = type === 'pdf' ? 'pdf' : 'xlsx';
     const url = URL.createObjectURL(data);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `reporte-${module}.${extension}`;
+    link.download = `reporte-${module}-${new Date().toISOString().slice(0, 10)}.${extension}`;
     link.click();
     URL.revokeObjectURL(url);
   },

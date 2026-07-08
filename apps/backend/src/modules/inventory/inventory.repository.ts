@@ -3,9 +3,7 @@ import { InventoryMovementType, Prisma } from '@prisma/client';
 
 import { PrismaService } from '../../database/prisma.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
-import { CreateProductDto } from './dto/create-product.dto';
 import { ProductQueryDto } from './dto/product-query.dto';
-import { UpdateProductDto } from './dto/update-product.dto';
 import { buildCategorySearchTerms } from './utils/category-normalization.util';
 
 @Injectable()
@@ -53,21 +51,23 @@ export class InventoryRepository {
     return this.prisma.product.findUnique({ where: { barcode } });
   }
 
-  createProduct(data: CreateProductDto, userId: string) {
+  createProduct(data: Prisma.ProductUncheckedCreateInput, userId: string) {
     return this.prisma.$transaction(async (tx) => {
       const product = await tx.product.create({
         data,
         include: { category: true },
       });
 
-      if (data.stock > 0) {
+      const initialStock = Number(data.stock ?? 0);
+
+      if (initialStock > 0) {
         await tx.inventoryMovement.create({
           data: {
             productId: product.id,
             type: InventoryMovementType.IN,
-            quantity: data.stock,
+            quantity: initialStock,
             previousStock: 0,
-            newStock: data.stock,
+            newStock: initialStock,
             reason: 'Stock inicial',
             userId,
           },
@@ -78,7 +78,7 @@ export class InventoryRepository {
     });
   }
 
-  updateProduct(id: string, data: UpdateProductDto) {
+  updateProduct(id: string, data: Prisma.ProductUncheckedUpdateInput) {
     return this.prisma.product.update({
       where: { id },
       data,
@@ -208,6 +208,12 @@ export class InventoryRepository {
       where.OR = [
         { name: { contains: search, mode: Prisma.QueryMode.insensitive } },
         { sku: { contains: search, mode: Prisma.QueryMode.insensitive } },
+        { barcode: { contains: search, mode: Prisma.QueryMode.insensitive } },
+        { brand: { contains: search, mode: Prisma.QueryMode.insensitive } },
+        { model: { contains: search, mode: Prisma.QueryMode.insensitive } },
+        { recommendedUse: { contains: search, mode: Prisma.QueryMode.insensitive } },
+        { salesNotes: { contains: search, mode: Prisma.QueryMode.insensitive } },
+        { technicalSpecsSearch: { contains: search.toLowerCase(), mode: Prisma.QueryMode.insensitive } },
         ...categoryFilters,
       ];
     }

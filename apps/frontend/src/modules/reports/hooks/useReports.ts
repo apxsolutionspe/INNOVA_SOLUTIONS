@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { reportsService } from '../services/reports.service';
 import {
   CashReport,
+  ExportReportModule,
   InventoryReport,
   ProfitabilityReport,
   PurchasesReport,
@@ -60,7 +61,7 @@ export function useReports() {
     void loadReports();
   }, [loadReports]);
 
-  const exportReport = async (module: 'sales' | 'inventory' | 'cash', type: 'pdf' | 'excel') => {
+  const exportReport = async (module: ExportReportModule, type: 'pdf' | 'excel') => {
     setIsExporting(true);
     try {
       await reportsService.export(module, type, filters);

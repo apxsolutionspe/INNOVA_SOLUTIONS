@@ -47,4 +47,9 @@ export class ReportQueryDto {
   @IsOptional()
   @IsString()
   supplierId?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  search?: string;
 }

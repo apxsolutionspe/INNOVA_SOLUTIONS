@@ -16,7 +16,8 @@ export function ReportFilters({ filters, onChange, onRefresh }: Props) {
     filters.status ||
     filters.categoryId ||
     filters.productId ||
-    filters.supplierId,
+    filters.supplierId ||
+    filters.search,
   );
 
   return (
@@ -31,7 +32,7 @@ export function ReportFilters({ filters, onChange, onRefresh }: Props) {
         <p className="text-xs font-semibold text-slate-400">Define el periodo y genera el reporte con datos reales.</p>
       </div>
 
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-[160px_160px_180px_170px_1fr_auto_auto] xl:items-center">
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-[150px_150px_170px_160px_minmax(180px,1fr)_auto_auto] xl:items-center">
         <input
           type="date"
           value={filters.startDate ?? ''}
@@ -49,7 +50,7 @@ export function ReportFilters({ filters, onChange, onRefresh }: Props) {
           onChange={(event) => onChange({ ...filters, paymentMethod: event.target.value || undefined })}
           className="h-11 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm font-semibold text-slate-800 outline-none transition focus:border-brand-blue focus:bg-white focus:ring-4 focus:ring-blue-100"
         >
-          <option value="">Todos los metodos</option>
+          <option value="">Todos los métodos</option>
           <option value="CASH">Efectivo</option>
           <option value="YAPE">Yape</option>
           <option value="PLIN">Plin</option>
@@ -62,9 +63,9 @@ export function ReportFilters({ filters, onChange, onRefresh }: Props) {
           className="h-11 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm font-semibold text-slate-800 outline-none transition focus:border-brand-blue focus:bg-white focus:ring-4 focus:ring-blue-100"
         />
         <input
-          value={filters.categoryId ?? ''}
-          onChange={(event) => onChange({ ...filters, categoryId: event.target.value || undefined })}
-          placeholder="Categoría ID opcional"
+          value={filters.search ?? ''}
+          onChange={(event) => onChange({ ...filters, search: event.target.value || undefined })}
+          placeholder="Buscar por código, cliente, producto o proveedor"
           className="h-11 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm font-semibold text-slate-800 outline-none transition focus:border-brand-blue focus:bg-white focus:ring-4 focus:ring-blue-100"
         />
         <Button type="button" variant="secondary" onClick={() => onChange({})} disabled={!hasFilters}>

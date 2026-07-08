@@ -97,6 +97,54 @@ export class ReportsController {
     this.sendFile(res, buffer, 'reporte-caja.xlsx', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
   }
 
+  @Get('export/service-orders/pdf')
+  async exportServiceOrdersPdf(@Query() query: ExportReportQueryDto, @CurrentUser() user: AuthenticatedUser, @Res() res: Response) {
+    const buffer = await this.reportsService.exportServiceOrders(query, user, 'pdf');
+    this.sendFile(res, buffer, 'reporte-servicios-tecnicos.pdf', 'application/pdf');
+  }
+
+  @Get('export/service-orders/excel')
+  async exportServiceOrdersExcel(@Query() query: ExportReportQueryDto, @CurrentUser() user: AuthenticatedUser, @Res() res: Response) {
+    const buffer = await this.reportsService.exportServiceOrders(query, user, 'excel');
+    this.sendFile(res, buffer, 'reporte-servicios-tecnicos.xlsx', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+  }
+
+  @Get('export/quick-services/pdf')
+  async exportQuickServicesPdf(@Query() query: ExportReportQueryDto, @CurrentUser() user: AuthenticatedUser, @Res() res: Response) {
+    const buffer = await this.reportsService.exportQuickServices(query, user, 'pdf');
+    this.sendFile(res, buffer, 'reporte-servicios-rapidos.pdf', 'application/pdf');
+  }
+
+  @Get('export/quick-services/excel')
+  async exportQuickServicesExcel(@Query() query: ExportReportQueryDto, @CurrentUser() user: AuthenticatedUser, @Res() res: Response) {
+    const buffer = await this.reportsService.exportQuickServices(query, user, 'excel');
+    this.sendFile(res, buffer, 'reporte-servicios-rapidos.xlsx', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+  }
+
+  @Get('export/purchases/pdf')
+  async exportPurchasesPdf(@Query() query: ExportReportQueryDto, @CurrentUser() user: AuthenticatedUser, @Res() res: Response) {
+    const buffer = await this.reportsService.exportPurchases(query, user, 'pdf');
+    this.sendFile(res, buffer, 'reporte-compras.pdf', 'application/pdf');
+  }
+
+  @Get('export/purchases/excel')
+  async exportPurchasesExcel(@Query() query: ExportReportQueryDto, @CurrentUser() user: AuthenticatedUser, @Res() res: Response) {
+    const buffer = await this.reportsService.exportPurchases(query, user, 'excel');
+    this.sendFile(res, buffer, 'reporte-compras.xlsx', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+  }
+
+  @Get('export/profitability/pdf')
+  async exportProfitabilityPdf(@Query() query: ExportReportQueryDto, @CurrentUser() user: AuthenticatedUser, @Res() res: Response) {
+    const buffer = await this.reportsService.exportProfitability(query, user, 'pdf');
+    this.sendFile(res, buffer, 'reporte-rentabilidad.pdf', 'application/pdf');
+  }
+
+  @Get('export/profitability/excel')
+  async exportProfitabilityExcel(@Query() query: ExportReportQueryDto, @CurrentUser() user: AuthenticatedUser, @Res() res: Response) {
+    const buffer = await this.reportsService.exportProfitability(query, user, 'excel');
+    this.sendFile(res, buffer, 'reporte-rentabilidad.xlsx', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+  }
+
   private sendFile(res: Response, buffer: Buffer, filename: string, contentType: string) {
     res.setHeader('Content-Type', contentType);
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);

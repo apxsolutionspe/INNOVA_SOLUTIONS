@@ -108,6 +108,13 @@ model Product {
   sku            String              @unique
   barcode        String?             @unique
   imageUrl       String?
+  brand          String?
+  model          String?
+  warranty       String?
+  recommendedUse String?
+  salesNotes     String?
+  technicalSpecs Json?
+  technicalSpecsSearch String?
   categoryId     String
   category       ProductCategory     @relation(fields: [categoryId], references: [id])
   purchasePrice  Decimal             @db.Decimal(12, 2)

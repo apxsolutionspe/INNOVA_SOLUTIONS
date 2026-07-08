@@ -31,7 +31,11 @@ export class ReportsRepository {
   serviceOrders(where: Prisma.ServiceOrderWhereInput) {
     return this.prisma.serviceOrder.findMany({
       where,
-      include: { user: { select: { id: true, fullName: true } }, customer: { select: { id: true, fullName: true } } },
+      include: {
+        user: { select: { id: true, fullName: true } },
+        customer: { select: { id: true, fullName: true, phone: true } },
+        items: { include: { product: true } },
+      },
       orderBy: { createdAt: 'asc' },
     });
   }

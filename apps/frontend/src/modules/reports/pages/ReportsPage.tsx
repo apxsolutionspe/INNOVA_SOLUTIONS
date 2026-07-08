@@ -23,8 +23,8 @@ const tabs = [
   { id: 'executive', label: 'Ejecutivo', icon: Gauge },
   { id: 'sales', label: 'Ventas', icon: ReceiptText },
   { id: 'inventory', label: 'Inventario', icon: Boxes },
-  { id: 'service-orders', label: 'Servicios tecnicos', icon: ClipboardList },
-  { id: 'quick-services', label: 'Servicios rapidos', icon: Zap },
+  { id: 'service-orders', label: 'Servicios técnicos', icon: ClipboardList },
+  { id: 'quick-services', label: 'Servicios rápidos', icon: Zap },
   { id: 'purchases', label: 'Compras', icon: ShoppingBag },
   { id: 'cash', label: 'Caja', icon: Banknote },
   { id: 'profitability', label: 'Rentabilidad', icon: BriefcaseBusiness },
@@ -53,10 +53,7 @@ export function ReportsPage() {
       <ReportsHeader
         updatedAt={new Date()}
         isLoading={reports.isLoading}
-        isExporting={reports.isExporting}
         onRefresh={() => void reports.loadReports()}
-        onExportSalesPdf={() => void reports.exportReport('sales', 'pdf')}
-        onExportCashExcel={() => void reports.exportReport('cash', 'excel')}
         onPrint={handlePrint}
       />
 
@@ -79,11 +76,11 @@ export function ReportsPage() {
         ) : null}
         {activeTab === 'sales' ? <SalesReportSection report={reports.sales} isExporting={reports.isExporting} onExport={(module, type) => void reports.exportReport(module, type)} /> : null}
         {activeTab === 'inventory' ? <InventoryReportSection report={reports.inventory} isExporting={reports.isExporting} onExport={(module, type) => void reports.exportReport(module, type)} /> : null}
-        {activeTab === 'service-orders' ? <ServiceOrdersReportSection report={reports.serviceOrders} /> : null}
-        {activeTab === 'quick-services' ? <QuickServicesReportSection report={reports.quickServices} /> : null}
-        {activeTab === 'purchases' ? <PurchasesReportSection report={reports.purchases} /> : null}
+        {activeTab === 'service-orders' ? <ServiceOrdersReportSection report={reports.serviceOrders} isExporting={reports.isExporting} onExport={(module, type) => void reports.exportReport(module, type)} /> : null}
+        {activeTab === 'quick-services' ? <QuickServicesReportSection report={reports.quickServices} isExporting={reports.isExporting} onExport={(module, type) => void reports.exportReport(module, type)} /> : null}
+        {activeTab === 'purchases' ? <PurchasesReportSection report={reports.purchases} isExporting={reports.isExporting} onExport={(module, type) => void reports.exportReport(module, type)} /> : null}
         {activeTab === 'cash' ? <CashReportSection report={reports.cash} isExporting={reports.isExporting} onExport={(module, type) => void reports.exportReport(module, type)} /> : null}
-        {activeTab === 'profitability' ? <ProfitabilityBasicSection report={reports.profitability} /> : null}
+        {activeTab === 'profitability' ? <ProfitabilityBasicSection report={reports.profitability} isExporting={reports.isExporting} onExport={(module, type) => void reports.exportReport(module, type)} /> : null}
       </section>
     </section>
   );

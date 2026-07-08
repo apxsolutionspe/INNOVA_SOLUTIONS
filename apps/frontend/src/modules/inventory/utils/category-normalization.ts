@@ -98,8 +98,15 @@ export function matchesProductSearch(product: Product, search: string) {
   const searchableText = [
     product.name,
     product.sku,
+    product.barcode,
+    product.brand,
+    product.model,
+    product.warranty,
+    product.recommendedUse,
+    product.salesNotes,
     product.category?.name,
     normalizeCategoryName(product.category?.name),
+    ...Object.entries(product.technicalSpecs ?? {}).flatMap(([key, value]) => [key, value]),
   ]
     .map(normalizeText)
     .join(' ');
