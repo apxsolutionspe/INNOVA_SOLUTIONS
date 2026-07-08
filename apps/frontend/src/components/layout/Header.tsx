@@ -17,7 +17,7 @@ const routeTitles: Array<{ path: string; title: string }> = [
   { path: '/dashboard', title: 'Inicio' },
   { path: '/pos', title: 'POS' },
   { path: '/sales', title: 'Historial de ventas' },
-  { path: '/quick-services', title: 'Servicios r?pidos' },
+  { path: '/quick-services', title: 'Servicios rápidos' },
   { path: '/quick-service-sales', title: 'Historial Servicios' },
   { path: '/payments', title: 'Pagos Online' },
   { path: '/customers', title: 'Clientes' },
@@ -30,8 +30,8 @@ const routeTitles: Array<{ path: string; title: string }> = [
   { path: '/profitability', title: 'Rentabilidad' },
   { path: '/ai-analytics', title: 'Analítica IA' },
   { path: '/users', title: 'Usuarios' },
-  { path: '/audit', title: 'Auditor?a' },
-  { path: '/settings', title: 'Configuraci?n' },
+  { path: '/audit', title: 'Auditoría' },
+  { path: '/settings', title: 'Configuración' },
   { path: '/integrations', title: 'Integraciones' },
   { path: '/sunat', title: 'SUNAT' },
   { path: '/whatsapp', title: 'WhatsApp' },
@@ -71,7 +71,7 @@ export function Header({ onMenuClick, onToggleSidebar, isMenuOpen = false }: Hea
 
   return (
     <header
-      className={`sticky top-0 z-50 isolate border-b bg-white/90 backdrop-blur-xl transition-all duration-200 ${
+      className={`fixed left-0 right-0 top-0 z-50 isolate border-b bg-white/90 backdrop-blur-xl transition-[left,box-shadow,border-color,background-color] duration-300 ${isMenuOpen ? 'lg:left-72' : 'lg:left-0'} ${
         isScrolled
           ? 'border-slate-200/90 shadow-[0_14px_34px_rgba(15,23,42,0.10)]'
           : 'border-slate-200/70 shadow-[0_8px_24px_rgba(15,23,42,0.045)]'
@@ -83,14 +83,14 @@ export function Header({ onMenuClick, onToggleSidebar, isMenuOpen = false }: Hea
           <button
             type="button"
             onClick={onToggleSidebar ?? onMenuClick}
-            aria-label={isMenuOpen ? 'Cerrar men? lateral' : 'Abrir men? lateral'}
+            aria-label={isMenuOpen ? 'Cerrar menú lateral' : 'Abrir menú lateral'}
             aria-expanded={isMenuOpen}
             className={`group grid h-11 w-11 shrink-0 place-items-center rounded-2xl border shadow-sm transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-cyan-100 ${
               isMenuOpen
                 ? 'border-cyan-200 bg-gradient-to-br from-blue-50 via-cyan-50 to-violet-50 text-brand-blue shadow-cyan-100'
                 : 'border-slate-200/80 bg-white/95 text-slate-700 hover:-translate-y-0.5 hover:border-brand-cyan hover:bg-cyan-50/70 hover:text-brand-blue hover:shadow-cyan-100/70'
             }`}
-            title={isMenuOpen ? 'Cerrar men?' : 'Abrir men?'}
+            title={isMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
           >
             {isMenuOpen ? <PanelLeftOpen size={20} className="transition group-hover:scale-105" /> : <Menu size={20} className="transition group-hover:scale-105" />}
           </button>
@@ -157,7 +157,7 @@ export function Header({ onMenuClick, onToggleSidebar, isMenuOpen = false }: Hea
             className="group inline-flex h-11 w-11 items-center justify-center gap-2 rounded-2xl border border-slate-200/80 bg-white/85 px-0 text-sm font-bold text-slate-700 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-red-200 hover:bg-red-50 hover:text-red-600 hover:shadow-red-100/70 focus:outline-none focus:ring-4 focus:ring-red-100 sm:w-auto sm:px-3"
           >
             <LogOut size={18} className="transition group-hover:translate-x-0.5" />
-            <span className="hidden sm:inline">Cerrar sesi?n</span>
+            <span className="hidden sm:inline">Cerrar sesión</span>
           </button>
         </div>
       </div>

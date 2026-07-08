@@ -21,7 +21,7 @@ export function SuppliersPage() {
   };
 
   const activeCount = suppliers.suppliers.filter((supplier) => supplier.isActive).length;
-  const inactiveCount = suppliers.suppliers.length - activeCount;
+  const catalogCount = suppliers.suppliers.reduce((total, supplier) => total + (supplier.products ?? []).filter((item) => item.isActive).length, 0);
   const lastSupplier = suppliers.suppliers[0]?.name ?? 'Sin registros';
 
   return (
@@ -30,8 +30,8 @@ export function SuppliersPage() {
         {[
           ['Total proveedores', suppliers.suppliers.length],
           ['Activos', activeCount],
-          ['Inactivos', inactiveCount],
-          ['Ultimo registrado', lastSupplier],
+          ['Productos ofrecidos', catalogCount],
+          ['Último registrado', lastSupplier],
         ].map(([label, value]) => (
           <motion.div key={label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
             <p className="text-xs font-bold uppercase text-slate-400">{label}</p>

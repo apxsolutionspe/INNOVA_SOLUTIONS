@@ -14,15 +14,15 @@ export class SuppliersRepository {
     const where = this.buildWhere(query);
     const skip = (query.page - 1) * query.limit;
     const [items, total] = await this.prisma.$transaction([
-      this.prisma.supplier.findMany({ where, skip, take: query.limit, orderBy: { createdAt: 'desc' } }),
+      this.prisma.supplier.findMany({ where, include: this.include(), skip, take: query.limit, orderBy: { createdAt: 'desc' } }),
       this.prisma.supplier.count({ where }),
     ]);
 
-    return { items, meta: { total, page: query.page, limit: query.limit, totalPages: Math.ceil(total / query.limit) } };
+    return { items: items.map((item) => this.mapSupplier(item)), meta: { total, page: query.page, limit: query.limit, totalPages: Math.ceil(total / query.limit) } };
   }
 
   findById(id: string) {
-    return this.prisma.supplier.findUnique({ where: { id } });
+    return this.prisma.supplier.findUnique({ where: { id }, include: this.include() });
   }
 
   findByRuc(ruc: string) {
@@ -30,15 +30,102 @@ export class SuppliersRepository {
   }
 
   create(dto: CreateSupplierDto) {
-    return this.prisma.supplier.create({ data: dto });
+    const { products = [], ...supplierData } = dto;
+    return this.prisma.supplier.create({
+      data: {
+        ...supplierData,
+        products: products.length ? { create: products.map((product) => this.productCreateData(product)) } : undefined,
+      },
+      include: this.include(),
+    }).then((supplier) => this.mapSupplier(supplier));
   }
 
   update(id: string, dto: UpdateSupplierDto) {
-    return this.prisma.supplier.update({ where: { id }, data: dto });
+    const { products, ...supplierData } = dto;
+    return this.prisma.$transaction(async (tx) => {
+      if (products) {
+        await tx.supplierProduct.deleteMany({ where: { supplierId: id } });
+      }
+      const supplier = await tx.supplier.update({
+        where: { id },
+        data: {
+          ...supplierData,
+          products: products ? { create: products.map((product) => this.productCreateData(product)) } : undefined,
+        },
+        include: this.include(),
+      });
+      return this.mapSupplier(supplier);
+    });
   }
 
   deactivate(id: string) {
-    return this.prisma.supplier.update({ where: { id }, data: { isActive: false } });
+    return this.prisma.supplier.update({ where: { id }, data: { isActive: false }, include: this.include() }).then((supplier) => this.mapSupplier(supplier));
+  }
+
+  async addProduct(supplierId: string, dto: NonNullable<CreateSupplierDto['products']>[number]) {
+    await this.prisma.supplierProduct.create({
+      data: {
+        supplier: { connect: { id: supplierId } },
+        ...this.productCreateData(dto),
+      },
+    });
+    const supplier = await this.prisma.supplier.findUniqueOrThrow({ where: { id: supplierId }, include: this.include() });
+    return this.mapSupplier(supplier);
+  }
+
+  async updateProduct(supplierId: string, itemId: string, dto: NonNullable<CreateSupplierDto['products']>[number]) {
+    await this.prisma.supplierProduct.updateMany({ where: { id: itemId, supplierId }, data: this.productUpdateData(dto) });
+    const supplier = await this.prisma.supplier.findUniqueOrThrow({ where: { id: supplierId }, include: this.include() });
+    return this.mapSupplier(supplier);
+  }
+
+  async deactivateProduct(supplierId: string, itemId: string) {
+    await this.prisma.supplierProduct.updateMany({ where: { id: itemId, supplierId }, data: { isActive: false } });
+    const supplier = await this.prisma.supplier.findUniqueOrThrow({ where: { id: supplierId }, include: this.include() });
+    return this.mapSupplier(supplier);
+  }
+
+  private include() {
+    return {
+      products: { include: { product: { include: { category: true } } }, orderBy: { createdAt: 'desc' } },
+      _count: { select: { purchaseOrders: true } },
+    } satisfies Prisma.SupplierInclude;
+  }
+
+  private productCreateData(dto: NonNullable<CreateSupplierDto['products']>[number]): Prisma.SupplierProductCreateWithoutSupplierInput {
+    return {
+      product: dto.productId ? { connect: { id: dto.productId } } : undefined,
+      name: dto.name,
+      category: dto.category,
+      unit: dto.unit,
+      referencePrice: dto.referencePrice,
+      deliveryTime: dto.deliveryTime,
+      notes: dto.notes,
+      isActive: dto.isActive ?? true,
+    };
+  }
+
+  private productUpdateData(dto: NonNullable<CreateSupplierDto['products']>[number]): Prisma.SupplierProductUncheckedUpdateManyInput {
+    return {
+      productId: dto.productId || null,
+      name: dto.name,
+      category: dto.category,
+      unit: dto.unit,
+      referencePrice: dto.referencePrice,
+      deliveryTime: dto.deliveryTime,
+      notes: dto.notes,
+      isActive: dto.isActive ?? true,
+    };
+  }
+
+  private mapSupplier(supplier: any) {
+    return {
+      ...supplier,
+      products: supplier.products?.map((product: any) => ({
+        ...product,
+        referencePrice: product.referencePrice === null || product.referencePrice === undefined ? null : Number(product.referencePrice),
+      })) ?? [],
+    };
   }
 
   private buildWhere(query: SupplierQueryDto): Prisma.SupplierWhereInput {
@@ -49,7 +136,11 @@ export class SuppliersRepository {
         { name: { contains: query.search, mode: 'insensitive' } },
         { ruc: { contains: query.search, mode: 'insensitive' } },
         { phone: { contains: query.search, mode: 'insensitive' } },
+        { whatsapp: { contains: query.search, mode: 'insensitive' } },
         { email: { contains: query.search, mode: 'insensitive' } },
+        { contactName: { contains: query.search, mode: 'insensitive' } },
+        { products: { some: { name: { contains: query.search, mode: 'insensitive' } } } },
+        { products: { some: { category: { contains: query.search, mode: 'insensitive' } } } },
       ];
     }
     return where;

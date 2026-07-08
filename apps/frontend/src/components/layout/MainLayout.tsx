@@ -50,7 +50,7 @@ export function MainLayout() {
     <div className="min-h-dvh overflow-x-clip bg-brand-surface">
       <div className="min-h-dvh min-w-0">
         <Sidebar isOpen={isSidebarOpen} onClose={closeSidebar} />
-        <div className={`min-w-0 transition-[padding] duration-300 ease-out ${isSidebarOpen ? 'lg:pl-72' : 'lg:pl-0'}`}>
+        <div className={`min-w-0 pt-16 transition-[padding] duration-300 ease-out sm:pt-20 ${isSidebarOpen ? 'lg:pl-72' : 'lg:pl-0'}`}>
           <Header isMenuOpen={isSidebarOpen} onMenuClick={isSidebarOpen ? closeSidebar : openSidebar} onToggleSidebar={toggleSidebar} />
           <OfflineBanner />
           <main className="min-w-0 pb-[calc(5rem+env(safe-area-inset-bottom))] lg:pb-0">

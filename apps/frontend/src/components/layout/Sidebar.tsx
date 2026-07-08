@@ -37,7 +37,7 @@ const navigationItems: NavItem[] = [
   { label: 'Clientes', icon: Users, path: '/customers', moduleKey: 'customers' },
   { label: 'Inventario', icon: Boxes, path: '/inventory', moduleKey: 'inventory' },
   { label: 'Órdenes técnicas', icon: ClipboardList, path: '/service-orders', moduleKey: 'service-orders' },
-  { label: 'Servicios r?pidos', icon: Zap, path: '/quick-services', moduleKey: 'quick-services' },
+  { label: 'Servicios rápidos', icon: Zap, path: '/quick-services', moduleKey: 'quick-services' },
   { label: 'Compras', icon: ShoppingBag, path: '/purchases', moduleKey: 'purchases' },
   { label: 'Proveedores', icon: Truck, path: '/suppliers', moduleKey: 'suppliers' },
   { label: 'Caja', icon: CreditCard, path: '/cash', moduleKey: 'cash' },
@@ -45,8 +45,8 @@ const navigationItems: NavItem[] = [
   { label: 'Rentabilidad', icon: BarChart3, path: '/profitability', moduleKey: 'profitability' },
   { label: 'Analítica IA', icon: Bot, path: '/ai-analytics', moduleKey: 'ai-analytics' },
   { label: 'Usuarios', icon: Users, path: '/users', moduleKey: 'users' },
-  { label: 'Auditor?a', icon: ShieldCheck, path: '/audit', moduleKey: 'audit' },
-  { label: 'Configuraci?n', icon: Settings, path: '/settings', moduleKey: 'settings' },
+  { label: 'Auditoría', icon: ShieldCheck, path: '/audit', moduleKey: 'audit' },
+  { label: 'Configuración', icon: Settings, path: '/settings', moduleKey: 'settings' },
 ];
 
 interface SidebarProps {
@@ -92,9 +92,9 @@ function SidebarContent({ onClose, compactClose = false }: { onClose?: () => voi
           <button
             type="button"
             onClick={onClose}
-            aria-label="Cerrar men? lateral"
+            aria-label="Cerrar menú lateral"
             className="relative grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/[0.04] text-slate-300 shadow-sm transition duration-200 hover:bg-white/10 hover:text-white focus:outline-none focus:ring-2 focus:ring-brand-cyan"
-            title="Cerrar men?"
+            title="Cerrar menú"
           >
             <X size={19} />
           </button>
@@ -102,7 +102,7 @@ function SidebarContent({ onClose, compactClose = false }: { onClose?: () => voi
       </div>
 
       <nav className="sidebar-scroll min-h-0 flex-1 overflow-y-auto px-3 py-4">
-        <div className="mb-3 px-3 text-[11px] font-black uppercase tracking-[0.22em] text-slate-500">Men? principal</div>
+        <div className="mb-3 px-3 text-[11px] font-black uppercase tracking-[0.22em] text-slate-500">Menú principal</div>
         <div className="space-y-1.5">
           {visibleItems.map((item) => {
             const Icon = item.icon;
@@ -163,10 +163,10 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
             <SidebarContent onClose={onClose} compactClose />
           </motion.aside>
 
-          <div className="fixed inset-0 z-50 lg:hidden">
+          <div className="fixed inset-0 z-[80] lg:hidden">
             <motion.button
               type="button"
-              aria-label="Cerrar men? lateral"
+              aria-label="Cerrar menú lateral"
               className="absolute inset-0 bg-slate-950/55 backdrop-blur-[2px]"
               onClick={onClose}
               initial={{ opacity: 0 }}
@@ -177,7 +177,7 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
             <motion.aside
               role="dialog"
               aria-modal="true"
-              aria-label="Men? principal"
+              aria-label="Menú principal"
               className="relative flex h-dvh w-[min(88vw,20rem)] max-w-[calc(100vw-1.5rem)] flex-col overflow-hidden bg-[radial-gradient(circle_at_16%_0%,rgba(6,182,212,0.17),transparent_29%),radial-gradient(circle_at_88%_22%,rgba(124,58,237,0.13),transparent_34%),linear-gradient(180deg,#020617_0%,#07111f_48%,#0f172a_100%)] text-white shadow-2xl shadow-slate-950/60 ring-1 ring-white/10 sm:w-80"
               initial={{ x: '-100%' }}
               animate={{ x: 0 }}

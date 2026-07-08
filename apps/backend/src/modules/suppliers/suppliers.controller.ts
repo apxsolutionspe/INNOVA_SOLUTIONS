@@ -8,6 +8,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AuthenticatedUser } from '../auth/types/authenticated-user.type';
 import { CreateSupplierDto } from './dto/create-supplier.dto';
 import { SupplierQueryDto } from './dto/supplier-query.dto';
+import { SupplierProductDto } from './dto/supplier-product.dto';
 import { UpdateSupplierDto } from './dto/update-supplier.dto';
 import { SuppliersService } from './suppliers.service';
 
@@ -38,6 +39,24 @@ export class SuppliersController {
   @Patch(':id')
   update(@Param('id') id: string, @Body() dto: UpdateSupplierDto, @CurrentUser() user: AuthenticatedUser) {
     return this.suppliersService.update(id, dto, user);
+  }
+
+  @Roles('ADMIN')
+  @Post(':id/products')
+  addProduct(@Param('id') id: string, @Body() dto: SupplierProductDto, @CurrentUser() user: AuthenticatedUser) {
+    return this.suppliersService.addProduct(id, dto, user);
+  }
+
+  @Roles('ADMIN')
+  @Patch(':id/products/:itemId')
+  updateProduct(@Param('id') id: string, @Param('itemId') itemId: string, @Body() dto: SupplierProductDto, @CurrentUser() user: AuthenticatedUser) {
+    return this.suppliersService.updateProduct(id, itemId, dto, user);
+  }
+
+  @Roles('ADMIN')
+  @Delete(':id/products/:itemId')
+  deactivateProduct(@Param('id') id: string, @Param('itemId') itemId: string, @CurrentUser() user: AuthenticatedUser) {
+    return this.suppliersService.deactivateProduct(id, itemId, user);
   }
 
   @Roles('ADMIN')

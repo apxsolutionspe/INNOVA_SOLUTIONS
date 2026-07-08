@@ -1,5 +1,11 @@
 import { httpClient } from '../../../services/http-client';
-import { Supplier, SupplierPayload, SuppliersResponse } from '../types/supplier.types';
+import { Supplier, SupplierPayload, SupplierProductPayload, SuppliersResponse } from '../types/supplier.types';
+
+function cleanPayload<T extends object>(payload: T) {
+  return Object.fromEntries(
+    Object.entries(payload).filter(([, value]) => value !== undefined && value !== null && value !== ''),
+  ) as Partial<T>;
+}
 
 export const suppliersService = {
   async findAll(params: { search?: string; page?: number; limit?: number; isActive?: boolean }) {
@@ -13,12 +19,27 @@ export const suppliersService = {
   },
 
   async create(payload: SupplierPayload) {
-    const { data } = await httpClient.post<Supplier>('/suppliers', payload);
+    const { data } = await httpClient.post<Supplier>('/suppliers', cleanPayload(payload));
     return data;
   },
 
   async update(id: string, payload: Partial<SupplierPayload>) {
-    const { data } = await httpClient.patch<Supplier>(`/suppliers/${id}`, payload);
+    const { data } = await httpClient.patch<Supplier>(`/suppliers/${id}`, cleanPayload(payload));
+    return data;
+  },
+
+  async addProduct(id: string, payload: SupplierProductPayload) {
+    const { data } = await httpClient.post<Supplier>(`/suppliers/${id}/products`, cleanPayload(payload));
+    return data;
+  },
+
+  async updateProduct(id: string, itemId: string, payload: SupplierProductPayload) {
+    const { data } = await httpClient.patch<Supplier>(`/suppliers/${id}/products/${itemId}`, cleanPayload(payload));
+    return data;
+  },
+
+  async deactivateProduct(id: string, itemId: string) {
+    const { data } = await httpClient.delete<Supplier>(`/suppliers/${id}/products/${itemId}`);
     return data;
   },
 

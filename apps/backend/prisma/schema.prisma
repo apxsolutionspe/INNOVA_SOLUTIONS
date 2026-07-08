@@ -123,6 +123,7 @@ model Product {
   serviceOrderItems ServiceOrderItem[]
   purchaseOrderItems PurchaseOrderItem[]
   onlineOrderItems OnlineOrderItem[]
+  supplierProducts SupplierProduct[]
 
   @@index([categoryId])
   @@index([name])
@@ -519,18 +520,49 @@ model Supplier {
   name           String
   ruc            String?         @unique
   phone          String?
+  whatsapp       String?
   email          String?
   address        String?
+  department     String?
+  province       String?
+  district       String?
+  reference      String?
   contactName    String?
+  contactRole    String?
+  sunatStatus    String?
+  sunatCondition String?
   notes          String?
   isActive       Boolean         @default(true)
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
   purchaseOrders PurchaseOrder[]
+  products       SupplierProduct[]
 
   @@index([name])
   @@index([phone])
   @@index([email])
+}
+
+model SupplierProduct {
+  id             String    @id @default(uuid())
+  supplierId     String
+  supplier       Supplier  @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  productId      String?
+  product        Product?  @relation(fields: [productId], references: [id])
+  name           String
+  category       String?
+  unit           String?
+  referencePrice Decimal?  @db.Decimal(12, 2)
+  deliveryTime   String?
+  notes          String?
+  isActive       Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([supplierId])
+  @@index([productId])
+  @@index([name])
+  @@index([category])
 }
 
 model PurchaseOrder {

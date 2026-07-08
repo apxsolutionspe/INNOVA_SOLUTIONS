@@ -57,7 +57,7 @@ export function UserProfilePanel({ user, isOpen, onClose }: UserProfilePanelProp
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/30 p-3 backdrop-blur-sm sm:p-5">
+    <div className="fixed inset-0 z-[70] bg-slate-950/30 p-3 backdrop-blur-sm sm:p-5">
       <div
         ref={panelRef}
         className="ml-auto flex max-h-[calc(100dvh-1.5rem)] w-full max-w-md flex-col overflow-hidden rounded-[1.75rem] border border-white/80 bg-white shadow-2xl shadow-slate-950/20 sm:max-h-[calc(100dvh-2.5rem)]"

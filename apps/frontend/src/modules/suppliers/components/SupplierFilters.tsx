@@ -14,7 +14,7 @@ export function SupplierFilters({ search, onSearchChange, onCreate }: Props) {
         <input
           value={search}
           onChange={(event) => onSearchChange(event.target.value)}
-          placeholder="Buscar por nombre, RUC, telefono o correo"
+          placeholder="Buscar por proveedor, RUC, teléfono o producto"
           className="h-11 w-full rounded-lg border border-slate-200 pl-10 pr-3 text-sm outline-none focus:border-brand-blue"
         />
       </label>
