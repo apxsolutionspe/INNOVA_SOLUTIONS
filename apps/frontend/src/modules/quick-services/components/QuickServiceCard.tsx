@@ -30,7 +30,7 @@ export function QuickServiceCard({ service, onAdd, onDetail }: QuickServiceCardP
       </div>
 
       <p className="mt-3 line-clamp-2 min-h-10 text-xs leading-5 text-slate-500">
-        {service.description || 'Servicio disponible para operacion rapida.'}
+        {service.description || 'Servicio disponible para operación rápida.'}
       </p>
 
       <div className="mt-auto flex items-end justify-between gap-3 pt-5">

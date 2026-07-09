@@ -17,7 +17,7 @@ export const authService = {
     } catch (error) {
       const message = error instanceof Error ? error.message : '';
 
-      if (message.includes('Credenciales invalidas')) {
+      if (message.includes('Credenciales invalidas') || message.includes('Credenciales inválidas')) {
         throw new Error('AUTH_INVALID_CREDENTIALS');
       }
 

@@ -23,7 +23,7 @@ export function QuickServicesHeader({ cashSession, isAdmin, isLoading, onRefresh
           <div className="min-w-0">
             <div className="inline-flex items-center gap-2 rounded-full bg-violet-50 px-3 py-1 text-xs font-black uppercase text-brand-violet">
               <Sparkles size={14} />
-              Caja rapida
+              Caja rápida
             </div>
             <h1 className="mt-3 text-2xl font-black text-slate-950 sm:text-3xl">Servicios Rápidos</h1>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">

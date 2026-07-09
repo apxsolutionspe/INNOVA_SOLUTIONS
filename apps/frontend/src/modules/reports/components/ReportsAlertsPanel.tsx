@@ -42,7 +42,7 @@ function ReportAlertItem({ label, description, value, path, tone, icon: Icon }: 
 export function ReportsAlertsPanel({ summary }: { summary: ReportsSummary | null }) {
   const alerts = [
     {
-      label: 'Stock critico',
+      label: 'Stock cr?tico',
       description: 'Productos por reponer',
       value: summary?.productsLowStock ?? 0,
       path: '/inventory',
@@ -87,7 +87,7 @@ export function ReportsAlertsPanel({ summary }: { summary: ReportsSummary | null
       </div>
 
       <p className="mt-4 rounded-xl bg-white px-3 py-2 text-xs font-bold text-slate-500">
-        {total ? `${total} pendientes consolidados.` : 'Sin pendientes criticos registrados.'}
+        {total ? `${total} pendientes consolidados.` : 'Sin pendientes cr?ticos registrados.'}
       </p>
     </aside>
   );

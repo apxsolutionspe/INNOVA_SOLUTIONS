@@ -49,7 +49,7 @@ function buildManualMessage(sale: Sale) {
 function toUserError(error?: string) {
   if (!error) return 'No se pudo generar el enlace del comprobante.';
   const normalized = error.toLowerCase();
-  if (normalized.includes('telefono') || normalized.includes('whatsapp') || normalized.includes('numero')) {
+  if (normalized.includes('telefono') || normalized.includes('teléfono') || normalized.includes('whatsapp') || normalized.includes('numero') || normalized.includes('número')) {
     return 'Número de WhatsApp inválido.';
   }
   if (normalized.includes('comprobante') || normalized.includes('venta')) return error;

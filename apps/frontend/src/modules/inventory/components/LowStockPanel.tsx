@@ -9,7 +9,7 @@ interface LowStockPanelProps {
 export function LowStockPanel({ products }: LowStockPanelProps) {
   return (
     <aside className="rounded-lg border border-orange-200 bg-orange-50/70 p-5">
-      <h2 className="text-lg font-bold text-slate-950">Stock critico</h2>
+      <h2 className="text-lg font-bold text-slate-950">Stock crítico</h2>
       <div className="mt-4 space-y-3">
         {products.length ? (
           products.map((product) => (
@@ -18,14 +18,14 @@ export function LowStockPanel({ products }: LowStockPanelProps) {
                 <ProductImage product={product} className="h-11 w-11 shrink-0 rounded-xl" imageClassName="p-1.5" iconClassName="h-4 w-4" />
                 <div className="min-w-0">
                   <p className="truncate text-sm font-semibold text-slate-800">{product.name}</p>
-                  <p className="text-xs text-slate-500">Minimo: {product.minStock}</p>
+                  <p className="text-xs text-slate-500">Mínimo: {product.minStock}</p>
                 </div>
               </div>
               <StockBadge stock={product.stock} minStock={product.minStock} />
             </div>
           ))
         ) : (
-          <p className="text-sm text-slate-500">No hay productos en stock critico.</p>
+          <p className="text-sm text-slate-500">No hay productos en stock crítico.</p>
         )}
       </div>
     </aside>

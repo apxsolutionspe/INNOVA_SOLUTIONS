@@ -27,7 +27,7 @@ export function useIntegrations() {
       setTestResult(result);
       await load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'No se pudo probar la integracion');
+      setError(err instanceof Error ? err.message : 'No se pudo probar la integración');
     }
   }
 

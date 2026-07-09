@@ -10,7 +10,7 @@ function safeMargin(profit: number, income: number) {
 
 export function MonthlyProfitTimeline({ data }: { data: MonthlyProfit[] }) {
   if (!data.length) {
-    return <EmptyState title="Sin periodos" description="Aun no hay datos mensuales de rentabilidad." icon={CalendarDays} />;
+    return <EmptyState title="Sin periodos" description="Aún no hay datos mensuales de rentabilidad." icon={CalendarDays} />;
   }
 
   return (

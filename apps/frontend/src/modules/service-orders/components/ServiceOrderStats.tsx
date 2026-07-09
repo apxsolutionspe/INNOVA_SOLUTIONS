@@ -11,9 +11,9 @@ interface ServiceOrderStatsProps {
 
 const cards = [
   { key: 'pending', label: 'Pendientes', description: 'Recibidas o en diagnóstico', icon: ClipboardList, tone: 'bg-blue-50 text-brand-blue border-blue-100' },
-  { key: 'inProgress', label: 'En proceso', description: 'Equipos en reparacion', icon: Wrench, tone: 'bg-violet-50 text-brand-violet border-violet-100' },
+  { key: 'inProgress', label: 'En proceso', description: 'Equipos en reparación', icon: Wrench, tone: 'bg-violet-50 text-brand-violet border-violet-100' },
   { key: 'ready', label: 'Listas', description: 'Pendientes de entrega', icon: PackageCheck, tone: 'bg-emerald-50 text-emerald-700 border-emerald-100' },
-  { key: 'deliveredToday', label: 'Entregadas hoy', description: 'Cerradas durante el dia', icon: CheckCircle2, tone: 'bg-slate-100 text-slate-700 border-slate-200' },
+  { key: 'deliveredToday', label: 'Entregadas hoy', description: 'Cerradas durante el día', icon: CheckCircle2, tone: 'bg-slate-100 text-slate-700 border-slate-200' },
 ] as const;
 
 export function ServiceOrderStats({ stats }: ServiceOrderStatsProps) {

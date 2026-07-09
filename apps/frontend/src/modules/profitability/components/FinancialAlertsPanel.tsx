@@ -6,7 +6,7 @@ import { ProfitabilitySummary } from '../types/profitability.types';
 type AlertTone = 'critical' | 'warning' | 'info' | 'healthy';
 
 const styles: Record<AlertTone, { item: string; icon: typeof AlertTriangle; label: string }> = {
-  critical: { item: 'border-red-100 bg-red-50 text-red-800', icon: ShieldAlert, label: 'Critico' },
+  critical: { item: 'border-red-100 bg-red-50 text-red-800', icon: ShieldAlert, label: 'Crítico' },
   warning: { item: 'border-orange-100 bg-orange-50 text-orange-800', icon: AlertTriangle, label: 'Advertencia' },
   info: { item: 'border-blue-100 bg-blue-50 text-blue-800', icon: Info, label: 'Informativo' },
   healthy: { item: 'border-emerald-100 bg-emerald-50 text-emerald-800', icon: CheckCircle2, label: 'Saludable' },
@@ -14,7 +14,7 @@ const styles: Record<AlertTone, { item: string; icon: typeof AlertTriangle; labe
 
 function buildAlerts(summary: ProfitabilitySummary | null) {
   if (!summary || summary.totalIncome <= 0) {
-    return [{ tone: 'info' as const, message: 'Aun no hay suficientes ingresos en el rango seleccionado para calcular alertas completas.' }];
+    return [{ tone: 'info' as const, message: 'Aún no hay suficientes ingresos en el rango seleccionado para calcular alertas completas.' }];
   }
 
   const alerts: Array<{ tone: AlertTone; message: string }> = [];
@@ -29,7 +29,7 @@ function buildAlerts(summary: ProfitabilitySummary | null) {
   if (expenseRatio > 35) alerts.push({ tone: 'warning', message: `Los gastos representan ${formatPercent(expenseRatio)} de los ingresos.` });
   summary.warnings.forEach((warning) => alerts.push({ tone: 'info', message: warning }));
 
-  if (!alerts.length) alerts.push({ tone: 'healthy', message: 'No hay alertas financieras criticas registradas.' });
+  if (!alerts.length) alerts.push({ tone: 'healthy', message: 'No hay alertas financieras críticas registradas.' });
   return alerts;
 }
 
@@ -40,7 +40,7 @@ export function FinancialAlertsPanel({ summary }: { summary: ProfitabilitySummar
     <aside className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 shadow-sm">
       <div>
         <h2 className="text-base font-black text-slate-950">Alertas financieras</h2>
-        <p className="mt-1 text-sm leading-6 text-slate-500">Senales que requieren revision administrativa.</p>
+        <p className="mt-1 text-sm leading-6 text-slate-500">Señales que requieren revisión administrativa.</p>
       </div>
       <div className="mt-4 space-y-3">
         {alerts.map((alert, index) => {

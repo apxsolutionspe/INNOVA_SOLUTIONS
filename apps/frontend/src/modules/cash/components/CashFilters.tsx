@@ -35,7 +35,7 @@ export function CashFilters({ type, paymentMethod, search, onTypeChange, onPayme
           <option value="INCOME">Ingresos</option>
           <option value="EXPENSE">Gastos / egresos</option>
           <option value="SALE">Ventas POS</option>
-          <option value="SERVICE_PAYMENT">Servicios rapidos</option>
+          <option value="SERVICE_PAYMENT">Servicios rápidos</option>
           <option value="ADJUSTMENT">Ajustes</option>
         </select>
         <select
@@ -43,7 +43,7 @@ export function CashFilters({ type, paymentMethod, search, onTypeChange, onPayme
           onChange={(event) => onPaymentMethodChange(event.target.value)}
           className="h-11 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm font-semibold text-slate-800 outline-none transition focus:border-brand-cyan focus:bg-white focus:ring-4 focus:ring-cyan-100"
         >
-          <option value="">Todos los metodos</option>
+          <option value="">Todos los métodos</option>
           <option value="CASH">Efectivo</option>
           <option value="YAPE">Yape</option>
           <option value="PLIN">Plin</option>

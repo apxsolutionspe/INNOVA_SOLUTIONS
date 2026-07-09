@@ -37,7 +37,7 @@ export function QuickServiceSalesPage() {
           <div>
             <Link to="/quick-services" className="inline-flex items-center gap-2 text-xs font-black uppercase text-brand-blue">
               <ArrowLeft size={15} />
-              Servicios rapidos
+              Servicios rápidos
             </Link>
             <h1 className="mt-3 text-2xl font-black text-slate-950">Historial de servicios</h1>
             <p className="mt-2 text-sm text-slate-600">Operaciones de servicios rápidos registradas.</p>

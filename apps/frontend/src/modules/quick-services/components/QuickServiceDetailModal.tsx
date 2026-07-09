@@ -60,7 +60,7 @@ export function QuickServiceDetailModal({ service, onClose, onAdd }: QuickServic
                 Descripción
               </div>
               <p className="mt-2 text-sm leading-6 text-slate-600">
-                {service.description || 'Servicio rapido configurable para operaciones de mostrador.'}
+                {service.description || 'Servicio rápido configurable para operaciones de mostrador.'}
               </p>
             </div>
             <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-4">
@@ -134,7 +134,7 @@ export function QuickServiceDetailModal({ service, onClose, onAdd }: QuickServic
               <textarea
                 value={notes}
                 onChange={(event) => setNotes(event.target.value)}
-                placeholder="Ejemplo: imprimir en alta calidad, enviar por correo, hojas especificas..."
+                placeholder="Ejemplo: imprimir en alta calidad, enviar por correo, hojas específicas..."
                 className="mt-2 min-h-24 w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm font-semibold text-slate-800 outline-none transition focus:border-brand-cyan focus:bg-white focus:ring-4 focus:ring-cyan-100"
               />
             </label>

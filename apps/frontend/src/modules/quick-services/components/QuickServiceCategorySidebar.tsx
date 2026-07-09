@@ -26,8 +26,8 @@ function displayCategoryName(name: string) {
     .toLowerCase()
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '');
-  if (lower.includes('tramite')) return 'Tramites digitales';
-  if (lower.includes('diseno')) return 'Diseno';
+  if (lower.includes('tramite')) return 'Trámites digitales';
+  if (lower.includes('diseno')) return 'Diseño';
   return normalized;
 }
 

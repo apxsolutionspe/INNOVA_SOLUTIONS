@@ -26,7 +26,7 @@ export function CashHeader({ session, isLoading, onRefresh, onOpen, onClose }: C
             </div>
             <h1 className="mt-3 text-2xl font-black text-slate-950 sm:text-3xl">Caja</h1>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
-              Control de apertura, movimientos, metodos de pago y cierre diario.
+              Control de apertura, movimientos, métodos de pago y cierre diario.
             </p>
           </div>
 

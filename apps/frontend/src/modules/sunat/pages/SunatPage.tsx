@@ -61,7 +61,7 @@ export function SunatPage() {
       {error ? <ErrorState message={error} /> : null}
       {message ? <div className="rounded-lg border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-700">{message}</div> : null}
       <div className="grid gap-4 md:grid-cols-3">
-        <ExecutiveKpiCard title="Modo" value={config?.mode ?? 'MOCK'} description="Emision controlada" icon={ShieldAlert} tone="violet" />
+        <ExecutiveKpiCard title="Modo" value={config?.mode ?? 'MOCK'} description="Emisión controlada" icon={ShieldAlert} tone="violet" />
         <ExecutiveKpiCard title="Estado" value={config?.status ?? 'MOCK'} description="Proveedor SUNAT" icon={FileCheck2} tone={(config?.status ?? 'MOCK') === 'ERROR' ? 'red' : 'blue'} />
         <ExecutiveKpiCard title="RUC" value={config?.ruc ?? 'No configurado'} description="Solo variable backend" icon={FileCheck2} tone="slate" />
       </div>

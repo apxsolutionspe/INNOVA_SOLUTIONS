@@ -13,7 +13,7 @@ export function PasswordInput({ value, error, disabled, onChange }: PasswordInpu
 
   return (
     <label className="block">
-      <span className="text-sm font-black text-orange-50/90">Contraseña</span>
+      <span className="text-[15px] font-black text-orange-50/95">Contraseña</span>
       <div
         className={`login-input-shell ${
           error ? 'login-input-shell-error' : ''
@@ -25,20 +25,20 @@ export function PasswordInput({ value, error, disabled, onChange }: PasswordInpu
           value={value}
           onChange={onChange}
           disabled={disabled}
-          className="h-full min-w-0 flex-1 bg-transparent text-sm font-semibold text-white outline-none placeholder:text-slate-300/75 disabled:cursor-not-allowed disabled:opacity-70"
-          placeholder="Ingresa tu contrasena"
+          className="h-full min-w-0 flex-1 bg-transparent text-base font-semibold text-white outline-none placeholder:text-[15px] placeholder:text-slate-300/75 disabled:cursor-not-allowed disabled:opacity-70"
+          placeholder="Ingresa tu contraseña"
           autoComplete="current-password"
         />
         <button
           type="button"
           onClick={() => setIsVisible((current) => !current)}
           className="grid h-9 w-9 shrink-0 place-items-center rounded-xl text-orange-100/80 transition hover:bg-orange-200/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300/60"
-          aria-label={isVisible ? 'Ocultar contrasena' : 'Mostrar contrasena'}
+          aria-label={isVisible ? 'Ocultar contraseña' : 'Mostrar contraseña'}
         >
           {isVisible ? <EyeOff size={18} /> : <Eye size={18} />}
         </button>
       </div>
-      {error ? <p className="mt-2 text-xs font-bold text-orange-100">{error}</p> : null}
+      {error ? <p className="mt-2 text-sm font-bold text-orange-100">{error}</p> : null}
     </label>
   );
 }

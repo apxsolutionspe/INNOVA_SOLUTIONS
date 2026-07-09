@@ -36,7 +36,7 @@ const normalizeLookupMessage = (message: string | undefined, fallback: string) =
   const normalized = message.toLowerCase();
 
   if (normalized.includes('timeout') || normalized.includes('respondio a tiempo') || normalized.includes('respondi? a tiempo') || normalized.includes('no respondio') || normalized.includes('no respondi?')) {
-    return 'Json.pe no respondi? dentro del tiempo esperado. Intenta nuevamente.';
+    return 'Json.pe no respondió dentro del tiempo esperado. Intenta nuevamente.';
   }
 
   return message;
@@ -104,19 +104,19 @@ export function CustomerForm({ customer, onSubmit, onClose }: CustomerFormProps)
 
     if (isCompany && !canLookupRuc) {
       setLookupStatus('error');
-      setLookupMessage('El RUC debe tener exactamente 11 d?gitos num?ricos.');
+      setLookupMessage('El RUC debe tener exactamente 11 dígitos numéricos.');
       return;
     }
 
     if (!isCompany && form.documentType !== 'DNI') {
       setLookupStatus('error');
-      setLookupMessage('La consulta automatica esta disponible para DNI.');
+      setLookupMessage('La consulta automática está disponible para DNI.');
       return;
     }
 
     if (!isCompany && !canLookupDni) {
       setLookupStatus('error');
-      setLookupMessage('El DNI debe tener exactamente 8 d?gitos num?ricos.');
+      setLookupMessage('El DNI debe tener exactamente 8 dígitos numéricos.');
       return;
     }
 
@@ -126,7 +126,7 @@ export function CustomerForm({ customer, onSubmit, onClose }: CustomerFormProps)
         const result = await documentLookupService.lookupRuc(documentNumber);
         if (!result.success || !result.data) {
           setLookupStatus(result.message?.toLowerCase().includes('configur') ? 'error' : 'warning');
-          setLookupMessage(normalizeLookupMessage(result.message, 'No se encontr? informaci?n para el documento consultado.'));
+          setLookupMessage(normalizeLookupMessage(result.message, 'No se encontró información para el documento consultado.'));
           return;
         }
 
@@ -149,7 +149,7 @@ export function CustomerForm({ customer, onSubmit, onClose }: CustomerFormProps)
       const result = await documentLookupService.lookupDni(documentNumber);
       if (!result.success || !result.data) {
         setLookupStatus(result.message?.toLowerCase().includes('configur') ? 'error' : 'warning');
-        setLookupMessage(normalizeLookupMessage(result.message, 'No se encontr? informaci?n para el documento consultado.'));
+        setLookupMessage(normalizeLookupMessage(result.message, 'No se encontró información para el documento consultado.'));
         return;
       }
 
@@ -209,13 +209,13 @@ export function CustomerForm({ customer, onSubmit, onClose }: CustomerFormProps)
   );
 
   const dniInlineMessage = !isCompany && form.documentType === 'DNI' && documentNumber.length > 0 && !canLookupDni
-    ? 'El DNI debe tener exactamente 8 d?gitos num?ricos.'
+    ? 'El DNI debe tener exactamente 8 dígitos numéricos.'
     : '';
 
   const validate = () => {
     if (isCompany) {
-      if (!form.documentNumber.trim() || form.documentNumber.trim().length !== 11) return 'El RUC debe tener exactamente 11 d?gitos num?ricos.';
-      if (!form.businessName?.trim()) return 'La razon social es obligatoria.';
+      if (!form.documentNumber.trim() || form.documentNumber.trim().length !== 11) return 'El RUC debe tener exactamente 11 dígitos numéricos.';
+      if (!form.businessName?.trim()) return 'La razón social es obligatoria.';
       return '';
     }
     if (!form.documentNumber.trim()) return 'El documento es obligatorio.';
@@ -277,7 +277,7 @@ export function CustomerForm({ customer, onSubmit, onClose }: CustomerFormProps)
           >
             <Building2 size={21} />
             <p className="mt-2 text-sm font-black">Empresa</p>
-            <p className="mt-1 text-xs leading-5">RUC, razon social y datos de contacto empresarial.</p>
+            <p className="mt-1 text-xs leading-5">RUC, razón social y datos de contacto empresarial.</p>
           </button>
         </section>
 
@@ -298,7 +298,7 @@ export function CustomerForm({ customer, onSubmit, onClose }: CustomerFormProps)
                 <option value="active">Activo</option>
                 <option value="inactive">Inactivo</option>
               </Select>
-              <Input required label="Razon social" value={form.businessName ?? ''} onChange={(event) => update('businessName', event.target.value)} containerClassName="sm:col-span-2" />
+              <Input required label="Razón social" value={form.businessName ?? ''} onChange={(event) => update('businessName', event.target.value)} containerClassName="sm:col-span-2" />
               <Input label="Nombre comercial" value={form.tradeName ?? ''} onChange={(event) => update('tradeName', event.target.value)} />
               <Input label="Representante legal" value={form.legalRepresentative ?? ''} onChange={(event) => update('legalRepresentative', event.target.value)} />
               <Input label="Teléfono / WhatsApp" value={form.phone ?? ''} onChange={(event) => update('phone', event.target.value)} />

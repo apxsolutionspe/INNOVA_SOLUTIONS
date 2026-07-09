@@ -5,18 +5,18 @@ import { QuickAction } from '../types/dashboard.types';
 const actions: QuickAction[] = [
   { label: 'Nueva venta', description: 'Abrir POS', path: '/pos', icon: ShoppingCart },
   { label: 'Nuevo cliente', description: 'Gestionar clientes', path: '/customers', icon: UserPlus },
-  { label: 'Nueva orden tecnica', description: 'Recepcion de equipo', path: '/service-orders', icon: ClipboardPlus },
+  { label: 'Nueva orden técnica', description: 'Recepción de equipo', path: '/service-orders', icon: ClipboardPlus },
   { label: 'Abrir caja', description: 'Control diario', path: '/cash', icon: CreditCard },
   { label: 'Registrar compra', description: 'Abastecimiento', path: '/purchases', icon: ShoppingBag },
-  { label: 'Ver reportes', description: 'Analisis completo', path: '/reports', icon: FileText },
+  { label: 'Ver reportes', description: 'Análisis completo', path: '/reports', icon: FileText },
 ];
 
 export function QuickActionsPanel() {
   return (
     <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
       <div>
-        <h2 className="text-base font-black text-slate-950">Accesos rapidos</h2>
-        <p className="mt-1 text-sm text-slate-500">Acciones frecuentes para operar sin friccion.</p>
+        <h2 className="text-base font-black text-slate-950">Accesos rápidos</h2>
+        <p className="mt-1 text-sm text-slate-500">Acciones frecuentes para operar sin fricción.</p>
       </div>
 
       <div className="mt-4 grid gap-2 sm:grid-cols-2">

@@ -17,7 +17,7 @@ export function useServiceOrders() {
       const response = await serviceOrdersService.findAll({ search, status, page: 1, limit: 50 });
       setOrders(response.items);
     } catch (loadError) {
-      setError(loadError instanceof Error ? loadError.message : 'No se pudo cargar ordenes.');
+      setError(loadError instanceof Error ? loadError.message : 'No se pudo cargar órdenes.');
     } finally {
       setIsLoading(false);
     }

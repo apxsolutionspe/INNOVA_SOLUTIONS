@@ -72,7 +72,7 @@ export function useQuickServices() {
   const confirm = async () => {
     setError('');
     if (!cashSession) {
-      setError('Debe abrir caja antes de registrar servicios rapidos.');
+      setError('Debe abrir caja antes de registrar servicios rápidos.');
       return;
     }
     if (!cart.length) {
@@ -102,7 +102,7 @@ export function useQuickServices() {
       setPaymentMethod('CASH');
       await reload();
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'No se pudo registrar operacion.');
+      setError(e instanceof Error ? e.message : 'No se pudo registrar operación.');
     } finally {
       setIsSaving(false);
     }

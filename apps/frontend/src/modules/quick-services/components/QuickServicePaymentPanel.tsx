@@ -132,7 +132,7 @@ export function QuickServicePaymentPanel(props: QuickServicePaymentPanelProps) {
           className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-brand-blue text-sm font-black text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500"
         >
           {props.isSaving ? <Loader2 className="animate-spin" size={18} /> : <CheckCircle2 size={18} />}
-          {props.isSaving ? 'Registrando...' : 'Confirmar operacion'}
+          {props.isSaving ? 'Registrando...' : 'Confirmar operación'}
         </button>
       </div>
     </div>

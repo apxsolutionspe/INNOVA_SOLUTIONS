@@ -13,8 +13,8 @@ export function ServiceOrdersHeader({ isLoading, onRefresh, onCreate }: ServiceO
     <header className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
       <div className="grid gap-5 p-5 lg:grid-cols-[1fr_auto] lg:items-center sm:p-6">
         <div>
-          <p className="text-xs font-black uppercase tracking-wide text-brand-blue">Servicio tecnico</p>
-          <h1 className="mt-2 text-2xl font-black tracking-tight text-slate-950 sm:text-3xl">Ordenes tecnicas</h1>
+          <p className="text-xs font-black uppercase tracking-wide text-brand-blue">Servicio técnico</p>
+          <h1 className="mt-2 text-2xl font-black tracking-tight text-slate-950 sm:text-3xl">Órdenes técnicas</h1>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">
             Recepción, diagnóstico y entrega de equipos con seguimiento operativo.
           </p>

@@ -72,9 +72,9 @@ export function ProfitabilityPage() {
         <ExecutivePanel title="Rentabilidad por categoría" description="Categorías con mayor contribución estimada.">
           <CategoryProfitChart data={data.categories} />
         </ExecutivePanel>
-        <ExecutivePanel title="Lectura destacada" description="Elementos con mayor contribucion estimada.">
+        <ExecutivePanel title="Lectura destacada" description="Elementos con mayor contribución estimada.">
           <div className="grid gap-3">
-            {[{ title: 'Producto mas rentable', item: topProduct }, { title: 'Servicio mas rentable', item: topService }].map(({ title, item }) => (
+            {[{ title: 'Producto más rentable', item: topProduct }, { title: 'Servicio más rentable', item: topService }].map(({ title, item }) => (
               <div key={title} className="rounded-xl border border-slate-200 bg-white p-4">
                 <div className="flex items-start gap-3">
                   <div className="grid h-10 w-10 place-items-center rounded-xl bg-emerald-50 text-emerald-700">
@@ -92,7 +92,7 @@ export function ProfitabilityPage() {
                 </div>
               </div>
             ))}
-            {!topProduct && !topService ? <EmptyState title="Sin rentabilidad destacada" description="Aun no hay productos o servicios con utilidad calculada." icon={Trophy} /> : null}
+            {!topProduct && !topService ? <EmptyState title="Sin rentabilidad destacada" description="Aún no hay productos o servicios con utilidad calculada." icon={Trophy} /> : null}
           </div>
         </ExecutivePanel>
       </div>
@@ -102,8 +102,8 @@ export function ProfitabilityPage() {
       </ExecutivePanel>
 
       <div className="grid gap-5 xl:grid-cols-2">
-        <ProductProfitTable title="Productos mas rentables" items={data.products} />
-        <ServiceProfitTable title="Servicios mas rentables" items={data.services} />
+        <ProductProfitTable title="Productos más rentables" items={data.products} />
+        <ServiceProfitTable title="Servicios más rentables" items={data.services} />
       </div>
     </section>
   );

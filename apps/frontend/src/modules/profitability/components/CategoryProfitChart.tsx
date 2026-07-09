@@ -6,7 +6,7 @@ import { ProfitItem } from '../types/profitability.types';
 
 export function CategoryProfitChart({ data }: { data: ProfitItem[] }) {
   if (!data.length) {
-    return <EmptyState title="Sin categorias" description="Aun no hay datos suficientes para comparar categorias." icon={Boxes} />;
+    return <EmptyState title="Sin categorías" description="Aún no hay datos suficientes para comparar categorías." icon={Boxes} />;
   }
 
   return (

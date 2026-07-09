@@ -31,7 +31,7 @@ export function QuickServicesPage() {
 
   const hasReferenceIssue = quick.paymentMethod !== 'CASH' && !quick.paymentReference.trim();
   const disabledReason = !quick.cashSession
-    ? 'Debe abrir caja antes de registrar servicios rapidos.'
+    ? 'Debe abrir caja antes de registrar servicios rápidos.'
     : !quick.cart.length
       ? 'Agrega servicios al carrito antes de confirmar.'
       : quick.cart.some((item) => item.quantity <= 0)

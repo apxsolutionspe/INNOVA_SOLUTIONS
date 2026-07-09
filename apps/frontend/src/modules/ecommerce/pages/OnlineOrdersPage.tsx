@@ -13,7 +13,7 @@ export function OnlineOrdersPage() {
       <ExecutiveHeader
         eyebrow="eCommerce"
         title="Pedidos online"
-        description="Seguimiento de pedidos web, estados y pagos preparados para integracion futura."
+        description="Seguimiento de pedidos web, estados y pagos preparados para integración futura."
         actions={<Button type="button" variant="secondary" onClick={() => window.location.reload()}><RefreshCw size={17} /> Actualizar</Button>}
       />
       <div className="grid gap-4 md:grid-cols-2">

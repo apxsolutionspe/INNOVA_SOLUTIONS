@@ -34,7 +34,7 @@ export function DashboardPage() {
 
   const kpis: KPIStat[] = [
     {
-      label: "Ingresos del dia",
+      label: "Ingresos del día",
       value: formatCurrency(summary.incomeToday),
       description: `${summary.salesToday} ventas registradas hoy`,
       icon: DollarSign,
@@ -48,7 +48,7 @@ export function DashboardPage() {
       tone: "blue",
     },
     {
-      label: "Ventas del dia",
+      label: "Ventas del día",
       value: summary.salesToday,
       description: `${summary.productsSoldToday} productos vendidos`,
       icon: ShoppingCart,
@@ -57,21 +57,21 @@ export function DashboardPage() {
     {
       label: "Caja actual",
       value: summary.currentCashStatus === "OPEN" ? "Abierta" : "Cerrada",
-      description: `Neto del dia ${formatCurrency(summary.netCashToday)}`,
+      description: `Neto del día ${formatCurrency(summary.netCashToday)}`,
       icon: WalletCards,
       tone: summary.currentCashStatus === "OPEN" ? "green" : "slate",
     },
     {
-      label: "Ordenes pendientes",
+      label: "Órdenes pendientes",
       value: summary.serviceOrdersPending,
       description: `${summary.serviceOrdersInProgress} en proceso, ${summary.serviceOrdersReady} listas`,
       icon: ClipboardList,
       tone: summary.serviceOrdersPending > 0 ? "violet" : "green",
     },
     {
-      label: "Stock critico",
+      label: "Stock crítico",
       value: stockCritical,
-      description: `${summary.lowStockCount} bajo minimo, ${summary.productsToRestock} por reponer`,
+      description: `${summary.lowStockCount} bajo mínimo, ${summary.productsToRestock} por reponer`,
       icon: Boxes,
       tone: stockCritical > 0 ? "orange" : "green",
     },
@@ -94,7 +94,7 @@ export function DashboardPage() {
   const revenueData: ChartDatum[] = [
     { name: "Ventas", value: summary.incomeToday, tone: "#2563EB" },
     {
-      name: "Serv. rapidos",
+      name: "Serv. rápidos",
       value: summary.quickServicesIncomeToday,
       tone: "#06B6D4",
     },
@@ -115,14 +115,14 @@ export function DashboardPage() {
       tone: "#7C3AED",
     },
     { name: "Listas", value: summary.serviceOrdersReady, tone: "#10B981" },
-    { name: "Stock crit.", value: stockCritical, tone: "#F97316" },
+    { name: "Stock crítico", value: stockCritical, tone: "#F97316" },
     { name: "Compras", value: summary.pendingPurchases, tone: "#EF4444" },
   ];
 
   const alerts: DashboardAlert[] = [
     {
       label: "Stock bajo",
-      description: "Productos que requieren reposicion",
+      description: "Productos que requieren reposición",
       value: stockCritical,
       severity: stockCritical > 0 ? "warning" : "success",
       icon: Boxes,
@@ -130,7 +130,7 @@ export function DashboardPage() {
       isVisible: stockCritical > 0,
     },
     {
-      label: "Ordenes pendientes",
+      label: "Órdenes pendientes",
       description: "Equipos por diagnosticar o atender",
       value: summary.serviceOrdersPending,
       severity: summary.serviceOrdersPending > 0 ? "info" : "success",
@@ -149,7 +149,7 @@ export function DashboardPage() {
     },
     {
       label: "Diferencia de caja",
-      description: "Revisar cierre o conciliacion",
+      description: "Revisar cierre o conciliación",
       value: formatCurrency(Math.abs(summary.cashDifference)),
       severity: Math.abs(summary.cashDifference) > 0 ? "danger" : "success",
       icon: AlertTriangle,
@@ -157,7 +157,7 @@ export function DashboardPage() {
       isVisible: Math.abs(summary.cashDifference) > 0,
     },
     {
-      label: "Notificaciones criticas",
+      label: "Notificaciones críticas",
       description: "Alertas internas de prioridad alta",
       value: summary.criticalNotifications,
       severity: summary.criticalNotifications > 0 ? "danger" : "success",
@@ -181,7 +181,7 @@ export function DashboardPage() {
       <div className="grid gap-5 xl:grid-cols-[1.35fr_0.85fr]">
         <DashboardChartCard
           title="Flujo del negocio"
-          description="Ingresos, caja y gastos relevantes del dia."
+          description="Ingresos, caja y gastos relevantes del día."
           data={revenueData}
           valuePrefix="S/ "
         />
@@ -191,7 +191,7 @@ export function DashboardPage() {
       <div className="grid gap-5 xl:grid-cols-[1fr_0.9fr]">
         <DashboardChartCard
           title="Carga operativa"
-          description="Pendientes clave por ordenes, inventario y compras."
+          description="Pendientes clave por órdenes, inventario y compras."
           data={operationsData}
         />
         <QuickActionsPanel />

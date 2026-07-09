@@ -27,7 +27,7 @@ export function AiAnalysisResultCard({ result }: { result: ResultLike }) {
               </div>
               <div>
                 <h2 className="text-lg font-black text-slate-950">Resultado</h2>
-                <p className="text-sm text-slate-500">Analisis generado con datos del sistema.</p>
+                <p className="text-sm text-slate-500">Análisis generado con datos del sistema.</p>
               </div>
             </div>
             {'question' in result && result.question ? (
@@ -49,7 +49,7 @@ export function AiAnalysisResultCard({ result }: { result: ResultLike }) {
         ) : null}
 
         <section>
-          <h3 className="text-sm font-black text-slate-950">Diagnostico</h3>
+          <h3 className="text-sm font-black text-slate-950">Diagnóstico</h3>
           <div className="mt-3 space-y-3 text-sm leading-7 text-slate-700">
             {paragraphs.map((paragraph) => (
               <p key={paragraph}>{paragraph}</p>

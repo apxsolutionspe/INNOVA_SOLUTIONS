@@ -21,9 +21,9 @@ export function QuickServicesKpiCards({ sales }: { sales: QuickServiceSale[] }) 
 
   const cards = [
     { label: 'Servicios de hoy', value: todaySales.length, icon: Zap, className: 'from-brand-blue to-brand-cyan' },
-    { label: 'Ingresos rapidos', value: `S/ ${incomeToday.toFixed(2)}`, icon: Banknote, className: 'from-brand-success to-emerald-400' },
+    { label: 'Ingresos rápidos', value: `S/ ${incomeToday.toFixed(2)}`, icon: Banknote, className: 'from-brand-success to-emerald-400' },
     { label: 'Operaciones', value: sales.length, icon: ReceiptText, className: 'from-brand-violet to-brand-blue' },
-    { label: 'Mas solicitado', value: topService, icon: Star, className: 'from-orange-500 to-brand-warning' },
+    { label: 'Más solicitado', value: topService, icon: Star, className: 'from-orange-500 to-brand-warning' },
   ];
 
   return (

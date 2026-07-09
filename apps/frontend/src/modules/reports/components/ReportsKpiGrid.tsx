@@ -64,7 +64,7 @@ export function ReportsKpiGrid({ summary }: { summary: ReportsSummary | null }) 
     {
       title: 'Pendientes',
       value: pendingTotal,
-      description: `Stock critico: ${summary?.productsLowStock ?? 0}`,
+      description: `Stock crítico: ${summary?.productsLowStock ?? 0}`,
       icon: pendingTotal || (summary?.productsLowStock ?? 0) ? AlertTriangle : Boxes,
       tone: pendingTotal || (summary?.productsLowStock ?? 0) ? 'orange' as const : 'slate' as const,
     },

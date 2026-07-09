@@ -33,9 +33,9 @@ export function WhatsappPage() {
   }
 
   return (
-    <PageContainer title="WhatsApp" description="Mensajeria avanzada preparada para WhatsApp Business API. Sin token real opera en modo mock.">
+    <PageContainer title="WhatsApp" description="Mensajería avanzada preparada para WhatsApp Business API. Sin token real opera en modo mock.">
       <ExecutiveHeader
-        eyebrow="Comunicacion externa"
+        eyebrow="Comunicación externa"
         title="WhatsApp Cloud API"
         description="Plantillas, historial y pruebas de envío desde backend. Los tokens no se exponen al frontend."
         actions={
@@ -49,7 +49,7 @@ export function WhatsappPage() {
       {message ? <div className="rounded-lg border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-700">{message}</div> : null}
       <div className="grid gap-4 md:grid-cols-3">
         <ExecutiveKpiCard title="Modo" value="Prueba segura" description="Sin envío real si no hay token" icon={MessageCircle} tone="violet" />
-        <ExecutiveKpiCard title="Plantillas" value="4" description="Ventas, ordenes y avisos" icon={Send} tone="blue" />
+        <ExecutiveKpiCard title="Plantillas" value="4" description="Ventas, órdenes y avisos" icon={Send} tone="blue" />
         <ExecutiveKpiCard title="Seguridad" value="Backend" description="Token protegido" icon={TestTube2} tone="green" />
       </div>
       <div className="grid gap-5 lg:grid-cols-2">

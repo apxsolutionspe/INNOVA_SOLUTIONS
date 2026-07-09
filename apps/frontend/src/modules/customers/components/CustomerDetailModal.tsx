@@ -51,7 +51,7 @@ export function CustomerDetailModal({ customer, onClose }: CustomerDetailModalPr
             </span>
             <span className="inline-flex items-center gap-2 rounded-xl bg-slate-50 px-3 py-2 text-sm font-bold text-slate-700">
               <Phone size={16} />
-              {customer.phone || 'Sin telefono'}
+              {customer.phone || 'Sin teléfono'}
             </span>
             <span className="inline-flex items-center gap-2 rounded-xl bg-slate-50 px-3 py-2 text-sm font-bold text-slate-700">
               <Mail size={16} />
@@ -62,7 +62,7 @@ export function CustomerDetailModal({ customer, onClose }: CustomerDetailModalPr
 
         {isCompany ? (
           <section className="grid gap-3 sm:grid-cols-2">
-            <DetailItem label="Razon social" value={customer.businessName || customer.fullName} />
+            <DetailItem label="Razón social" value={customer.businessName || customer.fullName} />
             <DetailItem label="Nombre comercial" value={customer.tradeName} />
             <DetailItem label="Representante legal" value={customer.legalRepresentative} />
             <DetailItem label="Rubro" value={customer.businessLine} />
@@ -80,7 +80,7 @@ export function CustomerDetailModal({ customer, onClose }: CustomerDetailModalPr
 
         <div className="flex items-center gap-2 rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-800">
           <MapPin size={18} />
-          Este cliente puede usarse en POS, ventas, servicios rapidos y ordenes tecnicas.
+          Este cliente puede usarse en POS, ventas, servicios rápidos y órdenes técnicas.
         </div>
       </div>
     </Modal>

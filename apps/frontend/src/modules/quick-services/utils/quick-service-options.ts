@@ -17,7 +17,7 @@ export function getQuickServiceOptions(service: QuickService): QuickServiceOptio
 
   if (text.includes('impres')) {
     return [
-      { label: 'Simple', description: 'Impresion por una cara.' },
+      { label: 'Simple', description: 'Impresión por una cara.' },
       { label: 'Doble cara', description: 'Optimizada para ahorrar hojas.' },
       { label: 'Alta calidad', description: 'Configuración recomendada para imágenes o presentaciones.' },
     ];
@@ -25,7 +25,7 @@ export function getQuickServiceOptions(service: QuickService): QuickServiceOptio
 
   if (text.includes('foto') || text.includes('copia')) {
     return [
-      { label: 'Blanco y negro', description: 'Copia rapida para documentos comunes.' },
+      { label: 'Blanco y negro', description: 'Copia rápida para documentos comunes.' },
       { label: 'Color', description: 'Copia con mayor fidelidad visual.' },
     ];
   }
@@ -41,23 +41,23 @@ export function getQuickServiceOptions(service: QuickService): QuickServiceOptio
   if (text.includes('pdf')) {
     return [
       { label: 'Unir', description: 'Combinar varios documentos.' },
-      { label: 'Dividir', description: 'Separar paginas o secciones.' },
+      { label: 'Dividir', description: 'Separar páginas o secciones.' },
       { label: 'Comprimir', description: 'Reducir peso para envío digital.' },
     ];
   }
 
   if (text.includes('canva') || text.includes('diseno') || text.includes('dise')) {
     return [
-      { label: 'Basico', description: 'Ajustes simples y entrega rapida.' },
-      { label: 'Intermedio', description: 'Diseno con mayor personalizacion.' },
-      { label: 'Premium', description: 'Mayor detalle visual y revision final.' },
+      { label: 'Básico', description: 'Ajustes simples y entrega rápida.' },
+      { label: 'Intermedio', description: 'Diseño con mayor personalización.' },
+      { label: 'Premium', description: 'Mayor detalle visual y revisión final.' },
     ];
   }
 
   if (text.includes('tramite')) {
     return [
-      { label: 'Simple', description: 'Registro o gestion digital directa.' },
-      { label: 'Con asesoria', description: 'Acompanamiento durante el tramite.' },
+      { label: 'Simple', description: 'Registro o gestión digital directa.' },
+      { label: 'Con asesoría', description: 'Acompañamiento durante el trámite.' },
     ];
   }
 

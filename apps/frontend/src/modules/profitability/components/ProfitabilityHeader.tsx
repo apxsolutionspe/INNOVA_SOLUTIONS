@@ -23,10 +23,10 @@ export function ProfitabilityHeader({ margin, netProfit, isLoading, onRefresh }:
     <header className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
       <div className="grid gap-5 p-5 lg:grid-cols-[1fr_auto] lg:items-center sm:p-6">
         <div>
-          <p className="text-xs font-black uppercase tracking-wide text-brand-blue">Analisis financiero</p>
+          <p className="text-xs font-black uppercase tracking-wide text-brand-blue">Análisis financiero</p>
           <h1 className="mt-2 text-2xl font-black tracking-tight text-slate-950 sm:text-3xl">Rentabilidad</h1>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">
-            Analisis avanzado de ingresos, costos, gastos y utilidad estimada para tomar decisiones de precio, compras y reposicion.
+            Análisis avanzado de ingresos, costos, gastos y utilidad estimada para tomar decisiones de precio, compras y reposición.
           </p>
           <div className="mt-4 flex flex-wrap items-center gap-2">
             <span className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-black ${status.tone}`}>

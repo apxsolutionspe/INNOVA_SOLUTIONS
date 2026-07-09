@@ -102,7 +102,7 @@ export function QuickServiceAdminPanel({ categories, services, onReload }: Quick
         <form onSubmit={createCategory} className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
           <h2 className="inline-flex items-center gap-2 text-sm font-black text-slate-950">
             <Settings size={17} />
-            Nueva categoria
+            Nueva categoría
           </h2>
           <input
             value={categoryName}
@@ -112,7 +112,7 @@ export function QuickServiceAdminPanel({ categories, services, onReload }: Quick
           />
           <button className="mt-3 inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-brand-blue text-sm font-black text-white">
             <Plus size={17} />
-            Crear categoria
+            Crear categoría
           </button>
         </form>
 

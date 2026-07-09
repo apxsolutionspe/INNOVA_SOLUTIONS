@@ -34,9 +34,9 @@ export function IntegrationsPage() {
       />
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <ExecutiveKpiCard title="Integraciones" value={counts.total} description="Proveedores registrados" icon={Unplug} tone="blue" />
-        <ExecutiveKpiCard title="Modo mock" value={counts.mock} description="Simulacion controlada" icon={ShieldCheck} tone="violet" />
+        <ExecutiveKpiCard title="Modo mock" value={counts.mock} description="Simulación controlada" icon={ShieldCheck} tone="violet" />
         <ExecutiveKpiCard title="Configuradas" value={counts.connected} description="Conectadas o listas" icon={TestTube2} tone="green" />
-        <ExecutiveKpiCard title="Errores" value={counts.errors} description="Requieren revision" icon={Unplug} tone={counts.errors ? 'red' : 'slate'} />
+        <ExecutiveKpiCard title="Errores" value={counts.errors} description="Requieren revisión" icon={Unplug} tone={counts.errors ? 'red' : 'slate'} />
       </div>
       {loading ? <LoadingState rows={4} /> : null}
       {error ? <ErrorState message={error} onRetry={() => void load()} /> : null}

@@ -5,9 +5,9 @@ export function OperationsSummary({ summary }: { summary: DashboardSummary }) {
   const items = [
     { label: 'Clientes', value: summary.customersCount, detail: 'registrados', icon: Users },
     { label: 'Productos vendidos', value: summary.productsSoldToday, detail: 'hoy', icon: PackageCheck },
-    { label: 'Servicios rapidos', value: summary.quickServicesToday, detail: 'operaciones hoy', icon: Zap },
-    { label: 'Ordenes en proceso', value: summary.serviceOrdersInProgress, detail: 'en taller', icon: ClipboardList },
-    { label: 'Entregas', value: summary.serviceOrdersDeliveredToday, detail: 'del dia', icon: ClipboardList },
+    { label: 'Servicios rápidos', value: summary.quickServicesToday, detail: 'operaciones hoy', icon: Zap },
+    { label: 'Órdenes en proceso', value: summary.serviceOrdersInProgress, detail: 'en taller', icon: ClipboardList },
+    { label: 'Entregas', value: summary.serviceOrdersDeliveredToday, detail: 'del día', icon: ClipboardList },
     { label: 'Proveedores', value: summary.suppliersCount, detail: 'activos', icon: Truck },
   ];
 
@@ -28,7 +28,7 @@ export function OperationsSummary({ summary }: { summary: DashboardSummary }) {
               </div>
               <div>
                 <p className="text-lg font-black text-slate-950">{item.value}</p>
-                <p className="text-xs font-semibold text-slate-500">{item.label} ? {item.detail}</p>
+                <p className="text-xs font-semibold text-slate-500">{item.label} · {item.detail}</p>
               </div>
             </div>
           );

@@ -41,7 +41,7 @@ const accessCards: Record<Exclude<SettingsTab, 'general' | 'business' | 'securit
   },
   integrations: {
     title: 'Centro de integraciones',
-    description: 'Administra proveedores externos, pruebas de conexión y estados de integracion.',
+    description: 'Administra proveedores externos, pruebas de conexión y estados de integración.',
     path: '/integrations',
     icon: Plug,
     badge: 'Admin',
@@ -51,7 +51,7 @@ const accessCards: Record<Exclude<SettingsTab, 'general' | 'business' | 'securit
     description: 'Configura plantillas, pruebas de envío y trazabilidad de mensajes del sistema.',
     path: '/whatsapp',
     icon: MessageCircle,
-    badge: 'Mensajeria',
+    badge: 'Mensajería',
   },
   ecommerce: {
     title: 'eCommerce interno',

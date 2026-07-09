@@ -39,8 +39,8 @@ export function QuickServiceCartPanel({ cart, subtotal, onQty, onRemove, onClear
 
       {!cart.length ? (
         <QuickServiceEmptyState
-          title="Agrega servicios para iniciar una operacion"
-          description="El carrito mostrara cantidades, subtotales y el total preliminar."
+          title="Agrega servicios para iniciar una operación"
+          description="El carrito mostrará cantidades, subtotales y el total preliminar."
           icon={ShoppingBasket}
         />
       ) : (

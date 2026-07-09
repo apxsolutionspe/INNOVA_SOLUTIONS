@@ -6,13 +6,13 @@ import { LoginBackgroundEffects } from '../components/LoginBackgroundEffects';
 import { LoginCard } from '../components/LoginCard';
 
 const genericLoginError = 'No se pudo iniciar sesión. Verifica tus credenciales e inténtalo nuevamente.';
-const serverUnavailableError = 'No se pudo conectar con el servidor. Verifica que el backend este activo.';
+const serverUnavailableError = 'No se pudo conectar con el servidor. Verifica que el backend esté activo.';
 
 function getLoginErrorMessage(error: unknown) {
   if (!(error instanceof Error)) return genericLoginError;
   if (error.message === 'AUTH_SERVER_UNAVAILABLE') return serverUnavailableError;
   if (error.message === 'AUTH_INVALID_CREDENTIALS') return genericLoginError;
-  if (error.message === 'AUTH_INVALID_RESPONSE') return 'La respuesta del servidor no fue valida. Intentalo nuevamente.';
+  if (error.message === 'AUTH_INVALID_RESPONSE') return 'La respuesta del servidor no fue válida. Inténtalo nuevamente.';
   return genericLoginError;
 }
 
@@ -34,7 +34,7 @@ export function LoginPage() {
   const validate = () => {
     const errors: { email?: string; password?: string } = {};
     if (!email.trim()) errors.email = 'Ingresa tu correo.';
-    if (!password.trim()) errors.password = 'Ingresa tu contrasena.';
+    if (!password.trim()) errors.password = 'Ingresa tu contraseña.';
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -51,7 +51,7 @@ export function LoginPage() {
       navigate('/dashboard', { replace: true });
     } catch (loginError) {
       if (import.meta.env.DEV) {
-        console.warn('[Login] Diagnostico controlado:', loginError instanceof Error ? loginError.message : 'AUTH_UNKNOWN_ERROR');
+        console.warn('[Login] Diagnóstico controlado:', loginError instanceof Error ? loginError.message : 'AUTH_UNKNOWN_ERROR');
       }
       setError(getLoginErrorMessage(loginError));
     } finally {

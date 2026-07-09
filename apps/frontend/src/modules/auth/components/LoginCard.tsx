@@ -47,7 +47,7 @@ export function LoginCard({
 
         <div className="mt-8 space-y-4">
           <AuthInput
-            label="Email"
+            label="Correo electrónico"
             type="email"
             value={email}
             onChange={(event) => onEmailChange(event.target.value)}
@@ -66,7 +66,7 @@ export function LoginCard({
         </div>
 
         {error ? (
-          <div className="mt-5 rounded-2xl border border-orange-300/28 bg-red-950/24 px-4 py-3 text-sm font-bold leading-6 text-orange-50 shadow-inner shadow-red-950/20">
+          <div className="mt-5 rounded-2xl border border-orange-300/28 bg-red-950/24 px-4 py-3 text-[15px] font-bold leading-6 text-orange-50 shadow-inner shadow-red-950/20">
             {error}
           </div>
         ) : null}
@@ -80,8 +80,8 @@ export function LoginCard({
           {isLoading ? 'Validando acceso...' : 'Ingresar al sistema'}
         </button>
 
-        <p className="mt-4 text-center text-[11px] font-semibold text-slate-300/80">
-          Conexion segura.
+        <p className="mt-4 text-center text-[13px] font-semibold text-slate-300/80">
+          Conexión segura.
         </p>
       </div>
     </motion.form>

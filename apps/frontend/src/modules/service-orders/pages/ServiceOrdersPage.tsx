@@ -43,7 +43,7 @@ export function ServiceOrdersPage() {
           <ServiceOrderTable orders={orders.orders} isLoading={orders.isLoading} />
           {!orders.isLoading && !orders.orders.length ? (
             <EmptyState
-              title={hasFilters ? 'No se encontraron ordenes tecnicas' : 'Aun no hay ordenes tecnicas registradas'}
+              title={hasFilters ? 'No se encontraron órdenes técnicas' : 'Aún no hay órdenes técnicas registradas'}
               description={hasFilters ? 'Ajusta la búsqueda o limpia los filtros para ver otras órdenes.' : 'Registra la primera recepción de equipo para iniciar el seguimiento técnico.'}
               icon={ClipboardList}
               action={!hasFilters ? <Button type="button" onClick={() => setIsFormOpen(true)}>Crear primera orden</Button> : undefined}
