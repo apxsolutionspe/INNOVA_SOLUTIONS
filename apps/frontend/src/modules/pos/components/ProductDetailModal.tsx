@@ -30,6 +30,11 @@ interface DetailItem {
   value: string | number;
 }
 
+interface SpecGroup {
+  title: string;
+  items: DetailItem[];
+}
+
 const SPEC_LABELS: Record<string, string> = {
   procesador: 'Procesador',
   processor: 'Procesador',
@@ -130,24 +135,45 @@ function resolveStockTone(product: Product, availableStock: number) {
   };
 }
 
-function buildTechnicalSpecs(product: Product) {
-  const specs: DetailItem[] = [];
-  addDetail(specs, 'Marca', product.brand);
-  addDetail(specs, 'Modelo', product.model);
-  addDetail(specs, 'Garantía', product.warranty);
-  addDetail(specs, 'Uso recomendado', product.recommendedUse);
+function isSpecRecord(value: unknown): value is Record<string, string | number> {
+  return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+}
 
-  for (const [key, value] of Object.entries(product.technicalSpecs ?? {})) {
-    addDetail(specs, formatSpecLabel(key), value);
+function buildTechnicalSpecGroups(product: Product): SpecGroup[] {
+  const groups: SpecGroup[] = [];
+  const summary: DetailItem[] = [];
+  addDetail(summary, 'Marca', product.brand);
+  addDetail(summary, 'Modelo', product.model);
+  addDetail(summary, 'Garantía', product.warranty);
+  addDetail(summary, 'Uso recomendado', product.recommendedUse);
+  if (summary.length) groups.push({ title: 'Resumen técnico', items: summary });
+
+  for (const [groupOrKey, value] of Object.entries(product.technicalSpecs ?? {})) {
+    if (isSpecRecord(value)) {
+      const items: DetailItem[] = [];
+      Object.entries(value).forEach(([key, childValue]) => addDetail(items, formatSpecLabel(key), childValue));
+      if (items.length) groups.push({ title: formatSpecLabel(groupOrKey), items });
+      continue;
+    }
+
+    const general = groups.find((group) => group.title === 'Características');
+    const target = general ?? { title: 'Características', items: [] };
+    addDetail(target.items, formatSpecLabel(groupOrKey), value);
+    if (!general && target.items.length) groups.push(target);
   }
 
   const seen = new Set<string>();
-  return specs.filter((item) => {
-    const identity = `${normalizeSpecKey(item.label)}:${String(item.value).toLowerCase()}`;
-    if (seen.has(identity)) return false;
-    seen.add(identity);
-    return true;
-  });
+  return groups
+    .map((group) => ({
+      ...group,
+      items: group.items.filter((item) => {
+        const identity = `${normalizeSpecKey(item.label)}:${String(item.value).toLowerCase()}`;
+        if (seen.has(identity)) return false;
+        seen.add(identity);
+        return true;
+      }),
+    }))
+    .filter((group) => group.items.length);
 }
 
 function buildCommercialDetails(product: Product, availableStock: number) {
@@ -162,13 +188,32 @@ function buildCommercialDetails(product: Product, availableStock: number) {
   return details;
 }
 
+function limitSpecGroups(groups: SpecGroup[], maxItems: number): SpecGroup[] {
+  let remaining = maxItems;
+  const result: SpecGroup[] = [];
+
+  for (const group of groups) {
+    if (remaining <= 0) break;
+    const items = group.items.slice(0, remaining);
+    if (items.length) {
+      result.push({ ...group, items });
+      remaining -= items.length;
+    }
+  }
+
+  return result;
+}
+
 export function ProductDetailModal({ product, inCartQuantity, onAdd, onClose }: ProductDetailModalProps) {
   const availableStock = Math.max(product.stock - inCartQuantity, 0);
   const stockTone = useMemo(() => resolveStockTone(product, availableStock), [availableStock, product]);
   const [quantity, setQuantity] = useState(stockTone.canAdd ? 1 : 0);
-  const technicalSpecs = useMemo(() => buildTechnicalSpecs(product), [product]);
+  const [showFullSpecs, setShowFullSpecs] = useState(false);
+  const technicalSpecGroups = useMemo(() => buildTechnicalSpecGroups(product), [product]);
   const commercialDetails = useMemo(() => buildCommercialDetails(product, availableStock), [availableStock, product]);
   const safeQuantity = stockTone.canAdd ? Math.max(1, Math.min(quantity || 1, availableStock)) : 0;
+  const visibleSpecGroups = useMemo(() => limitSpecGroups(technicalSpecGroups, showFullSpecs ? 40 : 12), [showFullSpecs, technicalSpecGroups]);
+  const totalSpecs = technicalSpecGroups.reduce((total, group) => total + group.items.length, 0);
 
   useEffect(() => {
     const closeOnEscape = (event: KeyboardEvent) => {
@@ -181,6 +226,7 @@ export function ProductDetailModal({ product, inCartQuantity, onAdd, onClose }: 
 
   useEffect(() => {
     setQuantity(stockTone.canAdd ? 1 : 0);
+    setShowFullSpecs(false);
   }, [product.id, stockTone.canAdd]);
 
   const updateQuantity = (nextValue: number) => {
@@ -270,11 +316,25 @@ export function ProductDetailModal({ product, inCartQuantity, onAdd, onClose }: 
           </div>
 
           <section className="mt-5 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
-            <SectionHeader icon={Ruler} title="Especificaciones técnicas" />
-            {technicalSpecs.length ? (
-              <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {technicalSpecs.map((item) => (
-                  <SpecCard key={`${item.label}-${item.value}`} label={item.label} value={item.value} />
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <SectionHeader icon={Ruler} title="Especificaciones técnicas" />
+                <p className="mt-2 text-sm font-semibold text-slate-500">Características principales del producto.</p>
+              </div>
+              {totalSpecs > 12 ? (
+                <button
+                  type="button"
+                  onClick={() => setShowFullSpecs((current) => !current)}
+                  className="inline-flex h-10 items-center justify-center rounded-xl border border-blue-100 bg-blue-50 px-4 text-xs font-black text-brand-blue transition hover:bg-blue-100"
+                >
+                  {showFullSpecs ? 'Ver resumen' : 'Ver ficha completa'}
+                </button>
+              ) : null}
+            </div>
+            {visibleSpecGroups.length ? (
+              <div className="mt-4 grid gap-4 lg:grid-cols-2">
+                {visibleSpecGroups.map((group) => (
+                  <SpecGroupBlock key={group.title} group={group} />
                 ))}
               </div>
             ) : (
@@ -455,11 +515,20 @@ function InfoRow({ label, value }: DetailItem) {
   );
 }
 
-function SpecCard({ label, value }: DetailItem) {
+function SpecGroupBlock({ group }: { group: SpecGroup }) {
   return (
-    <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
-      <p className="text-[11px] font-black uppercase tracking-wide text-slate-400">{label}</p>
-      <p className="mt-1 text-sm font-bold leading-6 text-slate-800">{value}</p>
+    <div className="overflow-hidden rounded-2xl border border-slate-100 bg-slate-50">
+      <div className="border-b border-slate-100 bg-white px-4 py-3">
+        <p className="text-xs font-black uppercase tracking-wide text-slate-500">{group.title}</p>
+      </div>
+      <div className="divide-y divide-slate-100">
+        {group.items.map((item) => (
+          <div key={`${group.title}-${item.label}-${item.value}`} className="grid gap-1 px-4 py-3 sm:grid-cols-[0.85fr_1.15fr] sm:items-start">
+            <p className="text-xs font-black uppercase tracking-wide text-slate-400">{item.label}</p>
+            <p className="text-sm font-bold leading-5 text-slate-800 sm:text-right">{item.value}</p>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

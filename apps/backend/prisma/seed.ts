@@ -17,6 +17,7 @@ import {
 } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { findProductImagePath } from './product-images';
+import { findProductTechnicalProfile } from './product-specs';
 
 const prisma = new PrismaClient();
 const TAX_RATE = 0.18;
@@ -230,6 +231,7 @@ async function seedProductCatalog() {
   const products = [];
   for (const [name, sku, barcode, categoryName, purchasePrice, salePrice, stock, minStock, unit, imageUrl] of productsData) {
     const resolvedImageUrl = findProductImagePath(name) ?? imageUrl;
+    const technicalProfile = findProductTechnicalProfile(name, categoryName);
 
     products.push(
       await prisma.product.upsert({
@@ -244,6 +246,12 @@ async function seedProductCatalog() {
           minStock,
           unit,
           imageUrl: resolvedImageUrl,
+          brand: technicalProfile?.brand,
+          model: technicalProfile?.model,
+          warranty: technicalProfile?.warranty,
+          recommendedUse: technicalProfile?.recommendedUse,
+          technicalSpecs: technicalProfile?.technicalSpecs,
+          technicalSpecsSearch: technicalProfile ? JSON.stringify(technicalProfile.technicalSpecs).toLowerCase() : null,
           isActive: true,
           description: `${name} demo para pruebas de inventario`,
         },
@@ -258,6 +266,12 @@ async function seedProductCatalog() {
           minStock,
           unit,
           imageUrl: resolvedImageUrl,
+          brand: technicalProfile?.brand,
+          model: technicalProfile?.model,
+          warranty: technicalProfile?.warranty,
+          recommendedUse: technicalProfile?.recommendedUse,
+          technicalSpecs: technicalProfile?.technicalSpecs,
+          technicalSpecsSearch: technicalProfile ? JSON.stringify(technicalProfile.technicalSpecs).toLowerCase() : null,
           isActive: true,
           description: `${name} demo para pruebas de inventario`,
         },

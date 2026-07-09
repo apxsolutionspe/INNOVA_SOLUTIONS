@@ -16,26 +16,38 @@ interface ProductFormProps {
 
 interface SpecRow {
   id: string;
+  group: string;
   key: string;
   value: string;
 }
 
-const createSpecRow = (key = '', value = ''): SpecRow => ({
+const createSpecRow = (group = 'General', key = '', value = ''): SpecRow => ({
   id: typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`,
+  group,
   key,
   value,
 });
 
-const specsToRows = (specs?: Record<string, string> | null) => {
-  const rows = Object.entries(specs ?? {}).map(([key, value]) => createSpecRow(key, String(value ?? '')));
+const specsToRows = (specs?: Product['technicalSpecs']) => {
+  const rows = Object.entries(specs ?? {}).flatMap(([groupOrKey, rawValue]) => {
+    if (rawValue && typeof rawValue === 'object') {
+      return Object.entries(rawValue as Record<string, string>).map(([key, value]) => createSpecRow(groupOrKey, key, String(value ?? '')));
+    }
+
+    return [createSpecRow('General', groupOrKey, String(rawValue ?? ''))];
+  });
   return rows.length ? rows : [createSpecRow()];
 };
 
 const rowsToSpecs = (rows: SpecRow[]) =>
-  rows.reduce<Record<string, string>>((accumulator, row) => {
+  rows.reduce<Record<string, Record<string, string>>>((accumulator, row) => {
+    const group = row.group.trim() || 'General';
     const key = row.key.trim();
     const value = row.value.trim();
-    if (key && value) accumulator[key] = value;
+    if (key && value) {
+      accumulator[group] = accumulator[group] ?? {};
+      accumulator[group][key] = value;
+    }
     return accumulator;
   }, {});
 
@@ -240,15 +252,16 @@ export function ProductForm({ product, categories, onSubmit, onClose }: ProductF
 
               <div className="mt-4 space-y-3">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                  <p className="text-xs font-black uppercase tracking-wide text-slate-500">Características principales</p>
+                  <p className="text-xs font-black uppercase tracking-wide text-slate-500">Especificaciones técnicas</p>
                   <button type="button" onClick={() => setSpecRows((current) => [...current, createSpecRow()])} className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-white px-3 text-xs font-black text-brand-blue ring-1 ring-cyan-100 hover:bg-cyan-50">
                     <Plus size={15} />
                     Agregar característica
                   </button>
                 </div>
                 {specRows.map((row) => (
-                  <div key={row.id} className="grid gap-2 sm:grid-cols-[1fr_1.4fr_auto]">
-                    <input value={row.key} onChange={(event) => updateSpecRow(row.id, { key: event.target.value })} placeholder="Clave: Procesador" className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none focus:border-brand-cyan focus:ring-4 focus:ring-cyan-100" />
+                  <div key={row.id} className="grid gap-2 sm:grid-cols-[0.9fr_1fr_1.35fr_auto]">
+                    <input value={row.group} onChange={(event) => updateSpecRow(row.id, { group: event.target.value })} placeholder="Grupo: Sistema" className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none focus:border-brand-cyan focus:ring-4 focus:ring-cyan-100" />
+                    <input value={row.key} onChange={(event) => updateSpecRow(row.id, { key: event.target.value })} placeholder="Característica: Procesador" className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none focus:border-brand-cyan focus:ring-4 focus:ring-cyan-100" />
                     <input value={row.value} onChange={(event) => updateSpecRow(row.id, { value: event.target.value })} placeholder="Valor: Intel Core i5" className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none focus:border-brand-cyan focus:ring-4 focus:ring-cyan-100" />
                     <button type="button" onClick={() => removeSpecRow(row.id)} className="grid h-10 w-full place-items-center rounded-lg border border-red-100 bg-white text-red-600 hover:bg-red-50 sm:w-10" aria-label="Quitar característica">
                       <Trash2 size={16} />

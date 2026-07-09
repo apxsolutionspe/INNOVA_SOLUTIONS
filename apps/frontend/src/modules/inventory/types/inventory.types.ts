@@ -7,6 +7,8 @@ export interface ProductCategory {
   isActive: boolean;
 }
 
+export type ProductTechnicalSpecs = Record<string, string | Record<string, string>>;
+
 export interface Product {
   id: string;
   name: string;
@@ -19,7 +21,7 @@ export interface Product {
   warranty?: string | null;
   recommendedUse?: string | null;
   salesNotes?: string | null;
-  technicalSpecs?: Record<string, string> | null;
+  technicalSpecs?: ProductTechnicalSpecs | null;
   image?: string | null;
   imagePath?: string | null;
   thumbnail?: string | null;
@@ -44,7 +46,7 @@ export interface ProductPayload {
   warranty?: string;
   recommendedUse?: string;
   salesNotes?: string;
-  technicalSpecs?: Record<string, string>;
+  technicalSpecs?: ProductTechnicalSpecs;
   categoryId: string;
   purchasePrice: number;
   salePrice: number;

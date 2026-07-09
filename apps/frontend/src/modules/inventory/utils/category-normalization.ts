@@ -106,10 +106,22 @@ export function matchesProductSearch(product: Product, search: string) {
     product.salesNotes,
     product.category?.name,
     normalizeCategoryName(product.category?.name),
-    ...Object.entries(product.technicalSpecs ?? {}).flatMap(([key, value]) => [key, value]),
+    ...flattenTechnicalSpecs(product.technicalSpecs),
   ]
     .map(normalizeText)
     .join(' ');
 
   return searchableText.includes(query);
+}
+
+function flattenTechnicalSpecs(value: Product['technicalSpecs']): string[] {
+  if (!value || typeof value !== 'object') return [];
+
+  return Object.entries(value).flatMap(([key, rawValue]) => {
+    if (rawValue && typeof rawValue === 'object') {
+      return [key, ...Object.entries(rawValue).flatMap(([childKey, childValue]) => [childKey, childValue])];
+    }
+
+    return [key, String(rawValue ?? '')];
+  });
 }

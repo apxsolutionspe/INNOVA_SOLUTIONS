@@ -259,12 +259,29 @@ export class InventoryService {
 
   private sanitizeTechnicalSpecs(value: unknown) {
     if (!value || typeof value !== 'object' || Array.isArray(value)) return undefined;
-    const entries = Object.entries(value as Record<string, unknown>)
-      .map(([key, rawValue]) => [this.cleanText(key), this.cleanText(String(rawValue ?? ''))])
-      .filter(([key, rawValue]) => key && rawValue)
-      .slice(0, 16);
+    const sanitized: Record<string, string | Record<string, string>> = {};
 
-    return entries.length ? Object.fromEntries(entries) : undefined;
+    for (const [rawKey, rawValue] of Object.entries(value as Record<string, unknown>).slice(0, 10)) {
+      const key = this.cleanText(rawKey);
+      if (!key || rawValue === undefined || rawValue === null) continue;
+
+      if (typeof rawValue === 'object' && !Array.isArray(rawValue)) {
+        const groupEntries = Object.entries(rawValue as Record<string, unknown>)
+          .map(([groupKey, groupValue]) => [this.cleanText(groupKey), this.cleanText(String(groupValue ?? ''))])
+          .filter(([groupKey, groupValue]) => groupKey && groupValue)
+          .slice(0, 12);
+
+        if (groupEntries.length) {
+          sanitized[key] = Object.fromEntries(groupEntries);
+        }
+        continue;
+      }
+
+      const textValue = this.cleanText(String(rawValue));
+      if (textValue) sanitized[key] = textValue;
+    }
+
+    return Object.keys(sanitized).length ? sanitized : undefined;
   }
 
   private cleanText(value: string) {
@@ -272,9 +289,7 @@ export class InventoryService {
   }
 
   private buildTechnicalSpecsSearch(payload: Record<string, unknown>) {
-    const specs = payload.technicalSpecs && typeof payload.technicalSpecs === 'object'
-      ? Object.entries(payload.technicalSpecs as Record<string, unknown>).flatMap(([key, value]) => [key, String(value ?? '')])
-      : [];
+    const specs = this.flattenTechnicalSpecsForSearch(payload.technicalSpecs);
     return [
       payload.brand,
       payload.model,
@@ -286,5 +301,17 @@ export class InventoryService {
       .filter(Boolean)
       .join(' ')
       .toLowerCase() || null;
+  }
+
+  private flattenTechnicalSpecsForSearch(value: unknown): string[] {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return [];
+
+    return Object.entries(value as Record<string, unknown>).flatMap(([key, rawValue]) => {
+      if (rawValue && typeof rawValue === 'object' && !Array.isArray(rawValue)) {
+        return [key, ...this.flattenTechnicalSpecsForSearch(rawValue)];
+      }
+
+      return [key, String(rawValue ?? '')];
+    });
   }
 }

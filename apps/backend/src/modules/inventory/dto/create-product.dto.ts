@@ -64,7 +64,12 @@ export class CreateProductDto {
   @MaxLength(700)
   salesNotes?: string;
 
-  @ApiPropertyOptional({ example: { Procesador: 'Intel Core i5', 'Memoria RAM': '8 GB' } })
+  @ApiPropertyOptional({
+    example: {
+      Sistema: { Procesador: 'Intel Core i5', Generacion: '12.a generacion referencial' },
+      'Memoria y almacenamiento': { 'Memoria RAM': '8 GB DDR4', Almacenamiento: 'SSD 512 GB' },
+    },
+  })
   @IsOptional()
   @IsObject()
   technicalSpecs?: Record<string, unknown>;
