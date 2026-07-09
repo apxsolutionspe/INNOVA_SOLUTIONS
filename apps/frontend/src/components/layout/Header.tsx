@@ -1,6 +1,6 @@
 ﻿import { BriefcaseBusiness, ChevronDown, LogOut, Menu, PanelLeftOpen } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 import { NotificationBell } from '../../modules/notifications/components/NotificationBell';
 import { useAuthStore } from '../../store/auth.store';
@@ -13,43 +13,12 @@ interface HeaderProps {
   isMenuOpen?: boolean;
 }
 
-const routeTitles: Array<{ path: string; title: string }> = [
-  { path: '/dashboard', title: 'Inicio' },
-  { path: '/pos', title: 'POS' },
-  { path: '/sales', title: 'Historial de ventas' },
-  { path: '/quick-services', title: 'Servicios rápidos' },
-  { path: '/quick-service-sales', title: 'Historial Servicios' },
-  { path: '/payments', title: 'Pagos Online' },
-  { path: '/customers', title: 'Clientes' },
-  { path: '/inventory', title: 'Inventario' },
-  { path: '/service-orders', title: 'Órdenes técnicas' },
-  { path: '/cash', title: 'Caja' },
-  { path: '/purchases', title: 'Compras' },
-  { path: '/suppliers', title: 'Proveedores' },
-  { path: '/reports', title: 'Reportes' },
-  { path: '/profitability', title: 'Rentabilidad' },
-  { path: '/ai-analytics', title: 'Analítica IA' },
-  { path: '/users', title: 'Usuarios' },
-  { path: '/audit', title: 'Auditoría' },
-  { path: '/settings', title: 'Configuración' },
-  { path: '/integrations', title: 'Integraciones' },
-  { path: '/sunat', title: 'SUNAT' },
-  { path: '/whatsapp', title: 'WhatsApp' },
-  { path: '/ecommerce', title: 'eCommerce' },
-];
-
-function resolveRouteTitle(pathname: string) {
-  return routeTitles.find((route) => pathname === route.path || pathname.startsWith(`${route.path}/`))?.title ?? 'Innova Solutions';
-}
-
 export function Header({ onMenuClick, onToggleSidebar, isMenuOpen = false }: HeaderProps) {
   const navigate = useNavigate();
-  const location = useLocation();
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const moduleTitle = resolveRouteTitle(location.pathname);
   const displayName = getDisplayUserName(user);
   const displayRole = getRoleBadgeLabel(user?.role);
   const initials = getRoleInitials(user?.role, user?.fullName);
@@ -102,18 +71,12 @@ export function Header({ onMenuClick, onToggleSidebar, isMenuOpen = false }: Hea
               <p className="truncate text-base font-black tracking-tight text-slate-950 sm:text-xl">
                 Innova Solutions
               </p>
-              <span className="hidden shrink-0 rounded-full border border-blue-100 bg-blue-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-brand-blue sm:inline-flex">
-                {moduleTitle}
-              </span>
             </div>
             <div className="mt-0.5 flex min-w-0 items-center gap-1.5">
               <p className="truncate text-xs font-semibold text-slate-500 sm:text-[13px]">Suite de Gestión</p>
               <span className="hidden h-1 w-1 rounded-full bg-slate-300 sm:block" />
               <p className="hidden truncate text-xs font-semibold text-slate-500 sm:block">Sistema Integral de Gestión</p>
             </div>
-            <p className="mt-1 truncate text-[11px] font-black uppercase tracking-wide text-brand-blue sm:hidden">
-              {moduleTitle}
-            </p>
           </div>
         </div>
 

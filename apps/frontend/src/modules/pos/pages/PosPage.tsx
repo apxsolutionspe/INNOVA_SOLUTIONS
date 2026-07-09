@@ -1,7 +1,8 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { RefreshCw, Wallet } from 'lucide-react';
 
 import { PosErrorState } from '../components/PosErrorState';
-import { PosHeader } from '../components/PosHeader';
 import { ProductCategoryFilter } from '../components/ProductCategoryFilter';
 import { ProductDetailModal } from '../components/ProductDetailModal';
 import { ProductGrid } from '../components/ProductGrid';
@@ -35,30 +36,56 @@ export function PosPage() {
             : '';
 
   return (
-    <section className="mx-auto flex w-full max-w-[100rem] min-w-0 flex-col gap-4 px-3 py-4 sm:gap-5 sm:px-6 sm:py-6 lg:px-8">
-      <PosHeader cashSession={pos.cashSession} isLoading={pos.isLoading} onRefresh={() => void pos.refresh()} />
-
+    <section className="mx-auto flex w-full max-w-[100rem] min-w-0 flex-col gap-3 px-3 py-3 sm:gap-4 sm:px-5 sm:py-4 lg:px-6">
       {pos.error ? <PosErrorState message={pos.error} /> : null}
 
-      <div className="grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1fr)_25rem] 2xl:grid-cols-[minmax(0,1fr)_27rem]">
-        <section className="min-w-0 space-y-4">
-          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="min-w-0">
-                <h2 className="text-lg font-black text-slate-950">Productos</h2>
-                <p className="mt-1 text-sm text-slate-500">Busca, filtra y agrega productos disponibles.</p>
+      <div className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1fr)_25rem] 2xl:grid-cols-[minmax(0,1fr)_27rem]">
+        <section className="min-w-0 space-y-3">
+          <div className="rounded-2xl border border-slate-200 bg-white/95 p-3 shadow-sm">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+              <div className="min-w-0 flex-1">
+                <ProductSearch
+                  search={pos.search}
+                  onChange={pos.setSearch}
+                  resultCount={pos.visibleProducts.length}
+                  isLoading={pos.isLoading}
+                />
               </div>
-              <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-600">
-                {pos.visibleProducts.length} en vista
-              </span>
+
+              <div className="flex flex-wrap items-center gap-2 lg:justify-end">
+                <div
+                  className={`inline-flex h-10 items-center gap-2 rounded-xl border px-3 text-xs font-black ${
+                    isCashOpen
+                      ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                      : 'border-orange-200 bg-orange-50 text-orange-700'
+                  }`}
+                >
+                  <Wallet size={16} />
+                  {isCashOpen ? `Caja abierta: ${pos.cashSession?.code}` : 'Caja cerrada'}
+                </div>
+
+                {!isCashOpen ? (
+                  <Link
+                    to="/cash"
+                    className="inline-flex h-10 items-center justify-center rounded-xl bg-brand-warning px-3 text-xs font-black text-white shadow-sm transition hover:bg-orange-600"
+                  >
+                    Abrir caja
+                  </Link>
+                ) : null}
+
+                <button
+                  type="button"
+                  onClick={() => void pos.refresh()}
+                  disabled={pos.isLoading}
+                  className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-xs font-black text-slate-700 shadow-sm transition hover:border-brand-cyan hover:text-brand-blue disabled:opacity-60"
+                >
+                  <RefreshCw className={pos.isLoading ? 'animate-spin' : ''} size={15} />
+                  Actualizar
+                </button>
+              </div>
             </div>
           </div>
-          <ProductSearch
-            search={pos.search}
-            onChange={pos.setSearch}
-            resultCount={pos.visibleProducts.length}
-            isLoading={pos.isLoading}
-          />
+
           <ProductCategoryFilter
             categories={pos.categories}
             selectedCategoryId={pos.selectedCategoryId}
