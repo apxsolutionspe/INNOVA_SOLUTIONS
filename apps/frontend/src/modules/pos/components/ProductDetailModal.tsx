@@ -17,6 +17,7 @@ import {
 
 import { Product } from '../../inventory/types/inventory.types';
 import { getProductImageSource } from '../../inventory/utils/product-image';
+import { getProductTechnicalSpecs, ProductTechnicalSpecGroup } from '../../inventory/utils/product-technical-specs';
 
 interface ProductDetailModalProps {
   product: Product;
@@ -30,75 +31,8 @@ interface DetailItem {
   value: string | number;
 }
 
-interface SpecGroup {
-  title: string;
-  items: DetailItem[];
-}
-
-const SPEC_LABELS: Record<string, string> = {
-  procesador: 'Procesador',
-  processor: 'Procesador',
-  cpu: 'Procesador',
-  ram: 'Memoria RAM',
-  memoria: 'Memoria RAM',
-  memoria_ram: 'Memoria RAM',
-  almacenamiento: 'Almacenamiento',
-  storage: 'Almacenamiento',
-  disco: 'Almacenamiento',
-  tipo_almacenamiento: 'Tipo de almacenamiento',
-  pantalla: 'Pantalla',
-  screen: 'Pantalla',
-  resolucion: 'Resolución',
-  resolution: 'Resolución',
-  grafica: 'Gráficos',
-  graficos: 'Gráficos',
-  gpu: 'Gráficos',
-  sistema_operativo: 'Sistema operativo',
-  os: 'Sistema operativo',
-  color: 'Color',
-  condicion: 'Condición',
-  estado: 'Condición',
-  ano: 'Año',
-  year: 'Año',
-  version: 'Versión',
-  conectividad: 'Conectividad',
-  bateria: 'Batería',
-  garantia: 'Garantía',
-  tecnologia: 'Tecnología',
-  compatibilidad: 'Compatibilidad',
-  rendimiento: 'Rendimiento',
-  capacidad: 'Capacidad',
-  frecuencia: 'Frecuencia',
-  tipo: 'Tipo',
-  interfaz: 'Interfaz',
-  plataforma: 'Plataforma compatible',
-  duracion: 'Duración',
-  dispositivos: 'Número de dispositivos',
-};
-
-function normalizeSpecKey(value: string) {
-  return value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, '_')
-    .replace(/^_+|_+$/g, '');
-}
-
 function formatCurrency(value: number) {
   return `S/ ${Number(value || 0).toFixed(2)}`;
-}
-
-function formatSpecLabel(key: string) {
-  const normalized = normalizeSpecKey(key);
-  if (SPEC_LABELS[normalized]) return SPEC_LABELS[normalized];
-
-  return key
-    .replace(/[_-]+/g, ' ')
-    .trim()
-    .replace(/\s+/g, ' ')
-    .replace(/^./, (letter) => letter.toUpperCase());
 }
 
 function addDetail(items: DetailItem[], label: string, value?: string | number | null) {
@@ -135,47 +69,6 @@ function resolveStockTone(product: Product, availableStock: number) {
   };
 }
 
-function isSpecRecord(value: unknown): value is Record<string, string | number> {
-  return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
-}
-
-function buildTechnicalSpecGroups(product: Product): SpecGroup[] {
-  const groups: SpecGroup[] = [];
-  const summary: DetailItem[] = [];
-  addDetail(summary, 'Marca', product.brand);
-  addDetail(summary, 'Modelo', product.model);
-  addDetail(summary, 'Garantía', product.warranty);
-  addDetail(summary, 'Uso recomendado', product.recommendedUse);
-  if (summary.length) groups.push({ title: 'Resumen técnico', items: summary });
-
-  for (const [groupOrKey, value] of Object.entries(product.technicalSpecs ?? {})) {
-    if (isSpecRecord(value)) {
-      const items: DetailItem[] = [];
-      Object.entries(value).forEach(([key, childValue]) => addDetail(items, formatSpecLabel(key), childValue));
-      if (items.length) groups.push({ title: formatSpecLabel(groupOrKey), items });
-      continue;
-    }
-
-    const general = groups.find((group) => group.title === 'Características');
-    const target = general ?? { title: 'Características', items: [] };
-    addDetail(target.items, formatSpecLabel(groupOrKey), value);
-    if (!general && target.items.length) groups.push(target);
-  }
-
-  const seen = new Set<string>();
-  return groups
-    .map((group) => ({
-      ...group,
-      items: group.items.filter((item) => {
-        const identity = `${normalizeSpecKey(item.label)}:${String(item.value).toLowerCase()}`;
-        if (seen.has(identity)) return false;
-        seen.add(identity);
-        return true;
-      }),
-    }))
-    .filter((group) => group.items.length);
-}
-
 function buildCommercialDetails(product: Product, availableStock: number) {
   const details: DetailItem[] = [];
   addDetail(details, 'SKU', product.sku);
@@ -188,9 +81,9 @@ function buildCommercialDetails(product: Product, availableStock: number) {
   return details;
 }
 
-function limitSpecGroups(groups: SpecGroup[], maxItems: number): SpecGroup[] {
+function limitSpecGroups(groups: ProductTechnicalSpecGroup[], maxItems: number): ProductTechnicalSpecGroup[] {
   let remaining = maxItems;
-  const result: SpecGroup[] = [];
+  const result: ProductTechnicalSpecGroup[] = [];
 
   for (const group of groups) {
     if (remaining <= 0) break;
@@ -209,7 +102,7 @@ export function ProductDetailModal({ product, inCartQuantity, onAdd, onClose }: 
   const stockTone = useMemo(() => resolveStockTone(product, availableStock), [availableStock, product]);
   const [quantity, setQuantity] = useState(stockTone.canAdd ? 1 : 0);
   const [showFullSpecs, setShowFullSpecs] = useState(false);
-  const technicalSpecGroups = useMemo(() => buildTechnicalSpecGroups(product), [product]);
+  const technicalSpecGroups = useMemo(() => getProductTechnicalSpecs(product), [product]);
   const commercialDetails = useMemo(() => buildCommercialDetails(product, availableStock), [availableStock, product]);
   const safeQuantity = stockTone.canAdd ? Math.max(1, Math.min(quantity || 1, availableStock)) : 0;
   const visibleSpecGroups = useMemo(() => limitSpecGroups(technicalSpecGroups, showFullSpecs ? 40 : 12), [showFullSpecs, technicalSpecGroups]);
@@ -515,7 +408,7 @@ function InfoRow({ label, value }: DetailItem) {
   );
 }
 
-function SpecGroupBlock({ group }: { group: SpecGroup }) {
+function SpecGroupBlock({ group }: { group: ProductTechnicalSpecGroup }) {
   return (
     <div className="overflow-hidden rounded-2xl border border-slate-100 bg-slate-50">
       <div className="border-b border-slate-100 bg-white px-4 py-3">
