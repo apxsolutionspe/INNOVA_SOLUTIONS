@@ -93,15 +93,20 @@ export class SuppliersRepository {
   }
 
   private productCreateData(dto: NonNullable<CreateSupplierDto['products']>[number]): Prisma.SupplierProductCreateWithoutSupplierInput {
+    const lastCost = dto.lastCost ?? dto.referencePrice;
+    const leadTime = dto.leadTime ?? dto.deliveryTime;
+
     return {
       product: dto.productId ? { connect: { id: dto.productId } } : undefined,
       name: dto.name,
       category: dto.category,
       unit: dto.unit,
       supplierSku: dto.supplierSku,
-      referencePrice: dto.referencePrice,
+      referencePrice: dto.referencePrice ?? lastCost,
+      lastCost,
       minOrderQuantity: dto.minOrderQuantity ?? 1,
-      deliveryTime: dto.deliveryTime,
+      deliveryTime: dto.deliveryTime ?? leadTime,
+      leadTime,
       availability: dto.availability,
       notes: dto.notes,
       isPreferred: dto.isPreferred ?? false,
@@ -110,15 +115,20 @@ export class SuppliersRepository {
   }
 
   private productUpdateData(dto: NonNullable<CreateSupplierDto['products']>[number]): Prisma.SupplierProductUncheckedUpdateManyInput {
+    const lastCost = dto.lastCost ?? dto.referencePrice;
+    const leadTime = dto.leadTime ?? dto.deliveryTime;
+
     return {
       productId: dto.productId || null,
       name: dto.name,
       category: dto.category,
       unit: dto.unit,
       supplierSku: dto.supplierSku || null,
-      referencePrice: dto.referencePrice,
+      referencePrice: dto.referencePrice ?? lastCost,
+      lastCost,
       minOrderQuantity: dto.minOrderQuantity ?? 1,
-      deliveryTime: dto.deliveryTime,
+      deliveryTime: dto.deliveryTime ?? leadTime,
+      leadTime,
       availability: dto.availability,
       notes: dto.notes,
       isPreferred: dto.isPreferred ?? false,
@@ -132,6 +142,7 @@ export class SuppliersRepository {
       products: supplier.products?.map((product: any) => ({
         ...product,
         referencePrice: product.referencePrice === null || product.referencePrice === undefined ? null : Number(product.referencePrice),
+        lastCost: product.lastCost === null || product.lastCost === undefined ? null : Number(product.lastCost),
         product: product.product
           ? {
               ...product.product,

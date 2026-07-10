@@ -23,11 +23,12 @@ function formatMoney(value: number) {
 }
 
 function resolveUnitCost(item: SupplierProduct) {
-  return Number(item.referencePrice ?? item.product?.purchasePrice ?? 0);
+  return Number(item.lastCost ?? item.referencePrice ?? item.product?.purchasePrice ?? 0);
 }
 
 export function PurchaseOrderForm({ onSubmit, onClose }: Props) {
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  const [catalog, setCatalog] = useState<SupplierProduct[]>([]);
   const [supplierId, setSupplierId] = useState('');
   const [items, setItems] = useState<DraftItem[]>([]);
   const [discount, setDiscount] = useState(0);
@@ -38,6 +39,7 @@ export function PurchaseOrderForm({ onSubmit, onClose }: Props) {
   const [expectedDate, setExpectedDate] = useState('');
   const [notes, setNotes] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoadingCatalog, setIsLoadingCatalog] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -51,10 +53,10 @@ export function PurchaseOrderForm({ onSubmit, onClose }: Props) {
 
   const supplierCatalog = useMemo(
     () =>
-      (selectedSupplier?.products ?? [])
+      catalog
         .filter((item) => item.isActive && item.productId && item.product?.isActive)
         .sort((a, b) => a.name.localeCompare(b.name)),
-    [selectedSupplier],
+    [catalog],
   );
 
   const totals = useMemo(() => calculatePurchasePreview(items, discount), [discount, items]);
@@ -63,6 +65,17 @@ export function PurchaseOrderForm({ onSubmit, onClose }: Props) {
     setSupplierId(nextSupplierId);
     setItems([]);
     setError('');
+    setCatalog([]);
+    if (!nextSupplierId) return;
+
+    setIsLoadingCatalog(true);
+    void suppliersService.products(nextSupplierId)
+      .then((products) => setCatalog(products))
+      .catch(() => {
+        setCatalog([]);
+        setError('No se pudo cargar el catálogo del proveedor seleccionado.');
+      })
+      .finally(() => setIsLoadingCatalog(false));
   };
 
   const findCatalogItem = (productId: string) => supplierCatalog.find((item) => item.productId === productId);
@@ -203,7 +216,13 @@ export function PurchaseOrderForm({ onSubmit, onClose }: Props) {
 
             {selectedSupplier ? (
               <div className="mt-4 rounded-xl border border-blue-100 bg-white px-4 py-3 text-sm font-semibold text-slate-600">
-                Catálogo disponible: <strong className="text-slate-950">{supplierCatalog.length}</strong> productos vinculados a {selectedSupplier.name}.
+                {isLoadingCatalog ? (
+                  'Cargando catálogo del proveedor...'
+                ) : (
+                  <>
+                    Catálogo disponible: <strong className="text-slate-950">{supplierCatalog.length}</strong> productos vinculados a {selectedSupplier.name}.
+                  </>
+                )}
               </div>
             ) : null}
           </section>
@@ -214,7 +233,7 @@ export function PurchaseOrderForm({ onSubmit, onClose }: Props) {
                 <h3 className="font-black text-slate-950">Productos del proveedor</h3>
                 <p className="mt-1 text-sm text-slate-500">Una orden de compra se registra para un solo proveedor.</p>
               </div>
-              <button type="button" onClick={addItem} className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 text-sm font-black text-white shadow-sm transition hover:bg-slate-800">
+              <button type="button" onClick={addItem} disabled={isLoadingCatalog} className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 text-sm font-black text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60">
                 <PackagePlus size={17} />
                 Agregar producto del proveedor
               </button>
@@ -224,6 +243,11 @@ export function PurchaseOrderForm({ onSubmit, onClose }: Props) {
               <div className="p-6 text-center">
                 <ReceiptText className="mx-auto text-slate-300" size={34} />
                 <p className="mt-3 text-sm font-black text-slate-700">Selecciona un proveedor para ver su catálogo.</p>
+              </div>
+            ) : isLoadingCatalog ? (
+              <div className="p-6 text-center">
+                <PackagePlus className="mx-auto animate-pulse text-blue-300" size={34} />
+                <p className="mt-3 text-sm font-black text-slate-700">Cargando productos vinculados...</p>
               </div>
             ) : supplierCatalog.length === 0 ? (
               <div className="p-6 text-center">
@@ -271,7 +295,7 @@ export function PurchaseOrderForm({ onSubmit, onClose }: Props) {
                       <label className="block">
                         <span className="text-xs font-black uppercase tracking-wide text-slate-500">Costo unitario</span>
                         <input type="number" min={0} step="0.01" value={item.unitCost} onChange={(event) => updateItem(index, { unitCost: Math.max(Number(event.target.value), 0) })} className="mt-2 h-11 w-full rounded-xl border border-slate-200 px-3 text-sm font-semibold outline-none focus:border-brand-blue" />
-                        {catalogItem?.referencePrice ? <span className="mt-1 block text-xs font-semibold text-slate-400">Referencial: {formatMoney(Number(catalogItem.referencePrice))}</span> : null}
+                        {catalogItem?.lastCost || catalogItem?.referencePrice ? <span className="mt-1 block text-xs font-semibold text-slate-400">Referencial: {formatMoney(Number(catalogItem.lastCost ?? catalogItem.referencePrice ?? 0))}</span> : null}
                       </label>
                       <div>
                         <span className="text-xs font-black uppercase tracking-wide text-slate-500">Subtotal</span>
@@ -338,7 +362,7 @@ export function PurchaseOrderForm({ onSubmit, onClose }: Props) {
           <button type="button" onClick={onClose} className="h-11 rounded-xl border border-slate-200 bg-white px-5 text-sm font-bold text-slate-600 transition hover:bg-slate-100">
             Cancelar
           </button>
-          <button disabled={isSaving || !items.length} type="submit" className="h-11 rounded-xl bg-brand-blue px-5 text-sm font-black text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60">
+          <button disabled={isSaving || isLoadingCatalog || !items.length} type="submit" className="h-11 rounded-xl bg-brand-blue px-5 text-sm font-black text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60">
             {isSaving ? 'Registrando...' : 'Registrar compra'}
           </button>
         </footer>

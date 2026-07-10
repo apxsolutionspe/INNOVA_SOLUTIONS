@@ -69,7 +69,20 @@ export class SuppliersService {
 
   async findProducts(id: string) {
     const supplier = await this.findOne(id);
-    return supplier.products ?? [];
+    return (supplier.products ?? [])
+      .filter((item: any) => item.isActive && item.productId && item.product?.isActive)
+      .map((item: any) => ({
+        ...item,
+        referencePrice: item.referencePrice === null || item.referencePrice === undefined ? null : Number(item.referencePrice),
+        lastCost: item.lastCost === null || item.lastCost === undefined ? null : Number(item.lastCost),
+        product: item.product
+          ? {
+              ...item.product,
+              purchasePrice: Number(item.product.purchasePrice),
+              salePrice: Number(item.product.salePrice),
+            }
+          : item.product,
+      }));
   }
 
   async deactivate(id: string, user: AuthenticatedUser) {

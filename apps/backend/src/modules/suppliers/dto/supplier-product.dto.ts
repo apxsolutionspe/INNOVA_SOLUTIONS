@@ -38,6 +38,13 @@ export class SupplierProductDto {
   @Min(0)
   referencePrice?: number;
 
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Transform(({ value }) => (value === '' || value === null || value === undefined ? undefined : Number(value)))
+  @IsNumber()
+  @Min(0)
+  lastCost?: number;
+
   @ApiPropertyOptional({ default: 1 })
   @IsOptional()
   @Transform(({ value }) => (value === '' || value === null || value === undefined ? undefined : Number(value)))
@@ -50,6 +57,12 @@ export class SupplierProductDto {
   @IsString()
   @MaxLength(80)
   deliveryTime?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  leadTime?: string;
 
   @ApiPropertyOptional()
   @IsOptional()

@@ -10,8 +10,10 @@ export interface SupplierProduct {
   unit?: string | null;
   supplierSku?: string | null;
   referencePrice?: number | null;
+  lastCost?: number | null;
   minOrderQuantity?: number | null;
   deliveryTime?: string | null;
+  leadTime?: string | null;
   availability?: string | null;
   notes?: string | null;
   isPreferred?: boolean;
@@ -27,8 +29,10 @@ export interface SupplierProductPayload {
   unit?: string;
   supplierSku?: string;
   referencePrice?: number;
+  lastCost?: number;
   minOrderQuantity?: number;
   deliveryTime?: string;
+  leadTime?: string;
   availability?: string;
   notes?: string;
   isPreferred?: boolean;

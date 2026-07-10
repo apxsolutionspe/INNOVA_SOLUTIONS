@@ -561,8 +561,10 @@ model SupplierProduct {
   unit             String?
   supplierSku      String?
   referencePrice   Decimal? @db.Decimal(12, 2)
+  lastCost         Decimal? @db.Decimal(12, 2)
   minOrderQuantity Int      @default(1)
   deliveryTime     String?
+  leadTime         String?
   availability     String?
   notes            String?
   isPreferred      Boolean  @default(false)
@@ -570,6 +572,7 @@ model SupplierProduct {
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
+  @@unique([supplierId, productId])
   @@index([supplierId])
   @@index([productId])
   @@index([name])
