@@ -8,9 +8,13 @@ export interface SupplierProduct {
   name: string;
   category?: string | null;
   unit?: string | null;
+  supplierSku?: string | null;
   referencePrice?: number | null;
+  minOrderQuantity?: number | null;
   deliveryTime?: string | null;
+  availability?: string | null;
   notes?: string | null;
+  isPreferred?: boolean;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -21,9 +25,13 @@ export interface SupplierProductPayload {
   name: string;
   category?: string;
   unit?: string;
+  supplierSku?: string;
   referencePrice?: number;
+  minOrderQuantity?: number;
   deliveryTime?: string;
+  availability?: string;
   notes?: string;
+  isPreferred?: boolean;
   isActive?: boolean;
 }
 

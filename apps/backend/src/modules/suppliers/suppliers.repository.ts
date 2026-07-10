@@ -98,9 +98,13 @@ export class SuppliersRepository {
       name: dto.name,
       category: dto.category,
       unit: dto.unit,
+      supplierSku: dto.supplierSku,
       referencePrice: dto.referencePrice,
+      minOrderQuantity: dto.minOrderQuantity ?? 1,
       deliveryTime: dto.deliveryTime,
+      availability: dto.availability,
       notes: dto.notes,
+      isPreferred: dto.isPreferred ?? false,
       isActive: dto.isActive ?? true,
     };
   }
@@ -111,9 +115,13 @@ export class SuppliersRepository {
       name: dto.name,
       category: dto.category,
       unit: dto.unit,
+      supplierSku: dto.supplierSku || null,
       referencePrice: dto.referencePrice,
+      minOrderQuantity: dto.minOrderQuantity ?? 1,
       deliveryTime: dto.deliveryTime,
+      availability: dto.availability,
       notes: dto.notes,
+      isPreferred: dto.isPreferred ?? false,
       isActive: dto.isActive ?? true,
     };
   }

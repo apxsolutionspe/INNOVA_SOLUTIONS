@@ -39,7 +39,7 @@ export function QuickServicesPage() {
         : hasReferenceIssue
           ? 'Los pagos digitales o por transferencia requieren referencia.'
           : quick.discount < 0 || quick.discount > quick.totals.subtotal
-            ? 'El descuento debe estar dentro del subtotal.'
+            ? 'El descuento no puede superar el subtotal.'
             : '';
 
   const loadReceipt = (sale: QuickServiceSale) => {
@@ -98,7 +98,7 @@ export function QuickServicesPage() {
             />
           </section>
 
-          <aside className="space-y-4 xl:sticky xl:top-20 xl:max-h-[calc(100dvh-6rem)] xl:self-start xl:overflow-y-auto xl:pr-1">
+          <aside className="flex flex-col gap-4 xl:sticky xl:top-20 xl:h-[calc(100dvh-6rem)] xl:min-h-[44rem] xl:self-start xl:overflow-hidden">
             <QuickServiceCartPanel
               cart={quick.cart}
               subtotal={quick.totals.subtotal}

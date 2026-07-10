@@ -1,10 +1,10 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Building2, MapPin, PackagePlus, Search, Trash2, UserRound, X, type LucideIcon } from 'lucide-react';
+import { Building2, CheckCircle2, Edit3, MapPin, PackagePlus, Search, Trash2, UserRound, X, type LucideIcon } from 'lucide-react';
 
 import { documentLookupService } from '../../../services/documentLookupService';
 import { inventoryService } from '../../inventory/services/inventory.service';
-import type { Product, ProductCategory } from '../../inventory/types/inventory.types';
+import type { Product } from '../../inventory/types/inventory.types';
 import { Supplier, SupplierPayload, SupplierProductPayload } from '../types/supplier.types';
 
 interface Props {
@@ -13,20 +13,37 @@ interface Props {
   onClose: () => void;
 }
 
-type CatalogDraft = SupplierProductPayload & { localId: string };
+type CatalogDraft = SupplierProductPayload & {
+  localId: string;
+};
+
 type FieldErrors = Partial<Record<keyof SupplierPayload | 'catalog', string>>;
 
-const emptyProduct = (): CatalogDraft => ({
-  localId: crypto.randomUUID(),
-  productId: '',
-  name: '',
-  category: '',
-  unit: '',
-  referencePrice: undefined,
-  deliveryTime: '',
-  notes: '',
-  isActive: true,
-});
+const categoryOptions = ['Accesorios', 'Componentes', 'Computadoras', 'Impresión', 'Laptops', 'Periféricos', 'Redes', 'Software', 'Repuestos', 'Seguridad', 'Otros'];
+const unitOptions = ['unidad', 'caja', 'paquete', 'licencia', 'botella', 'cartucho', 'metro', 'rollo', 'servicio'];
+const availabilityOptions = ['Disponible', 'Bajo pedido', 'Consultar stock', 'Temporalmente no disponible'];
+
+function createId() {
+  return globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function emptyProduct(): CatalogDraft {
+  return {
+    localId: createId(),
+    productId: '',
+    name: '',
+    category: '',
+    unit: 'unidad',
+    supplierSku: '',
+    referencePrice: undefined,
+    minOrderQuantity: 1,
+    deliveryTime: '',
+    availability: 'Disponible',
+    notes: '',
+    isPreferred: false,
+    isActive: true,
+  };
+}
 
 function digits(value: string) {
   return value.replace(/\D/g, '');
@@ -38,7 +55,11 @@ function normalizePhone(value?: string) {
   return clean.startsWith('51') ? clean : clean.length === 9 ? `51${clean}` : clean;
 }
 
-function validate(form: SupplierPayload) {
+function normalizeText(value?: string) {
+  return (value ?? '').trim().replace(/\s+/g, ' ');
+}
+
+function validateSupplier(form: SupplierPayload, catalog: CatalogDraft[]) {
   const errors: FieldErrors = {};
   if (!form.name.trim() || form.name.trim().length < 2) errors.name = 'El nombre del proveedor es obligatorio.';
   if (form.ruc && !/^\d{11}$/.test(digits(form.ruc))) errors.ruc = 'Ingresa un RUC válido de 11 dígitos.';
@@ -47,6 +68,46 @@ function validate(form: SupplierPayload) {
   if (phone && !/^(\d{9}|51\d{9})$/.test(phone)) errors.phone = 'Ingresa un teléfono válido para Perú.';
   const whatsapp = digits(form.whatsapp ?? '');
   if (whatsapp && !/^(\d{9}|51\d{9})$/.test(whatsapp)) errors.whatsapp = 'Ingresa un WhatsApp válido para Perú.';
+
+  const productIds = new Set<string>();
+  const offeredNames = new Set<string>();
+  for (const item of catalog.filter((product) => product.productId || normalizeText(product.name))) {
+    if (!item.productId && !normalizeText(item.name)) {
+      errors.catalog = 'Debes vincular un producto del inventario o escribir el nombre del producto ofrecido.';
+      break;
+    }
+    if (!normalizeText(item.category)) {
+      errors.catalog = 'La categoría es obligatoria en el catálogo del proveedor.';
+      break;
+    }
+    if (!normalizeText(item.unit)) {
+      errors.catalog = 'La unidad de compra es obligatoria.';
+      break;
+    }
+    if ((item.referencePrice ?? 0) < 0) {
+      errors.catalog = 'El costo referencial no puede ser negativo.';
+      break;
+    }
+    if ((item.minOrderQuantity ?? 1) <= 0) {
+      errors.catalog = 'La cantidad mínima debe ser mayor a cero.';
+      break;
+    }
+    if (item.productId) {
+      if (productIds.has(item.productId)) {
+        errors.catalog = 'Este producto ya está asignado a este proveedor.';
+        break;
+      }
+      productIds.add(item.productId);
+    } else {
+      const key = normalizeText(item.name).toLowerCase();
+      if (offeredNames.has(key)) {
+        errors.catalog = 'Este producto ofrecido ya está asignado a este proveedor.';
+        break;
+      }
+      offeredNames.add(key);
+    }
+  }
+
   return errors;
 }
 
@@ -64,9 +125,13 @@ function SectionTitle({ icon: Icon, title, description }: { icon: LucideIcon; ti
   );
 }
 
+function money(value?: number | null) {
+  const amount = Number(value ?? 0);
+  return `S/ ${Number.isFinite(amount) ? amount.toFixed(2) : '0.00'}`;
+}
+
 export function SupplierForm({ supplier, onSubmit, onClose }: Props) {
   const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<ProductCategory[]>([]);
   const [form, setForm] = useState<SupplierPayload>({
     name: supplier?.name ?? '',
     ruc: supplier?.ruc ?? '',
@@ -83,16 +148,6 @@ export function SupplierForm({ supplier, onSubmit, onClose }: Props) {
     sunatStatus: supplier?.sunatStatus ?? '',
     sunatCondition: supplier?.sunatCondition ?? '',
     notes: supplier?.notes ?? '',
-    products: supplier?.products?.map((item) => ({
-      productId: item.productId ?? '',
-      name: item.name,
-      category: item.category ?? item.product?.category?.name ?? '',
-      unit: item.unit ?? item.product?.unit ?? '',
-      referencePrice: item.referencePrice ?? undefined,
-      deliveryTime: item.deliveryTime ?? '',
-      notes: item.notes ?? '',
-      isActive: item.isActive,
-    })) ?? [],
   });
   const [catalog, setCatalog] = useState<CatalogDraft[]>(
     (supplier?.products ?? []).map((item) => ({
@@ -100,13 +155,18 @@ export function SupplierForm({ supplier, onSubmit, onClose }: Props) {
       productId: item.productId ?? '',
       name: item.name,
       category: item.category ?? item.product?.category?.name ?? '',
-      unit: item.unit ?? item.product?.unit ?? '',
+      unit: item.unit ?? item.product?.unit ?? 'unidad',
+      supplierSku: item.supplierSku ?? '',
       referencePrice: item.referencePrice ?? undefined,
+      minOrderQuantity: item.minOrderQuantity ?? 1,
       deliveryTime: item.deliveryTime ?? '',
+      availability: item.availability ?? 'Disponible',
       notes: item.notes ?? '',
+      isPreferred: item.isPreferred ?? false,
       isActive: item.isActive,
     })),
   );
+  const [editingCatalogId, setEditingCatalogId] = useState<string | null>(null);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [lookupMessage, setLookupMessage] = useState('');
   const [lookupStatus, setLookupStatus] = useState<'idle' | 'success' | 'warning' | 'error'>('idle');
@@ -114,11 +174,14 @@ export function SupplierForm({ supplier, onSubmit, onClose }: Props) {
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    void inventoryService.findProducts({ page: 1, limit: 100 }).then((response) => setProducts(response.items)).catch(() => setProducts([]));
-    void inventoryService.findCategories().then(setCategories).catch(() => setCategories([]));
+    void inventoryService.findProducts({ page: 1, limit: 200 }).then((response) => setProducts(response.items)).catch(() => setProducts([]));
   }, []);
 
-  const activeCatalog = useMemo(() => catalog.filter((item) => item.name.trim()), [catalog]);
+  const activeCatalog = useMemo(
+    () => catalog.filter((item) => item.productId || normalizeText(item.name)),
+    [catalog],
+  );
+  const editingCatalog = catalog.find((item) => item.localId === editingCatalogId) ?? null;
 
   const update = (key: keyof SupplierPayload, value: string) => {
     setForm((current) => ({ ...current, [key]: value }));
@@ -127,12 +190,20 @@ export function SupplierForm({ supplier, onSubmit, onClose }: Props) {
 
   const updateCatalog = (localId: string, patch: Partial<CatalogDraft>) => {
     setCatalog((current) => current.map((item) => (item.localId === localId ? { ...item, ...patch } : item)));
+    setErrors((current) => ({ ...current, catalog: undefined }));
+  };
+
+  const addCatalogItem = () => {
+    const draft = emptyProduct();
+    setCatalog((current) => [...current, draft]);
+    setEditingCatalogId(draft.localId);
+    setErrors((current) => ({ ...current, catalog: undefined }));
   };
 
   const selectProduct = (localId: string, productId: string) => {
     const product = products.find((item) => item.id === productId);
     if (!product) {
-      updateCatalog(localId, { productId: '', name: '', category: '', unit: '', referencePrice: undefined });
+      updateCatalog(localId, { productId: '', name: '', category: '', unit: 'unidad', referencePrice: undefined });
       return;
     }
     updateCatalog(localId, {
@@ -190,9 +261,21 @@ export function SupplierForm({ supplier, onSubmit, onClose }: Props) {
       ruc: digits(form.ruc ?? ''),
       phone: normalizePhone(form.phone),
       whatsapp: normalizePhone(form.whatsapp),
-      products: activeCatalog.map(({ localId: _localId, ...item }) => item),
+      products: activeCatalog.map(({ localId: _localId, ...item }) => ({
+        ...item,
+        productId: item.productId || undefined,
+        name: normalizeText(item.name),
+        category: normalizeText(item.category),
+        unit: normalizeText(item.unit),
+        supplierSku: normalizeText(item.supplierSku),
+        deliveryTime: normalizeText(item.deliveryTime),
+        availability: normalizeText(item.availability),
+        notes: normalizeText(item.notes),
+        minOrderQuantity: Math.max(Number(item.minOrderQuantity ?? 1), 1),
+        referencePrice: item.referencePrice === undefined || item.referencePrice === null ? undefined : Number(item.referencePrice),
+      })),
     };
-    const nextErrors = validate(payload);
+    const nextErrors = validateSupplier(payload, activeCatalog);
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length) return;
 
@@ -281,46 +364,146 @@ export function SupplierForm({ supplier, onSubmit, onClose }: Props) {
 
           <section className="space-y-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <SectionTitle icon={PackagePlus} title="Catálogo del proveedor" description="Productos que ofrece para compras y abastecimiento." />
-              <button type="button" onClick={() => setCatalog((current) => [...current, emptyProduct()])} className="inline-flex h-10 items-center gap-2 rounded-xl bg-brand-violet px-4 text-sm font-black text-white shadow-sm hover:bg-violet-700">
+              <SectionTitle icon={PackagePlus} title="Catálogo del proveedor" description="Productos que este proveedor ofrece para compras y abastecimiento." />
+              <button type="button" onClick={addCatalogItem} className="inline-flex h-10 items-center gap-2 rounded-xl bg-brand-violet px-4 text-sm font-black text-white shadow-sm hover:bg-violet-700">
                 <PackagePlus size={16} />
                 Agregar producto
               </button>
             </div>
+            {errors.catalog ? <p className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm font-bold text-red-700">{errors.catalog}</p> : null}
 
             {catalog.length ? (
               <div className="grid gap-3">
-                {catalog.map((item) => (
-                  <article key={item.localId} className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
-                    <div className="grid gap-3 lg:grid-cols-[1.2fr_1.2fr_0.8fr_0.8fr_0.8fr_auto]">
-                      <select value={item.productId ?? ''} onChange={(event) => selectProduct(item.localId, event.target.value)} className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold outline-none focus:border-brand-violet">
-                        <option value="">Producto referencial</option>
-                        {products.map((product) => <option key={product.id} value={product.id}>{product.name} · {product.sku}</option>)}
-                      </select>
-                      <input value={item.name} onChange={(event) => updateCatalog(item.localId, { name: event.target.value })} placeholder="Producto ofrecido" className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none focus:border-brand-violet" />
-                      <input list="supplier-categories" value={item.category ?? ''} onChange={(event) => updateCatalog(item.localId, { category: event.target.value })} placeholder="Categoría" className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none focus:border-brand-violet" />
-                      <input value={item.unit ?? ''} onChange={(event) => updateCatalog(item.localId, { unit: event.target.value })} placeholder="Unidad" className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none focus:border-brand-violet" />
-                      <input type="number" min="0" step="0.01" value={item.referencePrice ?? ''} onChange={(event) => updateCatalog(item.localId, { referencePrice: event.target.value ? Number(event.target.value) : undefined })} placeholder="Precio ref." className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none focus:border-brand-violet" />
-                      <button type="button" onClick={() => setCatalog((current) => current.filter((product) => product.localId !== item.localId))} className="grid h-10 w-10 place-items-center rounded-xl border border-red-200 bg-white text-red-600 hover:bg-red-50">
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                    <div className="mt-3 grid gap-3 md:grid-cols-2">
-                      <input value={item.deliveryTime ?? ''} onChange={(event) => updateCatalog(item.localId, { deliveryTime: event.target.value })} placeholder="Tiempo estimado de entrega" className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none focus:border-brand-violet" />
-                      <input value={item.notes ?? ''} onChange={(event) => updateCatalog(item.localId, { notes: event.target.value })} placeholder="Observación breve" className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none focus:border-brand-violet" />
-                    </div>
-                  </article>
-                ))}
+                {catalog.map((item) => {
+                  const linkedProduct = products.find((product) => product.id === item.productId);
+                  const isEditing = editingCatalogId === item.localId;
+                  return (
+                    <article key={item.localId} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                        <div className="min-w-0">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <h4 className="text-sm font-black text-slate-950">{item.name || 'Producto sin nombre'}</h4>
+                            {item.productId ? <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-black text-blue-700">Inventario</span> : <span className="rounded-full bg-orange-50 px-2.5 py-1 text-xs font-black text-orange-700">Ofrecido</span>}
+                            <span className={`rounded-full px-2.5 py-1 text-xs font-black ${item.isActive ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-200 text-slate-600'}`}>{item.isActive ? 'Activo' : 'Inactivo'}</span>
+                          </div>
+                          <p className="mt-2 text-xs font-semibold text-slate-500">
+                            {item.category || 'Sin categoría'} · {item.unit || 'Sin unidad'} · {money(item.referencePrice)}
+                          </p>
+                          {item.deliveryTime || item.availability ? <p className="mt-1 text-xs font-semibold text-slate-500">{item.availability || 'Sin disponibilidad'} · {item.deliveryTime || 'Sin tiempo de entrega'}</p> : null}
+                        </div>
+                        <div className="flex gap-2">
+                          <button type="button" onClick={() => setEditingCatalogId(isEditing ? null : item.localId)} className="inline-flex h-9 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-xs font-black text-brand-blue hover:bg-blue-50">
+                            <Edit3 size={14} />
+                            {isEditing ? 'Cerrar' : 'Editar'}
+                          </button>
+                          <button type="button" onClick={() => setCatalog((current) => current.filter((product) => product.localId !== item.localId))} className="grid h-9 w-9 place-items-center rounded-xl border border-red-200 bg-white text-red-600 hover:bg-red-50">
+                            <Trash2 size={15} />
+                          </button>
+                        </div>
+                      </div>
+
+                      {isEditing ? (
+                        <div className="mt-4 space-y-4 rounded-2xl border border-slate-200 bg-white p-4">
+                          <div>
+                            <h5 className="text-sm font-black text-slate-950">Identificación del producto</h5>
+                            <div className="mt-3 grid gap-3 lg:grid-cols-2">
+                              <label>
+                                <span className="text-xs font-black uppercase text-slate-400">Producto del inventario</span>
+                                <select value={item.productId ?? ''} onChange={(event) => selectProduct(item.localId, event.target.value)} className="mt-1 h-11 w-full rounded-xl border border-slate-200 px-3 text-sm font-semibold outline-none focus:border-brand-violet">
+                                  <option value="">Buscar producto existente...</option>
+                                  {products.map((product) => <option key={product.id} value={product.id}>{product.name} · {product.sku}</option>)}
+                                </select>
+                                <span className="mt-1 block text-xs font-semibold text-slate-400">Vincula un producto ya registrado en inventario.</span>
+                              </label>
+                              <label>
+                                <span className="text-xs font-black uppercase text-slate-400">Nombre del producto ofrecido</span>
+                                <input value={item.name} onChange={(event) => updateCatalog(item.localId, { name: event.target.value })} placeholder="Ejemplo: Laptop Lenovo IdeaPad, Router TP-Link, Tinta Epson negra..." className="mt-1 h-11 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-brand-violet" />
+                                <span className="mt-1 block text-xs font-semibold text-slate-400">Usa este campo si el producto aún no existe en inventario.</span>
+                              </label>
+                              {linkedProduct?.imageUrl ? <img src={linkedProduct.imageUrl} alt={linkedProduct.name} className="h-16 w-16 rounded-xl border border-slate-200 object-cover" /> : null}
+                              <label>
+                                <span className="text-xs font-black uppercase text-slate-400">Categoría</span>
+                                <select value={item.category ?? ''} onChange={(event) => updateCatalog(item.localId, { category: event.target.value })} className="mt-1 h-11 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-brand-violet">
+                                  <option value="">Seleccionar categoría</option>
+                                  {categoryOptions.map((category) => <option key={category} value={category}>{category}</option>)}
+                                </select>
+                              </label>
+                              <label>
+                                <span className="text-xs font-black uppercase text-slate-400">Unidad de compra</span>
+                                <select value={item.unit ?? ''} onChange={(event) => updateCatalog(item.localId, { unit: event.target.value })} className="mt-1 h-11 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-brand-violet">
+                                  {unitOptions.map((unit) => <option key={unit} value={unit}>{unit}</option>)}
+                                </select>
+                              </label>
+                            </div>
+                          </div>
+
+                          <div>
+                            <h5 className="text-sm font-black text-slate-950">Datos comerciales</h5>
+                            <div className="mt-3 grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+                              <label>
+                                <span className="text-xs font-black uppercase text-slate-400">Costo referencial</span>
+                                <div className="relative mt-1">
+                                  <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm font-black text-slate-400">S/</span>
+                                  <input type="number" min="0" step="0.01" value={item.referencePrice ?? ''} onChange={(event) => updateCatalog(item.localId, { referencePrice: event.target.value ? Number(event.target.value) : undefined })} placeholder="0.00" className="h-11 w-full rounded-xl border border-slate-200 pl-10 pr-3 text-sm outline-none focus:border-brand-violet" />
+                                </div>
+                                <span className="mt-1 block text-xs font-semibold text-slate-400">Costo aproximado de compra.</span>
+                              </label>
+                              <label>
+                                <span className="text-xs font-black uppercase text-slate-400">Cantidad mínima</span>
+                                <input type="number" min="1" value={item.minOrderQuantity ?? 1} onChange={(event) => updateCatalog(item.localId, { minOrderQuantity: Math.max(Number(event.target.value), 1) })} placeholder="1" className="mt-1 h-11 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-brand-violet" />
+                                <span className="mt-1 block text-xs font-semibold text-slate-400">Cantidad mínima que el proveedor suele vender.</span>
+                              </label>
+                              <label>
+                                <span className="text-xs font-black uppercase text-slate-400">Tiempo estimado</span>
+                                <input value={item.deliveryTime ?? ''} onChange={(event) => updateCatalog(item.localId, { deliveryTime: event.target.value })} placeholder="Ej. 24 horas, 2 días, 3 a 5 días..." className="mt-1 h-11 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-brand-violet" />
+                              </label>
+                              <label>
+                                <span className="text-xs font-black uppercase text-slate-400">Disponibilidad</span>
+                                <select value={item.availability ?? 'Disponible'} onChange={(event) => updateCatalog(item.localId, { availability: event.target.value })} className="mt-1 h-11 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-brand-violet">
+                                  {availabilityOptions.map((availability) => <option key={availability} value={availability}>{availability}</option>)}
+                                </select>
+                              </label>
+                            </div>
+                          </div>
+
+                          <div>
+                            <h5 className="text-sm font-black text-slate-950">Información adicional</h5>
+                            <div className="mt-3 grid gap-3 md:grid-cols-[1fr_2fr]">
+                              <label>
+                                <span className="text-xs font-black uppercase text-slate-400">Código del proveedor</span>
+                                <input value={item.supplierSku ?? ''} onChange={(event) => updateCatalog(item.localId, { supplierSku: event.target.value })} placeholder="Opcional" className="mt-1 h-11 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-brand-violet" />
+                                <span className="mt-1 block text-xs font-semibold text-slate-400">Código interno o SKU usado por el proveedor.</span>
+                              </label>
+                              <label>
+                                <span className="text-xs font-black uppercase text-slate-400">Observación</span>
+                                <input value={item.notes ?? ''} onChange={(event) => updateCatalog(item.localId, { notes: event.target.value.slice(0, 160) })} placeholder="Ejemplo: precio sujeto a disponibilidad, validar compatibilidad..." className="mt-1 h-11 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-brand-violet" />
+                              </label>
+                              <label className="flex min-h-11 items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm font-bold text-slate-700">
+                                <input type="checkbox" checked={item.isActive ?? true} onChange={(event) => updateCatalog(item.localId, { isActive: event.target.checked })} />
+                                Activo
+                              </label>
+                              <label className="flex min-h-11 items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm font-bold text-slate-700">
+                                <input type="checkbox" checked={item.isPreferred ?? false} onChange={(event) => updateCatalog(item.localId, { isPreferred: event.target.checked })} />
+                                Proveedor preferido para este producto
+                              </label>
+                            </div>
+                          </div>
+                        </div>
+                      ) : null}
+                    </article>
+                  );
+                })}
               </div>
             ) : (
               <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-8 text-center">
-                <p className="text-sm font-black text-slate-800">Aún no has agregado productos a este proveedor.</p>
-                <p className="mt-1 text-sm font-semibold text-slate-500">Puedes guardar el proveedor ahora o registrar su catálogo para futuras compras.</p>
+                <p className="text-sm font-black text-slate-800">Este proveedor aún no tiene productos asignados.</p>
+                <p className="mt-1 text-sm font-semibold text-slate-500">Agrega productos para usarlos en órdenes de compra y abastecimiento.</p>
+                <button type="button" onClick={addCatalogItem} className="mt-4 inline-flex h-10 items-center gap-2 rounded-xl bg-brand-violet px-4 text-sm font-black text-white shadow-sm hover:bg-violet-700">
+                  <PackagePlus size={16} />
+                  Agregar primer producto
+                </button>
               </div>
             )}
-            <datalist id="supplier-categories">
-              {categories.map((category) => <option key={category.id} value={category.name} />)}
-            </datalist>
           </section>
 
           <section className="space-y-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
@@ -333,8 +516,9 @@ export function SupplierForm({ supplier, onSubmit, onClose }: Props) {
           <p className="text-xs font-semibold text-slate-500">Este proveedor ofrece {activeCatalog.length} producto(s).</p>
           <div className="flex flex-col-reverse gap-3 sm:flex-row">
             <button type="button" onClick={onClose} disabled={isSaving} className="h-11 rounded-xl border border-slate-200 px-4 text-sm font-black text-slate-700 hover:bg-slate-50 disabled:opacity-60">Cancelar</button>
-            <button disabled={isSaving} className="h-11 rounded-xl bg-brand-blue px-5 text-sm font-black text-white shadow-sm hover:bg-blue-700 disabled:opacity-60">
-              {isSaving ? 'Guardando...' : 'Guardar proveedor'}
+            <button disabled={isSaving} className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-brand-blue px-5 text-sm font-black text-white shadow-sm hover:bg-blue-700 disabled:opacity-60">
+              {isSaving ? 'Guardando...' : supplier ? 'Actualizar proveedor' : 'Guardar proveedor'}
+              {!isSaving ? <CheckCircle2 size={16} /> : null}
             </button>
           </div>
         </footer>

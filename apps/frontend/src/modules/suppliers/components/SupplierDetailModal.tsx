@@ -1,6 +1,6 @@
-import { Building2, Mail, MapPin, PackageSearch, Phone, X } from 'lucide-react';
+import { Building2, CheckCircle2, Link2, Mail, MapPin, PackageSearch, Phone, X } from 'lucide-react';
 
-import { Supplier } from '../types/supplier.types';
+import { Supplier, SupplierProduct } from '../types/supplier.types';
 
 interface Props {
   supplier: Supplier;
@@ -21,8 +21,78 @@ function DetailItem({ label, value }: { label: string; value?: string | number |
   );
 }
 
+function CatalogBadge({ children, tone = 'slate' }: { children: string; tone?: 'blue' | 'emerald' | 'orange' | 'violet' | 'slate' }) {
+  const styles = {
+    blue: 'bg-blue-50 text-blue-700',
+    emerald: 'bg-emerald-50 text-emerald-700',
+    orange: 'bg-orange-50 text-orange-700',
+    violet: 'bg-violet-50 text-violet-700',
+    slate: 'bg-slate-100 text-slate-600',
+  };
+
+  return <span className={`rounded-full px-2.5 py-1 text-xs font-black ${styles[tone]}`}>{children}</span>;
+}
+
+function ProductCard({ item }: { item: SupplierProduct }) {
+  const isLinked = Boolean(item.productId && item.product);
+
+  return (
+    <article className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="break-words font-black text-slate-950">{item.product?.name ?? item.name}</p>
+          <p className="mt-1 text-xs font-semibold text-slate-500">
+            {item.category || item.product?.category?.name || 'Sin categoría'} · {item.unit || item.product?.unit || 'Sin unidad'}
+          </p>
+        </div>
+        {item.isPreferred ? (
+          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-emerald-50 text-emerald-700" title="Proveedor preferido">
+            <CheckCircle2 size={16} />
+          </span>
+        ) : null}
+      </div>
+
+      <div className="mt-3 flex flex-wrap gap-2">
+        {isLinked ? <CatalogBadge tone="blue">Vinculado a inventario</CatalogBadge> : <CatalogBadge tone="orange">No vinculado</CatalogBadge>}
+        {item.isPreferred ? <CatalogBadge tone="emerald">Preferido</CatalogBadge> : null}
+        {item.availability ? <CatalogBadge tone="violet">{item.availability}</CatalogBadge> : null}
+        <CatalogBadge>{item.isActive ? 'Activo' : 'Inactivo'}</CatalogBadge>
+      </div>
+
+      <dl className="mt-4 grid gap-2 text-sm sm:grid-cols-2">
+        <div>
+          <dt className="text-xs font-black uppercase text-slate-400">Costo referencial</dt>
+          <dd className="font-black text-slate-900">{formatCurrency(item.referencePrice)}</dd>
+        </div>
+        <div>
+          <dt className="text-xs font-black uppercase text-slate-400">Cantidad mínima</dt>
+          <dd className="font-bold text-slate-700">{item.minOrderQuantity ?? 1}</dd>
+        </div>
+        <div>
+          <dt className="text-xs font-black uppercase text-slate-400">Código proveedor</dt>
+          <dd className="font-bold text-slate-700">{item.supplierSku || '-'}</dd>
+        </div>
+        <div>
+          <dt className="text-xs font-black uppercase text-slate-400">Entrega</dt>
+          <dd className="font-bold text-slate-700">{item.deliveryTime || '-'}</dd>
+        </div>
+      </dl>
+
+      {item.notes ? <p className="mt-3 rounded-xl bg-white px-3 py-2 text-sm font-semibold text-slate-600">{item.notes}</p> : null}
+      {!isLinked ? (
+        <p className="mt-3 flex items-start gap-2 rounded-xl border border-orange-100 bg-orange-50 px-3 py-2 text-xs font-bold text-orange-700">
+          <Link2 className="mt-0.5 shrink-0" size={14} />
+          Vincula este producto al inventario para usarlo directamente en órdenes de compra.
+        </p>
+      ) : null}
+    </article>
+  );
+}
+
 export function SupplierDetailModal({ supplier, onClose }: Props) {
   const activeProducts = (supplier.products ?? []).filter((item) => item.isActive);
+  const linkedProducts = activeProducts.filter((item) => item.productId);
+  const offeredProducts = activeProducts.filter((item) => !item.productId);
 
   return (
     <div className="fixed inset-0 z-50 grid place-items-end bg-slate-950/55 p-0 backdrop-blur-sm sm:place-items-center sm:p-4">
@@ -31,7 +101,9 @@ export function SupplierDetailModal({ supplier, onClose }: Props) {
           <div>
             <p className="text-xs font-black uppercase tracking-wide text-cyan-200">Detalle del proveedor</p>
             <h2 className="mt-1 text-2xl font-black">{supplier.name}</h2>
-            <p className="mt-1 text-sm text-slate-300">{supplier.ruc || 'Sin RUC registrado'} · {activeProducts.length} producto(s) ofrecido(s)</p>
+            <p className="mt-1 text-sm text-slate-300">
+              {supplier.ruc || 'Sin RUC registrado'} · {linkedProducts.length} vinculado(s) · {offeredProducts.length} ofrecido(s)
+            </p>
           </div>
           <button onClick={onClose} className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-white/15 text-white transition hover:bg-white/10" aria-label="Cerrar detalle">
             <X size={18} />
@@ -90,7 +162,7 @@ export function SupplierDetailModal({ supplier, onClose }: Props) {
                 <span className="grid h-10 w-10 place-items-center rounded-2xl bg-orange-50 text-orange-700"><PackageSearch size={18} /></span>
                 <div>
                   <h3 className="font-black text-slate-950">Catálogo del proveedor</h3>
-                  <p className="text-sm font-semibold text-slate-500">Productos que ofrece para compras y abastecimiento.</p>
+                  <p className="text-sm font-semibold text-slate-500">Productos vinculados al inventario y productos ofrecidos para evaluación.</p>
                 </div>
               </div>
               <span className="rounded-full bg-violet-50 px-3 py-1 text-xs font-black text-violet-700">{activeProducts.length} productos</span>
@@ -98,18 +170,7 @@ export function SupplierDetailModal({ supplier, onClose }: Props) {
 
             {activeProducts.length ? (
               <div className="grid gap-3 md:grid-cols-2">
-                {activeProducts.map((item) => (
-                  <article key={item.id} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                    <p className="font-black text-slate-950">{item.name}</p>
-                    <div className="mt-2 flex flex-wrap gap-2 text-xs font-black">
-                      {item.category ? <span className="rounded-full bg-blue-50 px-2.5 py-1 text-blue-700">{item.category}</span> : null}
-                      {item.unit ? <span className="rounded-full bg-slate-100 px-2.5 py-1 text-slate-600">{item.unit}</span> : null}
-                      <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-emerald-700">{formatCurrency(item.referencePrice)}</span>
-                    </div>
-                    {item.deliveryTime ? <p className="mt-2 text-sm font-semibold text-slate-600">Entrega: {item.deliveryTime}</p> : null}
-                    {item.notes ? <p className="mt-2 text-sm text-slate-500">{item.notes}</p> : null}
-                  </article>
-                ))}
+                {activeProducts.map((item) => <ProductCard key={item.id} item={item} />)}
               </div>
             ) : (
               <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-8 text-center text-sm font-semibold text-slate-500">

@@ -1,5 +1,5 @@
 import { httpClient } from '../../../services/http-client';
-import { Supplier, SupplierPayload, SupplierProductPayload, SuppliersResponse } from '../types/supplier.types';
+import { Supplier, SupplierPayload, SupplierProduct, SupplierProductPayload, SuppliersResponse } from '../types/supplier.types';
 
 function cleanPayload<T extends object>(payload: T) {
   return Object.fromEntries(
@@ -15,6 +15,11 @@ export const suppliersService = {
 
   async findOne(id: string) {
     const { data } = await httpClient.get<Supplier>(`/suppliers/${id}`);
+    return data;
+  },
+
+  async products(id: string) {
+    const { data } = await httpClient.get<SupplierProduct[]>(`/suppliers/${id}/products`);
     return data;
   },
 

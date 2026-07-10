@@ -27,16 +27,35 @@ export class SupplierProductDto {
 
   @ApiPropertyOptional()
   @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  supplierSku?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
   @Transform(({ value }) => (value === '' || value === null || value === undefined ? undefined : Number(value)))
   @IsNumber()
   @Min(0)
   referencePrice?: number;
+
+  @ApiPropertyOptional({ default: 1 })
+  @IsOptional()
+  @Transform(({ value }) => (value === '' || value === null || value === undefined ? undefined : Number(value)))
+  @IsNumber()
+  @Min(1)
+  minOrderQuantity?: number;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
   @MaxLength(80)
   deliveryTime?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  availability?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
@@ -49,4 +68,10 @@ export class SupplierProductDto {
   @Transform(({ value }) => value === true || value === 'true')
   @IsBoolean()
   isActive?: boolean;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Transform(({ value }) => value === true || value === 'true')
+  @IsBoolean()
+  isPreferred?: boolean;
 }

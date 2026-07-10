@@ -49,7 +49,10 @@ export function useQuickServices() {
       setIsLoading(false);
     }
   };
-  useEffect(() => { void reload().catch((e) => setError(e.message)); }, [search, categoryId]);
+
+  useEffect(() => {
+    void reload().catch((e) => setError(e.message));
+  }, [search, categoryId]);
 
   const add = (service: QuickService, quantity = 1, option?: string, notes?: string) => {
     setError('');
@@ -64,11 +67,14 @@ export function useQuickServices() {
         : [...items, { service, quantity: safeQuantity, option, notes }],
     );
   };
+
   const qty = (id: string, quantity: number) => {
     setError('');
-    setCart((items) => items.map((i) => i.service.id === id ? { ...i, quantity: Math.max(1, Number.isFinite(quantity) ? quantity : 1) } : i));
+    setCart((items) => items.map((i) => (i.service.id === id ? { ...i, quantity: Math.max(1, Number.isFinite(quantity) ? quantity : 1) } : i)));
   };
+
   const remove = (id: string) => setCart((items) => items.filter((i) => i.service.id !== id));
+
   const confirm = async () => {
     setError('');
     if (!cashSession) {
@@ -93,7 +99,13 @@ export function useQuickServices() {
     }
     setIsSaving(true);
     try {
-      const sale = await quickServicesService.createSale({ customerId: selectedCustomer?.id, items: cart.map((i) => ({ quickServiceId: i.service.id, quantity: i.quantity })), discount, paymentMethod, paymentReference });
+      const sale = await quickServicesService.createSale({
+        customerId: selectedCustomer?.id,
+        items: cart.map((i) => ({ quickServiceId: i.service.id, quantity: i.quantity })),
+        discount,
+        paymentMethod,
+        paymentReference,
+      });
       setSuccessSale(sale);
       setCart([]);
       setSelectedCustomer(null);
@@ -107,6 +119,44 @@ export function useQuickServices() {
       setIsSaving(false);
     }
   };
+
   const loadReceipt = async (id: string) => setReceipt(await quickServicesService.receipt(id));
-  return { categories, services, allServices, customers, sales, cashSession, cart, selectedCustomer, search, categoryId, paymentMethod, paymentReference, discount, totals, successSale, receipt, error, isLoading, isSaving, setSearch, setCategoryId, setSelectedCustomer, setPaymentMethod, setPaymentReference, setDiscount, setSuccessSale, setReceipt, setError, add, qty, remove, clearCart: () => setCart([]), confirm, loadReceipt, reload };
+
+  return {
+    categories,
+    services,
+    allServices,
+    customers,
+    sales,
+    cashSession,
+    cart,
+    selectedCustomer,
+    search,
+    categoryId,
+    paymentMethod,
+    paymentReference,
+    discount,
+    totals,
+    successSale,
+    receipt,
+    error,
+    isLoading,
+    isSaving,
+    setSearch,
+    setCategoryId,
+    setSelectedCustomer,
+    setPaymentMethod,
+    setPaymentReference,
+    setDiscount,
+    setSuccessSale,
+    setReceipt,
+    setError,
+    add,
+    qty,
+    remove,
+    clearCart: () => setCart([]),
+    confirm,
+    loadReceipt,
+    reload,
+  };
 }
