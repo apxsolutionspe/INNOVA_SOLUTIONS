@@ -8,27 +8,27 @@ datasource db {
 }
 
 model User {
-  id          String    @id @default(uuid())
-  fullName    String
-  email       String    @unique
-  password    String
-  roleId      String
-  role        Role      @relation(fields: [roleId], references: [id])
-  isActive    Boolean   @default(true)
-  lastLoginAt DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  auditLogs   AuditLog[]
-  inventoryMovements InventoryMovement[]
-  sales       Sale[]
-  saleCancellations SaleCancellation[]
-  serviceOrders ServiceOrder[]
-  serviceOrderLogs ServiceOrderLog[]
-  cashSessions CashSession[]
-  cashMovements CashMovement[]
-  quickServiceSales QuickServiceSale[]
-  purchaseOrders PurchaseOrder[]
-  notifications Notification[]
+  id                  String               @id @default(uuid())
+  fullName            String
+  email               String               @unique
+  password            String
+  roleId              String
+  role                Role                 @relation(fields: [roleId], references: [id])
+  isActive            Boolean              @default(true)
+  lastLoginAt         DateTime?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  auditLogs           AuditLog[]
+  inventoryMovements  InventoryMovement[]
+  sales               Sale[]
+  saleCancellations   SaleCancellation[]
+  serviceOrders       ServiceOrder[]
+  serviceOrderLogs    ServiceOrderLog[]
+  cashSessions        CashSession[]
+  cashMovements       CashMovement[]
+  quickServiceSales   QuickServiceSale[]
+  purchaseOrders      PurchaseOrder[]
+  notifications       Notification[]
   whatsappMessageLogs WhatsappMessageLog[]
 
   @@index([roleId])
@@ -44,17 +44,17 @@ model Role {
 }
 
 model AuditLog {
-  id        String   @id @default(uuid())
-  action    String
-  module    String?
+  id          String   @id @default(uuid())
+  action      String
+  module      String?
   description String?
-  entityId  String?
-  entityType String?
-  ipAddress String?
-  userAgent String?
-  userId    String?
-  user      User?    @relation(fields: [userId], references: [id])
-  createdAt DateTime @default(now())
+  entityId    String?
+  entityType  String?
+  ipAddress   String?
+  userAgent   String?
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
 
   @@index([userId])
   @@index([module])
@@ -63,27 +63,27 @@ model AuditLog {
 }
 
 model Customer {
-  id             String       @id @default(uuid())
-  customerType   CustomerType @default(NATURAL)
-  documentType   DocumentType
-  documentNumber String
-  fullName       String
-  firstName      String?
-  lastName       String?
-  businessName   String?
-  tradeName      String?
+  id                  String             @id @default(uuid())
+  customerType        CustomerType       @default(NATURAL)
+  documentType        DocumentType
+  documentNumber      String
+  fullName            String
+  firstName           String?
+  lastName            String?
+  businessName        String?
+  tradeName           String?
   legalRepresentative String?
-  phone          String?
-  email          String?
-  address        String?
-  businessLine   String?
-  notes          String?
-  isActive       Boolean      @default(true)
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
-  sales          Sale[]
-  serviceOrders  ServiceOrder[]
-  quickServiceSales QuickServiceSale[]
+  phone               String?
+  email               String?
+  address             String?
+  businessLine        String?
+  notes               String?
+  isActive            Boolean            @default(true)
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  sales               Sale[]
+  serviceOrders       ServiceOrder[]
+  quickServiceSales   QuickServiceSale[]
 
   @@unique([documentType, documentNumber])
   @@index([customerType])
@@ -102,35 +102,35 @@ model ProductCategory {
 }
 
 model Product {
-  id             String              @id @default(uuid())
-  name           String
-  description    String?
-  sku            String              @unique
-  barcode        String?             @unique
-  imageUrl       String?
-  brand          String?
-  model          String?
-  warranty       String?
-  recommendedUse String?
-  salesNotes     String?
-  technicalSpecs Json?
+  id                   String              @id @default(uuid())
+  name                 String
+  description          String?
+  sku                  String              @unique
+  barcode              String?             @unique
+  imageUrl             String?
+  brand                String?
+  model                String?
+  warranty             String?
+  recommendedUse       String?
+  salesNotes           String?
+  technicalSpecs       Json?
   technicalSpecsSearch String?
-  categoryId     String
-  category       ProductCategory     @relation(fields: [categoryId], references: [id])
-  purchasePrice  Decimal             @db.Decimal(12, 2)
-  salePrice      Decimal             @db.Decimal(12, 2)
-  stock          Int                 @default(0)
-  minStock       Int                 @default(0)
-  unit           String
-  isActive       Boolean             @default(true)
-  createdAt      DateTime            @default(now())
-  updatedAt      DateTime            @updatedAt
-  movements      InventoryMovement[]
-  saleItems      SaleItem[]
-  serviceOrderItems ServiceOrderItem[]
-  purchaseOrderItems PurchaseOrderItem[]
-  onlineOrderItems OnlineOrderItem[]
-  supplierProducts SupplierProduct[]
+  categoryId           String
+  category             ProductCategory     @relation(fields: [categoryId], references: [id])
+  purchasePrice        Decimal             @db.Decimal(12, 2)
+  salePrice            Decimal             @db.Decimal(12, 2)
+  stock                Int                 @default(0)
+  minStock             Int                 @default(0)
+  unit                 String
+  isActive             Boolean             @default(true)
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+  movements            InventoryMovement[]
+  saleItems            SaleItem[]
+  serviceOrderItems    ServiceOrderItem[]
+  purchaseOrderItems   PurchaseOrderItem[]
+  onlineOrderItems     OnlineOrderItem[]
+  supplierProducts     SupplierProduct[]
 
   @@index([categoryId])
   @@index([name])
@@ -173,28 +173,28 @@ enum InventoryMovementType {
 }
 
 model Sale {
-  id            String             @id @default(uuid())
-  code          String             @unique
-  customerId    String?
-  customer      Customer?          @relation(fields: [customerId], references: [id])
-  userId        String
-  user          User               @relation(fields: [userId], references: [id])
-  subtotal      Decimal            @db.Decimal(12, 2)
-  discountTotal Decimal            @db.Decimal(12, 2)
-  taxTotal      Decimal            @db.Decimal(12, 2)
-  total         Decimal            @db.Decimal(12, 2)
-  applyIgv      Boolean            @default(false)
-  igvRate       Decimal            @default(0.18) @db.Decimal(5, 4)
-  paymentStatus PaymentStatus
-  status        SaleStatus         @default(COMPLETED)
-  notes         String?
-  createdAt     DateTime           @default(now())
-  updatedAt     DateTime           @updatedAt
-  items         SaleItem[]
-  payments      Payment[]
-  cancellations SaleCancellation[]
-  cashMovements CashMovement[]
-  sunatDocuments SunatDocument[]
+  id                  String               @id @default(uuid())
+  code                String               @unique
+  customerId          String?
+  customer            Customer?            @relation(fields: [customerId], references: [id])
+  userId              String
+  user                User                 @relation(fields: [userId], references: [id])
+  subtotal            Decimal              @db.Decimal(12, 2)
+  discountTotal       Decimal              @db.Decimal(12, 2)
+  taxTotal            Decimal              @db.Decimal(12, 2)
+  total               Decimal              @db.Decimal(12, 2)
+  applyIgv            Boolean              @default(false)
+  igvRate             Decimal              @default(0.18) @db.Decimal(5, 4)
+  paymentStatus       PaymentStatus
+  status              SaleStatus           @default(COMPLETED)
+  notes               String?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  items               SaleItem[]
+  payments            Payment[]
+  cancellations       SaleCancellation[]
+  cashMovements       CashMovement[]
+  sunatDocuments      SunatDocument[]
   paymentTransactions PaymentTransaction[]
 
   @@index([customerId])
@@ -271,12 +271,12 @@ enum SaleItemType {
 }
 
 model ServiceOrder {
-  id                    String              @id @default(uuid())
-  code                  String              @unique
+  id                    String               @id @default(uuid())
+  code                  String               @unique
   customerId            String
-  customer              Customer            @relation(fields: [customerId], references: [id])
+  customer              Customer             @relation(fields: [customerId], references: [id])
   userId                String
-  user                  User                @relation(fields: [userId], references: [id])
+  user                  User                 @relation(fields: [userId], references: [id])
   equipmentType         String
   brand                 String?
   model                 String?
@@ -289,17 +289,17 @@ model ServiceOrder {
   receptionNotes        String?
   technicalDiagnosis    String?
   solutionApplied       String?
-  status                ServiceOrderStatus  @default(RECEIVED)
+  status                ServiceOrderStatus   @default(RECEIVED)
   estimatedDeliveryDate DateTime?
-  receivedAt            DateTime            @default(now())
+  receivedAt            DateTime             @default(now())
   deliveredAt           DateTime?
-  laborCost             Decimal             @default(0) @db.Decimal(12, 2)
-  partsCost             Decimal             @default(0) @db.Decimal(12, 2)
-  discount              Decimal             @default(0) @db.Decimal(12, 2)
-  total                 Decimal             @default(0) @db.Decimal(12, 2)
+  laborCost             Decimal              @default(0) @db.Decimal(12, 2)
+  partsCost             Decimal              @default(0) @db.Decimal(12, 2)
+  discount              Decimal              @default(0) @db.Decimal(12, 2)
+  total                 Decimal              @default(0) @db.Decimal(12, 2)
   notes                 String?
-  createdAt             DateTime            @default(now())
-  updatedAt             DateTime            @updatedAt
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
   items                 ServiceOrderItem[]
   logs                  ServiceOrderLog[]
   photos                ServiceOrderPhoto[]
@@ -369,26 +369,26 @@ enum ServiceOrderStatus {
 }
 
 model CashSession {
-  id                 String            @id @default(uuid())
-  code               String            @unique
+  id                 String             @id @default(uuid())
+  code               String             @unique
   userId             String
-  user               User              @relation(fields: [userId], references: [id])
-  openingAmount      Decimal           @db.Decimal(12, 2)
-  expectedCashAmount Decimal           @default(0) @db.Decimal(12, 2)
-  realCashAmount     Decimal?          @db.Decimal(12, 2)
-  difference         Decimal           @default(0) @db.Decimal(12, 2)
-  totalSales         Decimal           @default(0) @db.Decimal(12, 2)
-  totalExpenses      Decimal           @default(0) @db.Decimal(12, 2)
-  totalCash          Decimal           @default(0) @db.Decimal(12, 2)
-  totalYape          Decimal           @default(0) @db.Decimal(12, 2)
-  totalPlin          Decimal           @default(0) @db.Decimal(12, 2)
-  totalTransfer      Decimal           @default(0) @db.Decimal(12, 2)
-  status             CashSessionStatus @default(OPEN)
-  openedAt           DateTime          @default(now())
+  user               User               @relation(fields: [userId], references: [id])
+  openingAmount      Decimal            @db.Decimal(12, 2)
+  expectedCashAmount Decimal            @default(0) @db.Decimal(12, 2)
+  realCashAmount     Decimal?           @db.Decimal(12, 2)
+  difference         Decimal            @default(0) @db.Decimal(12, 2)
+  totalSales         Decimal            @default(0) @db.Decimal(12, 2)
+  totalExpenses      Decimal            @default(0) @db.Decimal(12, 2)
+  totalCash          Decimal            @default(0) @db.Decimal(12, 2)
+  totalYape          Decimal            @default(0) @db.Decimal(12, 2)
+  totalPlin          Decimal            @default(0) @db.Decimal(12, 2)
+  totalTransfer      Decimal            @default(0) @db.Decimal(12, 2)
+  status             CashSessionStatus  @default(OPEN)
+  openedAt           DateTime           @default(now())
   closedAt           DateTime?
   notes              String?
-  createdAt          DateTime          @default(now())
-  updatedAt          DateTime          @updatedAt
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
   movements          CashMovement[]
   quickServiceSales  QuickServiceSale[]
 
@@ -398,26 +398,26 @@ model CashSession {
 }
 
 model CashMovement {
-  id                    String           @id @default(uuid())
-  cashSessionId         String
-  cashSession           CashSession      @relation(fields: [cashSessionId], references: [id])
-  userId                String
-  user                  User             @relation(fields: [userId], references: [id])
-  type                  CashMovementType
-  concept               String
-  amount                Decimal          @db.Decimal(12, 2)
-  paymentMethod         PaymentMethod
-  reference             String?
-  relatedSaleId         String?
-  relatedSale           Sale?            @relation(fields: [relatedSaleId], references: [id])
-  relatedServiceOrderId String?
-  relatedServiceOrder   ServiceOrder?    @relation(fields: [relatedServiceOrderId], references: [id])
+  id                        String            @id @default(uuid())
+  cashSessionId             String
+  cashSession               CashSession       @relation(fields: [cashSessionId], references: [id])
+  userId                    String
+  user                      User              @relation(fields: [userId], references: [id])
+  type                      CashMovementType
+  concept                   String
+  amount                    Decimal           @db.Decimal(12, 2)
+  paymentMethod             PaymentMethod
+  reference                 String?
+  relatedSaleId             String?
+  relatedSale               Sale?             @relation(fields: [relatedSaleId], references: [id])
+  relatedServiceOrderId     String?
+  relatedServiceOrder       ServiceOrder?     @relation(fields: [relatedServiceOrderId], references: [id])
   relatedQuickServiceSaleId String?
-  relatedQuickServiceSale QuickServiceSale? @relation(fields: [relatedQuickServiceSaleId], references: [id])
-  relatedPurchaseOrderId String?
-  relatedPurchaseOrder   PurchaseOrder? @relation(fields: [relatedPurchaseOrderId], references: [id])
-  notes                 String?
-  createdAt             DateTime         @default(now())
+  relatedQuickServiceSale   QuickServiceSale? @relation(fields: [relatedQuickServiceSaleId], references: [id])
+  relatedPurchaseOrderId    String?
+  relatedPurchaseOrder      PurchaseOrder?    @relation(fields: [relatedPurchaseOrderId], references: [id])
+  notes                     String?
+  createdAt                 DateTime          @default(now())
 
   @@index([cashSessionId])
   @@index([userId])
@@ -473,25 +473,25 @@ model QuickService {
 }
 
 model QuickServiceSale {
-  id               String                 @id @default(uuid())
-  code             String                 @unique
-  customerId       String?
-  customer         Customer?              @relation(fields: [customerId], references: [id])
-  userId           String
-  user             User                   @relation(fields: [userId], references: [id])
-  cashSessionId    String
-  cashSession      CashSession            @relation(fields: [cashSessionId], references: [id])
-  subtotal         Decimal                @db.Decimal(12, 2)
-  discount         Decimal                @default(0) @db.Decimal(12, 2)
-  total            Decimal                @db.Decimal(12, 2)
-  paymentMethod    PaymentMethod
-  paymentReference String?
-  status           QuickServiceSaleStatus @default(COMPLETED)
-  notes            String?
-  createdAt        DateTime               @default(now())
-  updatedAt        DateTime               @updatedAt
-  items            QuickServiceSaleItem[]
-  cashMovements    CashMovement[]
+  id                  String                 @id @default(uuid())
+  code                String                 @unique
+  customerId          String?
+  customer            Customer?              @relation(fields: [customerId], references: [id])
+  userId              String
+  user                User                   @relation(fields: [userId], references: [id])
+  cashSessionId       String
+  cashSession         CashSession            @relation(fields: [cashSessionId], references: [id])
+  subtotal            Decimal                @db.Decimal(12, 2)
+  discount            Decimal                @default(0) @db.Decimal(12, 2)
+  total               Decimal                @db.Decimal(12, 2)
+  paymentMethod       PaymentMethod
+  paymentReference    String?
+  status              QuickServiceSaleStatus @default(COMPLETED)
+  notes               String?
+  createdAt           DateTime               @default(now())
+  updatedAt           DateTime               @updatedAt
+  items               QuickServiceSaleItem[]
+  cashMovements       CashMovement[]
   paymentTransactions PaymentTransaction[]
 
   @@index([customerId])
@@ -523,9 +523,9 @@ enum QuickServiceSaleStatus {
 }
 
 model Supplier {
-  id             String          @id @default(uuid())
+  id             String            @id @default(uuid())
   name           String
-  ruc            String?         @unique
+  ruc            String?           @unique
   phone          String?
   whatsapp       String?
   email          String?
@@ -539,9 +539,9 @@ model Supplier {
   sunatStatus    String?
   sunatCondition String?
   notes          String?
-  isActive       Boolean         @default(true)
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
+  isActive       Boolean           @default(true)
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
   purchaseOrders PurchaseOrder[]
   products       SupplierProduct[]
 
@@ -551,24 +551,24 @@ model Supplier {
 }
 
 model SupplierProduct {
-  id             String    @id @default(uuid())
-  supplierId     String
-  supplier       Supplier  @relation(fields: [supplierId], references: [id], onDelete: Cascade)
-  productId      String?
-  product        Product?  @relation(fields: [productId], references: [id])
-  name           String
-  category       String?
-  unit           String?
-  supplierSku    String?
-  referencePrice Decimal?  @db.Decimal(12, 2)
-  minOrderQuantity Int     @default(1)
-  deliveryTime   String?
-  availability   String?
-  notes          String?
-  isPreferred    Boolean   @default(false)
-  isActive       Boolean   @default(true)
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  id               String   @id @default(uuid())
+  supplierId       String
+  supplier         Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  productId        String?
+  product          Product? @relation(fields: [productId], references: [id])
+  name             String
+  category         String?
+  unit             String?
+  supplierSku      String?
+  referencePrice   Decimal? @db.Decimal(12, 2)
+  minOrderQuantity Int      @default(1)
+  deliveryTime     String?
+  availability     String?
+  notes            String?
+  isPreferred      Boolean  @default(false)
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
   @@index([supplierId])
   @@index([productId])
@@ -607,17 +607,17 @@ model PurchaseOrder {
 }
 
 model PurchaseOrderItem {
-  id              String        @id @default(uuid())
-  purchaseOrderId String
-  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
-  productId       String
-  product         Product       @relation(fields: [productId], references: [id])
-  quantity        Int
-  receivedQuantity Int          @default(0)
-  unitCost        Decimal       @db.Decimal(12, 2)
-  subtotal        Decimal       @db.Decimal(12, 2)
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  id               String        @id @default(uuid())
+  purchaseOrderId  String
+  purchaseOrder    PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
+  productId        String
+  product          Product       @relation(fields: [productId], references: [id])
+  quantity         Int
+  receivedQuantity Int           @default(0)
+  unitCost         Decimal       @db.Decimal(12, 2)
+  subtotal         Decimal       @db.Decimal(12, 2)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
 
   @@index([purchaseOrderId])
   @@index([productId])
@@ -637,17 +637,17 @@ enum PurchasePaymentStatus {
 }
 
 model Notification {
-  id            String                 @id @default(uuid())
+  id            String               @id @default(uuid())
   userId        String?
-  user          User?                  @relation(fields: [userId], references: [id])
+  user          User?                @relation(fields: [userId], references: [id])
   title         String
   message       String
-  type          NotificationType       @default(SYSTEM)
-  priority      NotificationPriority   @default(MEDIUM)
-  isRead        Boolean                @default(false)
+  type          NotificationType     @default(SYSTEM)
+  priority      NotificationPriority @default(MEDIUM)
+  isRead        Boolean              @default(false)
   relatedModule String?
   relatedId     String?
-  createdAt     DateTime               @default(now())
+  createdAt     DateTime             @default(now())
   readAt        DateTime?
 
   @@index([userId])
@@ -658,22 +658,22 @@ model Notification {
 }
 
 model BusinessSettings {
-  id              String   @id @default(uuid())
-  businessName    String
-  ruc             String?
-  address         String?
-  phone           String?
-  email           String?
-  logoUrl         String?
-  currency        String   @default("PEN")
-  applyIgv        Boolean  @default(false)
-  taxPercentage   Decimal  @default(18) @db.Decimal(5, 2)
-  yapeNumber      String?
-  plinNumber      String?
-  bankAccount     String?
-  receiptMessage  String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id             String   @id @default(uuid())
+  businessName   String
+  ruc            String?
+  address        String?
+  phone          String?
+  email          String?
+  logoUrl        String?
+  currency       String   @default("PEN")
+  applyIgv       Boolean  @default(false)
+  taxPercentage  Decimal  @default(18) @db.Decimal(5, 2)
+  yapeNumber     String?
+  plinNumber     String?
+  bankAccount    String?
+  receiptMessage String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
 
 enum NotificationType {
@@ -744,7 +744,7 @@ enum OnlinePaymentStatus {
 }
 
 model IntegrationSetting {
-  id             String            @id @default(uuid())
+  id             String              @id @default(uuid())
   provider       IntegrationProvider @unique
   mode           IntegrationMode     @default(MOCK)
   status         IntegrationStatus   @default(MOCK)
@@ -773,7 +773,7 @@ model SunatDocument {
   taxTotal               Decimal             @db.Decimal(12, 2)
   total                  Decimal             @db.Decimal(12, 2)
   currency               String              @default("PEN")
-  status                 SunatDocumentStatus  @default(DRAFT)
+  status                 SunatDocumentStatus @default(DRAFT)
   sunatTicket            String?
   sunatResponseCode      String?
   sunatResponseMessage   String?
