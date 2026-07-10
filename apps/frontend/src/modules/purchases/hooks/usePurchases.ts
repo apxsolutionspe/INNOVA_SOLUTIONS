@@ -37,7 +37,7 @@ export function usePurchases(limit = 20) {
 
   const receivePurchase = async (id: string, items?: Array<{ itemId: string; receivedQuantity: number }>, notes?: string) => {
     const purchase = await purchasesService.receive(id, { items, notes });
-    setMessage('Recepcion registrada y stock actualizado.');
+    setMessage('Recepción registrada y stock actualizado.');
     await loadPurchases();
     return purchase;
   };

@@ -12,7 +12,8 @@
     "prisma:migrate": "prisma migrate dev --schema prisma/schema.prisma",
     "prisma:seed": "prisma db seed --schema prisma/schema.prisma",
     "products:backfill-images": "tsx scripts/backfill-product-images.ts",
-    "products:backfill-specs": "tsx scripts/backfill-product-specs.ts"
+    "products:backfill-specs": "tsx scripts/backfill-product-specs.ts",
+    "suppliers:backfill-products": "tsx scripts/backfill-supplier-products.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

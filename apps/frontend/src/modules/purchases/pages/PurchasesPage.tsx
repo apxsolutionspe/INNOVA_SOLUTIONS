@@ -49,7 +49,7 @@ export function PurchasesPage() {
       {purchases.error ? <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">{purchases.error}</div> : null}
       <PurchaseOrderTable purchases={purchases.purchases} isLoading={purchases.isLoading} />
       <div className="rounded-lg border border-cyan-200 bg-cyan-50 p-4 text-sm font-semibold text-cyan-800">
-        <Truck className="mr-2 inline" size={18} /> Al recibir productos, el stock sube automaticamente y queda movimiento IN en inventario.
+        <Truck className="mr-2 inline" size={18} /> Al recibir productos, el stock sube automáticamente y queda un movimiento de entrada en inventario.
       </div>
       {isFormOpen ? <PurchaseOrderForm onSubmit={handleSubmit} onClose={() => setIsFormOpen(false)} /> : null}
     </PageContainer>

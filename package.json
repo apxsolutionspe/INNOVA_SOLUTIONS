@@ -23,6 +23,7 @@
     "prisma:studio": "npx prisma studio --schema apps/backend/prisma/schema.prisma",
     "products:backfill-images": "npm run products:backfill-images --workspace @techcenter/backend",
     "products:backfill-specs": "npm run products:backfill-specs --workspace @techcenter/backend",
+    "suppliers:backfill-products": "npm run suppliers:backfill-products --workspace @techcenter/backend",
     "users:list": "tsx scripts/list-users.ts",
     "users:reset-password": "tsx scripts/reset-user-password.ts",
     "admin:reset-password": "tsx scripts/reset-admin-password.ts",

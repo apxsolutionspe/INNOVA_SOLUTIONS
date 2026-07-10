@@ -124,6 +124,13 @@ export class SuppliersRepository {
       products: supplier.products?.map((product: any) => ({
         ...product,
         referencePrice: product.referencePrice === null || product.referencePrice === undefined ? null : Number(product.referencePrice),
+        product: product.product
+          ? {
+              ...product.product,
+              purchasePrice: Number(product.product.purchasePrice),
+              salePrice: Number(product.product.salePrice),
+            }
+          : product.product,
       })) ?? [],
     };
   }

@@ -11,14 +11,14 @@ import { Customer, CustomerPayload } from '../types/customer.types';
 
 function KpiCard({ label, value, icon: Icon, tone }: { label: string; value: number; icon: typeof Users; tone: string }) {
   return (
-    <article className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-      <div className="flex items-center gap-4">
-        <div className={`grid h-11 w-11 place-items-center rounded-xl ${tone}`}>
-          <Icon size={21} />
+    <article className="h-full rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+      <div className="flex min-w-0 items-center gap-3">
+        <div className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${tone}`}>
+          <Icon size={20} />
         </div>
-        <div>
+        <div className="min-w-0">
           <p className="text-xs font-black uppercase tracking-wide text-slate-400">{label}</p>
-          <p className="mt-1 text-2xl font-black text-slate-950">{value}</p>
+          <p className="mt-1 text-2xl font-black leading-none text-slate-950">{value}</p>
         </div>
       </div>
     </article>
@@ -51,9 +51,9 @@ export function CustomersPage() {
     <section className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
       <header className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
         <div className="relative p-5 sm:p-6">
-          <div className="absolute inset-y-0 right-0 hidden w-80 bg-gradient-to-l from-cyan-50 via-violet-50 to-transparent lg:block" />
-          <div className="relative flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div>
+          <div className="absolute inset-y-0 right-0 hidden w-96 bg-gradient-to-l from-cyan-50 via-violet-50 to-transparent lg:block" />
+          <div className="relative flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+            <div className="max-w-3xl">
               <h1 className="text-2xl font-black text-slate-950 sm:text-3xl">Clientes</h1>
               <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
                 Gestión de personas naturales y empresas para ventas, servicios y facturación.
@@ -65,7 +65,7 @@ export function CustomersPage() {
                 setEditingCustomer(null);
                 setIsFormOpen(true);
               }}
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-brand-blue px-4 text-sm font-black text-white shadow-sm transition hover:bg-blue-700"
+              className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-brand-blue px-5 text-sm font-black text-white shadow-sm transition hover:bg-blue-700 sm:w-auto"
             >
               <Plus size={18} />
               Nuevo cliente
@@ -88,10 +88,6 @@ export function CustomersPage() {
         onSearchChange={customers.setSearch}
         onTypeChange={customers.setCustomerType}
         onStatusChange={customers.setStatusFilter}
-        onCreate={() => {
-          setEditingCustomer(null);
-          setIsFormOpen(true);
-        }}
       />
       <Toast message={customers.message} />
       {customers.error ? <ErrorState message={customers.error} /> : null}
@@ -110,7 +106,7 @@ export function CustomersPage() {
       {customerToToggle ? (
         <ConfirmDialog
           title={customerToToggle.isActive ? 'Desactivar cliente' : 'Activar cliente'}
-          message={`${customerToToggle.isActive ? 'Esta accion desactivara' : 'Esta accion activara'} a ${customerToToggle.fullName}.`}
+          message={`${customerToToggle.isActive ? 'Esta acción desactivará' : 'Esta acción activará'} a ${customerToToggle.fullName}.`}
           tone={customerToToggle.isActive ? 'danger' : 'info'}
           confirmLabel={customerToToggle.isActive ? 'Desactivar' : 'Activar'}
           onClose={() => setCustomerToToggle(null)}

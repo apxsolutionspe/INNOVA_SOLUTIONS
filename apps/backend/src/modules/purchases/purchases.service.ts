@@ -41,10 +41,29 @@ export class PurchasesService {
       if (!supplier || !supplier.isActive) throw new BadRequestException('Proveedor no disponible');
       if (!dto.items.length) throw new BadRequestException('La compra debe incluir productos');
 
+      const seenProductIds = new Set<string>();
       const items = [];
       for (const item of dto.items) {
+        if (seenProductIds.has(item.productId)) {
+          throw new BadRequestException('No se permiten productos duplicados en la misma compra');
+        }
+        seenProductIds.add(item.productId);
+
         const product = await tx.product.findUnique({ where: { id: item.productId } });
         if (!product || !product.isActive) throw new BadRequestException('Producto no disponible');
+
+        const supplierProduct = await tx.supplierProduct.findFirst({
+          where: {
+            supplierId: dto.supplierId,
+            productId: product.id,
+            isActive: true,
+          },
+        });
+
+        if (!supplierProduct) {
+          throw new BadRequestException('Este producto no pertenece al catálogo del proveedor seleccionado');
+        }
+
         items.push({
           productId: product.id,
           quantity: item.quantity,
@@ -56,10 +75,10 @@ export class PurchasesService {
       const totals = this.calculateTotals(items, dto.discount ?? 0);
       const paymentStatus = dto.paymentStatus ?? PurchasePaymentStatus.PENDING;
       if (dto.payFromCash && paymentStatus !== PurchasePaymentStatus.PAID) {
-        throw new BadRequestException('Solo se registra pago en caja cuando la compra esta pagada');
+        throw new BadRequestException('Solo se registra pago en caja cuando la compra está pagada');
       }
       if (dto.payFromCash && !dto.paymentMethod) {
-        throw new BadRequestException('Metodo de pago requerido para registrar gasto en caja');
+        throw new BadRequestException('Método de pago requerido para registrar gasto en caja');
       }
 
       const code = await this.generateCode(tx);
@@ -149,7 +168,7 @@ export class PurchasesService {
             quantity: quantityToReceive,
             previousStock: product.stock,
             newStock,
-            reason: `Recepcion de compra ${purchase.code}`,
+            reason: `Recepción de compra ${purchase.code}`,
             userId: user.id,
           },
         });
@@ -178,7 +197,7 @@ export class PurchasesService {
     if (purchase.status === PurchaseOrderStatus.CANCELLED) throw new BadRequestException('La compra ya fue cancelada');
     const updated = await this.prisma.purchaseOrder.update({
       where: { id },
-      data: { status: PurchaseOrderStatus.CANCELLED, notes: purchase.notes ? `${purchase.notes}\nCancelacion: ${dto.reason}` : `Cancelacion: ${dto.reason}` },
+      data: { status: PurchaseOrderStatus.CANCELLED, notes: purchase.notes ? `${purchase.notes}\nCancelación: ${dto.reason}` : `Cancelación: ${dto.reason}` },
       include: this.purchasesRepository.include(),
     });
     await this.audit(user.id, 'CANCEL_PURCHASE_ORDER', `Compra cancelada: ${purchase.code}. Motivo: ${dto.reason}`);
