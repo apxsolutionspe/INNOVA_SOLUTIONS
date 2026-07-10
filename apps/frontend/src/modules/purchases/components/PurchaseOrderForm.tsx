@@ -1,6 +1,18 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { AlertTriangle, CalendarDays, PackagePlus, ReceiptText, Trash2, Truck, X } from 'lucide-react';
+import {
+  AlertTriangle,
+  CalendarDays,
+  CheckCircle2,
+  Filter,
+  PackageCheck,
+  PackagePlus,
+  ReceiptText,
+  Search,
+  Trash2,
+  Truck,
+  X,
+} from 'lucide-react';
 
 import { suppliersService } from '../../suppliers/services/suppliers.service';
 import { Supplier, SupplierProduct } from '../../suppliers/types/supplier.types';
@@ -19,11 +31,39 @@ interface DraftItem {
 }
 
 function formatMoney(value: number) {
-  return `S/ ${value.toFixed(2)}`;
+  return `S/ ${Number.isFinite(value) ? value.toFixed(2) : '0.00'}`;
 }
 
-function resolveUnitCost(item: SupplierProduct) {
-  return Number(item.lastCost ?? item.referencePrice ?? item.product?.purchasePrice ?? 0);
+function normalizeSearch(value: string) {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
+}
+
+function productName(item: SupplierProduct) {
+  return item.product?.name ?? item.name;
+}
+
+function productCategory(item: SupplierProduct) {
+  return item.product?.category?.name ?? item.category ?? 'Sin categoría';
+}
+
+function productUnit(item: SupplierProduct) {
+  return item.product?.unit ?? item.unit ?? 'unidad';
+}
+
+function productSku(item: SupplierProduct) {
+  return item.product?.sku ?? item.supplierSku ?? 'Sin SKU';
+}
+
+function resolveUnitCost(item?: SupplierProduct) {
+  return Number(item?.lastCost ?? item?.referencePrice ?? item?.product?.purchasePrice ?? 0);
+}
+
+function resolveLeadTime(item: SupplierProduct) {
+  return item.leadTime ?? item.deliveryTime ?? 'Por confirmar';
 }
 
 export function PurchaseOrderForm({ onSubmit, onClose }: Props) {
@@ -31,6 +71,8 @@ export function PurchaseOrderForm({ onSubmit, onClose }: Props) {
   const [catalog, setCatalog] = useState<SupplierProduct[]>([]);
   const [supplierId, setSupplierId] = useState('');
   const [items, setItems] = useState<DraftItem[]>([]);
+  const [catalogSearch, setCatalogSearch] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('ALL');
   const [discount, setDiscount] = useState(0);
   const [paymentStatus, setPaymentStatus] = useState<PurchasePaymentStatus>('PENDING');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('CASH');
@@ -55,17 +97,54 @@ export function PurchaseOrderForm({ onSubmit, onClose }: Props) {
     () =>
       catalog
         .filter((item) => item.isActive && item.productId && item.product?.isActive)
-        .sort((a, b) => a.name.localeCompare(b.name)),
+        .sort((a, b) => productName(a).localeCompare(productName(b))),
     [catalog],
   );
 
-  const totals = useMemo(() => calculatePurchasePreview(items, discount), [discount, items]);
+  const categoryOptions = useMemo(() => {
+    const categories = new Set(supplierCatalog.map(productCategory).filter(Boolean));
+    return Array.from(categories).sort((a, b) => a.localeCompare(b));
+  }, [supplierCatalog]);
+
+  const filteredCatalog = useMemo(() => {
+    const query = normalizeSearch(catalogSearch);
+    return supplierCatalog.filter((item) => {
+      const matchesCategory = categoryFilter === 'ALL' || productCategory(item) === categoryFilter;
+      if (!matchesCategory) return false;
+      if (!query) return true;
+
+      const searchable = normalizeSearch([
+        productName(item),
+        productCategory(item),
+        productSku(item),
+        item.availability ?? '',
+        item.notes ?? '',
+      ].join(' '));
+      return searchable.includes(query);
+    });
+  }, [catalogSearch, categoryFilter, supplierCatalog]);
+
+  const normalizedItems = useMemo(
+    () =>
+      items.map((item) => ({
+        ...item,
+        quantity: Number.isFinite(item.quantity) && item.quantity > 0 ? item.quantity : 1,
+        unitCost: Number.isFinite(item.unitCost) && item.unitCost >= 0 ? item.unitCost : resolveUnitCost(findCatalogItemFromList(supplierCatalog, item.productId)),
+      })),
+    [items, supplierCatalog],
+  );
+
+  const totals = useMemo(() => calculatePurchasePreview(normalizedItems, discount), [discount, normalizedItems]);
+
+  const addedProductIds = useMemo(() => new Set(items.map((item) => item.productId)), [items]);
 
   const handleSupplierChange = (nextSupplierId: string) => {
     setSupplierId(nextSupplierId);
     setItems([]);
-    setError('');
     setCatalog([]);
+    setCatalogSearch('');
+    setCategoryFilter('ALL');
+    setError('');
     if (!nextSupplierId) return;
 
     setIsLoadingCatalog(true);
@@ -78,52 +157,67 @@ export function PurchaseOrderForm({ onSubmit, onClose }: Props) {
       .finally(() => setIsLoadingCatalog(false));
   };
 
-  const findCatalogItem = (productId: string) => supplierCatalog.find((item) => item.productId === productId);
+  const findCatalogItem = (productId: string) => findCatalogItemFromList(supplierCatalog, productId);
 
-  const addItem = () => {
+  const addCatalogProduct = (product: SupplierProduct) => {
     setError('');
-    if (!supplierId) {
-      setError('Selecciona un proveedor.');
-      return;
-    }
-
-    const candidate = supplierCatalog.find((item) => !items.some((current) => current.productId === item.productId));
-    if (!candidate?.productId) {
-      setError(supplierCatalog.length ? 'Todos los productos disponibles ya fueron agregados.' : 'Este proveedor aún no tiene productos asignados.');
+    if (!product.productId) return;
+    if (addedProductIds.has(product.productId)) {
+      setError('Este producto ya fue agregado a la orden.');
       return;
     }
 
     setItems((current) => [
       ...current,
       {
-        productId: candidate.productId as string,
+        productId: product.productId as string,
         quantity: 1,
-        unitCost: resolveUnitCost(candidate),
+        unitCost: resolveUnitCost(product),
       },
     ]);
   };
 
+  const handleCatalogAction = () => {
+    if (!supplierId) {
+      setError('Selecciona un proveedor para ver su catálogo.');
+      return;
+    }
+    if (!supplierCatalog.length) {
+      setError('Este proveedor aún no tiene productos vinculados.');
+      return;
+    }
+    setError('');
+  };
+
   const updateItem = (index: number, patch: Partial<DraftItem>) => {
     setError('');
+    setItems((current) => current.map((item, itemIndex) => (itemIndex === index ? { ...item, ...patch } : item)));
+  };
+
+  const normalizeItem = (index: number) => {
     setItems((current) =>
       current.map((item, itemIndex) => {
         if (itemIndex !== index) return item;
-        const next = { ...item, ...patch };
-        if (patch.productId) {
-          const catalogItem = findCatalogItem(patch.productId);
-          next.unitCost = catalogItem ? resolveUnitCost(catalogItem) : item.unitCost;
-        }
-        return next;
+        const catalogItem = findCatalogItem(item.productId);
+        return {
+          ...item,
+          quantity: Number.isFinite(item.quantity) && item.quantity > 0 ? item.quantity : 1,
+          unitCost: Number.isFinite(item.unitCost) && item.unitCost >= 0 ? item.unitCost : resolveUnitCost(catalogItem),
+        };
       }),
     );
   };
 
   const validate = () => {
     if (!supplierId) return 'Selecciona un proveedor.';
-    if (!items.length) return 'Agrega al menos un producto.';
+    if (!normalizedItems.length) return 'Agrega al menos un producto del proveedor para registrar la compra.';
     const allowedProductIds = new Set(supplierCatalog.map((item) => item.productId));
+    const seenProductIds = new Set<string>();
 
-    for (const item of items) {
+    for (const item of normalizedItems) {
+      if (!item.productId) return 'Cada producto debe tener un identificador válido.';
+      if (seenProductIds.has(item.productId)) return 'No se permiten productos duplicados en la orden.';
+      seenProductIds.add(item.productId);
       if (!allowedProductIds.has(item.productId)) return 'Este producto no pertenece al catálogo del proveedor seleccionado.';
       if (item.quantity <= 0) return 'La cantidad debe ser mayor a cero.';
       if (item.unitCost < 0) return 'El costo unitario no puede ser negativo.';
@@ -147,7 +241,7 @@ export function PurchaseOrderForm({ onSubmit, onClose }: Props) {
       setError('');
       await onSubmit({
         supplierId,
-        items,
+        items: normalizedItems,
         discount,
         paymentStatus,
         paymentMethod: paymentStatus === 'PENDING' ? undefined : paymentMethod,
@@ -178,10 +272,10 @@ export function PurchaseOrderForm({ onSubmit, onClose }: Props) {
             </div>
             <h2 className="mt-3 text-xl font-black text-slate-950">Nueva orden de compra</h2>
             <p className="mt-1 text-sm leading-6 text-slate-500">
-              Registra productos adquiridos a un proveedor y actualiza inventario al recibir.
+              Elige productos del catálogo del proveedor y registra la compra para abastecimiento.
             </p>
           </div>
-          <button type="button" onClick={onClose} className="grid h-9 w-9 shrink-0 place-items-center rounded-xl text-slate-500 transition hover:bg-slate-100">
+          <button type="button" onClick={onClose} className="grid h-9 w-9 shrink-0 place-items-center rounded-xl text-slate-500 transition hover:bg-slate-100" aria-label="Cerrar formulario">
             <X size={18} />
           </button>
         </header>
@@ -231,82 +325,161 @@ export function PurchaseOrderForm({ onSubmit, onClose }: Props) {
             <div className="flex flex-col gap-3 border-b border-slate-200 p-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h3 className="font-black text-slate-950">Productos del proveedor</h3>
-                <p className="mt-1 text-sm text-slate-500">Una orden de compra se registra para un solo proveedor.</p>
+                <p className="mt-1 text-sm text-slate-500">Elige productos del catálogo vinculado a este proveedor.</p>
               </div>
-              <button type="button" onClick={addItem} disabled={isLoadingCatalog} className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 text-sm font-black text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60">
+              <button type="button" onClick={handleCatalogAction} disabled={isLoadingCatalog} className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 text-sm font-black text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60">
                 <PackagePlus size={17} />
-                Agregar producto del proveedor
+                Ver catálogo del proveedor
               </button>
             </div>
 
             {!supplierId ? (
-              <div className="p-6 text-center">
-                <ReceiptText className="mx-auto text-slate-300" size={34} />
-                <p className="mt-3 text-sm font-black text-slate-700">Selecciona un proveedor para ver su catálogo.</p>
-              </div>
+              <EmptyCatalogState icon="receipt" title="Selecciona un proveedor" description="Al seleccionar un proveedor se mostrará su catálogo de productos vinculados." />
             ) : isLoadingCatalog ? (
-              <div className="p-6 text-center">
-                <PackagePlus className="mx-auto animate-pulse text-blue-300" size={34} />
-                <p className="mt-3 text-sm font-black text-slate-700">Cargando productos vinculados...</p>
-              </div>
+              <EmptyCatalogState icon="loading" title="Cargando productos vinculados..." description="Estamos consultando el catálogo del proveedor seleccionado." />
             ) : supplierCatalog.length === 0 ? (
-              <div className="p-6 text-center">
-                <AlertTriangle className="mx-auto text-orange-400" size={34} />
-                <p className="mt-3 text-sm font-black text-slate-800">Este proveedor aún no tiene productos asignados.</p>
-                <p className="mt-1 text-sm text-slate-500">Asigna productos desde el módulo Proveedores antes de registrar la compra.</p>
-              </div>
-            ) : items.length === 0 ? (
-              <div className="p-6 text-center">
-                <PackagePlus className="mx-auto text-slate-300" size={34} />
-                <p className="mt-3 text-sm font-black text-slate-700">Agrega productos del catálogo del proveedor.</p>
-              </div>
+              <EmptyCatalogState icon="warning" title="Este proveedor aún no tiene productos asignados." description="Asigna productos desde el módulo Proveedores antes de registrar la compra." />
             ) : (
-              <div className="divide-y divide-slate-100">
-                {items.map((item, index) => {
-                  const catalogItem = findCatalogItem(item.productId);
-                  const product = catalogItem?.product;
-                  const subtotal = item.quantity * item.unitCost;
-                  const availableOptions = supplierCatalog.filter(
-                    (candidate) => candidate.productId === item.productId || !items.some((current, currentIndex) => currentIndex !== index && current.productId === candidate.productId),
-                  );
-
-                  return (
-                    <div key={`${item.productId}-${index}`} className="grid gap-3 p-4 lg:grid-cols-[minmax(16rem,1fr)_8rem_10rem_8rem_44px] lg:items-start">
-                      <label className="block">
-                        <span className="text-xs font-black uppercase tracking-wide text-slate-500">Producto</span>
-                        <select value={item.productId} onChange={(event) => updateItem(index, { productId: event.target.value })} className="mt-2 h-11 w-full rounded-xl border border-slate-200 px-3 text-sm font-semibold outline-none focus:border-brand-blue">
-                          {availableOptions.map((candidate) => (
-                            <option key={candidate.id} value={candidate.productId ?? ''}>
-                              {candidate.product?.name ?? candidate.name}
-                            </option>
-                          ))}
-                        </select>
-                        {product ? (
-                          <p className="mt-1 text-xs font-semibold text-slate-500">
-                            {product.category?.name ?? catalogItem?.category ?? 'Sin categoría'} · Stock {product.stock}/{product.minStock}
-                          </p>
-                        ) : null}
-                        {product && product.stock <= product.minStock ? <p className="mt-1 text-xs font-bold text-orange-600">Producto en stock bajo.</p> : null}
-                      </label>
-                      <label className="block">
-                        <span className="text-xs font-black uppercase tracking-wide text-slate-500">Cantidad</span>
-                        <input type="number" min={1} value={item.quantity} onChange={(event) => updateItem(index, { quantity: Math.max(Number(event.target.value), 1) })} className="mt-2 h-11 w-full rounded-xl border border-slate-200 px-3 text-sm font-semibold outline-none focus:border-brand-blue" />
-                      </label>
-                      <label className="block">
-                        <span className="text-xs font-black uppercase tracking-wide text-slate-500">Costo unitario</span>
-                        <input type="number" min={0} step="0.01" value={item.unitCost} onChange={(event) => updateItem(index, { unitCost: Math.max(Number(event.target.value), 0) })} className="mt-2 h-11 w-full rounded-xl border border-slate-200 px-3 text-sm font-semibold outline-none focus:border-brand-blue" />
-                        {catalogItem?.lastCost || catalogItem?.referencePrice ? <span className="mt-1 block text-xs font-semibold text-slate-400">Referencial: {formatMoney(Number(catalogItem.lastCost ?? catalogItem.referencePrice ?? 0))}</span> : null}
-                      </label>
-                      <div>
-                        <span className="text-xs font-black uppercase tracking-wide text-slate-500">Subtotal</span>
-                        <p className="mt-4 text-sm font-black text-slate-950">{formatMoney(subtotal)}</p>
-                      </div>
-                      <button type="button" onClick={() => setItems((current) => current.filter((_, itemIndex) => itemIndex !== index))} className="mt-6 grid h-11 place-items-center rounded-xl text-red-600 transition hover:bg-red-50" title="Quitar producto">
-                        <Trash2 size={18} />
-                      </button>
+              <div className="grid gap-5 p-4 xl:grid-cols-[minmax(0,1fr)_minmax(25rem,0.85fr)]">
+                <div className="min-w-0 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                  <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+                    <div>
+                      <h4 className="font-black text-slate-950">Catálogo disponible</h4>
+                      <p className="mt-1 text-sm font-semibold text-slate-500">{filteredCatalog.length} de {supplierCatalog.length} productos disponibles</p>
                     </div>
-                  );
-                })}
+                    <div className="grid gap-3 lg:grid-cols-[minmax(14rem,1fr)_12rem]">
+                      <label className="block">
+                        <span className="text-xs font-black uppercase tracking-wide text-slate-500">Buscar</span>
+                        <div className="relative mt-2">
+                          <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={17} />
+                          <input value={catalogSearch} onChange={(event) => setCatalogSearch(event.target.value)} placeholder="Buscar producto del proveedor..." className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-3 text-sm font-semibold outline-none transition focus:border-brand-blue focus:ring-4 focus:ring-blue-100" />
+                        </div>
+                      </label>
+                      <label className="block">
+                        <span className="text-xs font-black uppercase tracking-wide text-slate-500">Categoría</span>
+                        <div className="relative mt-2">
+                          <Filter className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={17} />
+                          <select value={categoryFilter} onChange={(event) => setCategoryFilter(event.target.value)} className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-3 text-sm font-semibold outline-none transition focus:border-brand-blue focus:ring-4 focus:ring-blue-100">
+                            <option value="ALL">Todas las categorías</option>
+                            {categoryOptions.map((category) => <option key={category} value={category}>{category}</option>)}
+                          </select>
+                        </div>
+                      </label>
+                    </div>
+                  </div>
+
+                  {filteredCatalog.length ? (
+                    <div className="mt-4 grid gap-3 md:grid-cols-2">
+                      {filteredCatalog.map((product) => {
+                        const isAdded = Boolean(product.productId && addedProductIds.has(product.productId));
+                        return (
+                          <article key={product.id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="min-w-0">
+                                <h5 className="break-words text-sm font-black text-slate-950">{productName(product)}</h5>
+                                <p className="mt-1 text-xs font-bold text-slate-500">{productCategory(product)} · SKU {productSku(product)}</p>
+                              </div>
+                              {isAdded ? (
+                                <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-black text-emerald-700">
+                                  <CheckCircle2 size={13} />
+                                  Agregado
+                                </span>
+                              ) : null}
+                            </div>
+
+                            <dl className="mt-4 grid gap-2 text-sm sm:grid-cols-2">
+                              <div>
+                                <dt className="text-xs font-black uppercase text-slate-400">Stock actual</dt>
+                                <dd className="font-bold text-slate-800">{product.product?.stock ?? 0} {productUnit(product)}</dd>
+                              </div>
+                              <div>
+                                <dt className="text-xs font-black uppercase text-slate-400">Costo referencial</dt>
+                                <dd className="font-bold text-slate-800">{formatMoney(resolveUnitCost(product))}</dd>
+                              </div>
+                              <div>
+                                <dt className="text-xs font-black uppercase text-slate-400">Entrega</dt>
+                                <dd className="font-bold text-slate-800">{resolveLeadTime(product)}</dd>
+                              </div>
+                              <div>
+                                <dt className="text-xs font-black uppercase text-slate-400">Disponibilidad</dt>
+                                <dd className="font-bold text-slate-800">{product.availability ?? 'Disponible'}</dd>
+                              </div>
+                            </dl>
+
+                            {product.notes ? <p className="mt-3 rounded-xl bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-600">{product.notes}</p> : null}
+
+                            <button
+                              type="button"
+                              onClick={() => addCatalogProduct(product)}
+                              disabled={isAdded}
+                              className="mt-4 inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-brand-blue px-4 text-sm font-black text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500"
+                            >
+                              {isAdded ? 'Ya agregado' : 'Agregar'}
+                            </button>
+                          </article>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="mt-4 rounded-2xl border border-dashed border-slate-300 bg-white px-4 py-8 text-center">
+                      <Search className="mx-auto text-slate-300" size={34} />
+                      <p className="mt-3 text-sm font-black text-slate-700">No se encontraron productos con ese criterio.</p>
+                    </div>
+                  )}
+                </div>
+
+                <div className="min-w-0 rounded-2xl border border-slate-200 bg-white">
+                  <div className="border-b border-slate-200 p-4">
+                    <h4 className="font-black text-slate-950">Productos agregados a la orden</h4>
+                    <p className="mt-1 text-sm font-semibold text-slate-500">{items.length} producto(s) seleccionados</p>
+                  </div>
+
+                  {items.length ? (
+                    <div className="divide-y divide-slate-100">
+                      {items.map((item, index) => {
+                        const catalogItem = findCatalogItem(item.productId);
+                        const product = catalogItem?.product;
+                        const subtotal = normalizedItems[index].quantity * normalizedItems[index].unitCost;
+
+                        return (
+                          <div key={`${item.productId}-${index}`} className="grid gap-3 p-4 lg:grid-cols-[minmax(12rem,1fr)_6rem_8rem_7rem_40px] lg:items-start">
+                            <div className="min-w-0">
+                              <span className="text-xs font-black uppercase tracking-wide text-slate-500">Producto</span>
+                              <p className="mt-2 break-words text-sm font-black text-slate-950">{catalogItem ? productName(catalogItem) : 'Producto no disponible'}</p>
+                              {product ? (
+                                <p className="mt-1 text-xs font-semibold text-slate-500">
+                                  {product.category?.name ?? catalogItem?.category ?? 'Sin categoría'} · Stock actual: {product.stock}
+                                </p>
+                              ) : null}
+                            </div>
+                            <label className="block">
+                              <span className="text-xs font-black uppercase tracking-wide text-slate-500">Cantidad</span>
+                              <input type="number" min={1} value={item.quantity} onChange={(event) => updateItem(index, { quantity: Math.max(Number(event.target.value), 1) })} onBlur={() => normalizeItem(index)} className="mt-2 h-11 w-full rounded-xl border border-slate-200 px-3 text-sm font-semibold outline-none focus:border-brand-blue" />
+                            </label>
+                            <label className="block">
+                              <span className="text-xs font-black uppercase tracking-wide text-slate-500">Costo unitario</span>
+                              <input type="number" min={0} step="0.01" value={item.unitCost} onChange={(event) => updateItem(index, { unitCost: Math.max(Number(event.target.value), 0) })} onBlur={() => normalizeItem(index)} className="mt-2 h-11 w-full rounded-xl border border-slate-200 px-3 text-sm font-semibold outline-none focus:border-brand-blue" />
+                              {catalogItem?.lastCost || catalogItem?.referencePrice ? <span className="mt-1 block text-xs font-semibold text-slate-400">Ref.: {formatMoney(resolveUnitCost(catalogItem))}</span> : null}
+                            </label>
+                            <div>
+                              <span className="text-xs font-black uppercase tracking-wide text-slate-500">Subtotal</span>
+                              <p className="mt-4 text-sm font-black text-slate-950">{formatMoney(subtotal)}</p>
+                            </div>
+                            <button type="button" onClick={() => setItems((current) => current.filter((_, itemIndex) => itemIndex !== index))} className="mt-6 grid h-11 place-items-center rounded-xl text-red-600 transition hover:bg-red-50" title="Quitar producto">
+                              <Trash2 size={18} />
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="p-6 text-center">
+                      <PackageCheck className="mx-auto text-slate-300" size={34} />
+                      <p className="mt-3 text-sm font-black text-slate-700">Aún no agregaste productos a la orden.</p>
+                      <p className="mt-1 text-sm text-slate-500">Usa el botón Agregar en el catálogo disponible.</p>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </section>
@@ -362,11 +535,28 @@ export function PurchaseOrderForm({ onSubmit, onClose }: Props) {
           <button type="button" onClick={onClose} className="h-11 rounded-xl border border-slate-200 bg-white px-5 text-sm font-bold text-slate-600 transition hover:bg-slate-100">
             Cancelar
           </button>
-          <button disabled={isSaving || isLoadingCatalog || !items.length} type="submit" className="h-11 rounded-xl bg-brand-blue px-5 text-sm font-black text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60">
+          <button disabled={isSaving || isLoadingCatalog || !normalizedItems.length} type="submit" className="h-11 rounded-xl bg-brand-blue px-5 text-sm font-black text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60">
             {isSaving ? 'Registrando...' : 'Registrar compra'}
           </button>
         </footer>
       </motion.form>
+    </div>
+  );
+}
+
+function findCatalogItemFromList(items: SupplierProduct[], productId: string) {
+  return items.find((item) => item.productId === productId);
+}
+
+function EmptyCatalogState({ icon, title, description }: { icon: 'receipt' | 'loading' | 'warning'; title: string; description: string }) {
+  const Icon = icon === 'warning' ? AlertTriangle : icon === 'loading' ? PackagePlus : ReceiptText;
+  const color = icon === 'warning' ? 'text-orange-400' : icon === 'loading' ? 'animate-pulse text-blue-300' : 'text-slate-300';
+
+  return (
+    <div className="p-6 text-center">
+      <Icon className={`mx-auto ${color}`} size={34} />
+      <p className="mt-3 text-sm font-black text-slate-800">{title}</p>
+      <p className="mt-1 text-sm text-slate-500">{description}</p>
     </div>
   );
 }
